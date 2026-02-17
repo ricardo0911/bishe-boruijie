@@ -1,0 +1,111 @@
+<view class="container safe-bottom checkout-page">
+  <view class="card form-card">
+    <view class="form-item">
+      <text class="label">收货人</text>
+      <input class="input" value="{{receiverName}}" placeholder="请输入收货人姓名" bindinput="onInputReceiverName" />
+    </view>
+    <view class="form-item">
+      <text class="label">联系电话</text>
+      <input class="input" value="{{receiverPhone}}" type="number" maxlength="11" placeholder="请输入手机号码" bindinput="onInputReceiverPhone" />
+    </view>
+    <view class="form-item">
+      <text class="label">收货地址</text>
+      <input class="input" value="{{receiverAddress}}" placeholder="请输入详细地址" bindinput="onInputReceiverAddress" />
+    </view>
+  </view>
+
+  <view class="card delivery-card">
+    <view class="delivery-head">
+      <text class="delivery-title">同城配送</text>
+      <text class="delivery-eta">{{deliveryEta}}</text>
+    </view>
+    <view class="delivery-open-tag">已开通：同城快递</view>
+
+    <view class="delivery-mode-row">
+      <view
+        wx:for="{{deliveryModes}}"
+        wx:key="key"
+        class="delivery-mode {{selectedDeliveryMode===item.key ? 'delivery-mode-active' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onPickDeliveryMode"
+      >
+        <text class="delivery-mode-name">{{item.label}}</text>
+        <text class="delivery-mode-desc">{{item.desc}}</text>
+      </view>
+    </view>
+
+    <view class="delivery-slot-row">
+      <view
+        wx:for="{{deliverySlots}}"
+        wx:key="key"
+        class="delivery-slot {{selectedDeliverySlot===item.key ? 'delivery-slot-active' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onPickDeliverySlot"
+      >
+        {{item.label}}
+      </view>
+    </view>
+
+    <view class="delivery-benefit">{{deliveryBenefit}}</view>
+  </view>
+
+  <view class="card form-card">
+    <view class="form-item no-border">
+      <text class="label">备注</text>
+      <input class="input" value="{{remark}}" placeholder="选填，如卡片祝福语" bindinput="onInputRemark" />
+    </view>
+  </view>
+
+  <view class="section-head">
+    <text class="section-title">商品清单</text>
+  </view>
+
+  <view wx:if="{{orderProducts.length>0}}">
+    <view class="card item-card" wx:for="{{orderProducts}}" wx:key="id">
+      <view class="item-cover">
+        <image wx:if="{{item.coverImage}}" class="item-cover-image" src="{{item.coverImage}}" mode="aspectFill" />
+        <text wx:else>{{item.categoryShort}}</text>
+      </view>
+      <view class="item-main">
+        <text class="item-title">{{item.title}}</text>
+        <view class="item-bottom">
+          <view class="price-row">
+            <text class="price-symbol">¥</text>
+            <text class="price-value">{{item.unitPrice}}</text>
+          </view>
+          <text class="item-qty">x{{item.quantity}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{!loading && orderProducts.length===0}}" class="empty-wrap">
+    <text class="empty-title">暂无可结算商品</text>
+  </view>
+
+  <view class="card fee-card">
+    <view class="fee-row">
+      <text>商品金额</text>
+      <text>¥{{totalAmount}}</text>
+    </view>
+    <view class="fee-row">
+      <text>同城配送费</text>
+      <text>¥{{deliveryFee}}</text>
+    </view>
+    <view class="fee-row total-row">
+      <text>应付金额</text>
+      <text class="total-price">¥{{payableAmount}}</text>
+    </view>
+  </view>
+
+  <view class="checkout-bar card">
+    <view>
+      <text class="sum-label">合计</text>
+      <view class="price-row">
+        <text class="price-symbol">¥</text>
+        <text class="price-value">{{payableAmount}}</text>
+      </view>
+    </view>
+    <button class="btn-primary submit-btn" loading="{{submitting}}" bindtap="onSubmitOrder">提交订单</button>
+  </view>
+</view>

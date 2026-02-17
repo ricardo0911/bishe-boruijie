@@ -1,0 +1,14 @@
+# Java
+backend/target/
+
+# Python
+analysis/.venv/
+analysis/__pycache__/
+analysis/*.pyc
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+Thumbs.db

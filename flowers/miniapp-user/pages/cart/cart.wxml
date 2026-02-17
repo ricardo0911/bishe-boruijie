@@ -1,0 +1,40 @@
+<view class="container safe-bottom cart-page">
+  <view wx:if="{{items.length>0}}">
+    <view class="cart-item card" wx:for="{{items}}" wx:key="productId">
+      <view class="item-cover">
+        <image wx:if="{{item.coverImage}}" class="item-cover-image" src="{{item.coverImage}}" mode="aspectFill" />
+        <text wx:else class="item-cover-text">花</text>
+      </view>
+      <view class="item-main">
+        <text class="item-title">{{item.productTitle}}</text>
+        <view class="item-bottom">
+          <view class="price-row">
+            <text class="price-symbol">¥</text>
+            <text class="price-value">{{item.unitPrice}}</text>
+          </view>
+          <view class="qty-wrap">
+            <view class="qty-btn" data-id="{{item.productId}}" data-qty="{{item.quantity}}" bindtap="onTapDecrease">-</view>
+            <text class="qty-num">{{item.quantity}}</text>
+            <view class="qty-btn" data-id="{{item.productId}}" data-qty="{{item.quantity}}" bindtap="onTapIncrease">+</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="checkout-bar card">
+      <view>
+        <text class="total-label">合计</text>
+        <view class="price-row">
+          <text class="price-symbol">¥</text>
+          <text class="price-value">{{totalAmount}}</text>
+        </view>
+      </view>
+      <button class="btn-primary checkout-btn" bindtap="onCheckout">去结算</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{!loading}}" class="empty-wrap">
+    <text class="empty-title">购物车是空的</text>
+    <button class="btn-primary empty-btn" bindtap="onGoShopping">去逛逛</button>
+  </view>
+</view>

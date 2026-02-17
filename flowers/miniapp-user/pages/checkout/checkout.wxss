@@ -1,0 +1,252 @@
+.checkout-page {
+  padding-bottom: calc(176rpx + env(safe-area-inset-bottom));
+}
+
+.form-card {
+  padding: 0 20rpx;
+}
+
+.delivery-card {
+  margin-top: 12rpx;
+  padding: 18rpx;
+  border: 2rpx solid #eedce4;
+  background: linear-gradient(160deg, #fffefe 0%, #fff7f9 62%, #fffdf8 100%);
+}
+
+.delivery-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.delivery-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #2f2830;
+}
+
+.delivery-eta {
+  font-size: 23rpx;
+  color: #bf4d68;
+}
+
+.delivery-mode-row {
+  margin-top: 14rpx;
+  display: flex;
+  gap: 10rpx;
+  flex-wrap: wrap;
+}
+
+.delivery-open-tag {
+  margin-top: 8rpx;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid #ecd4dd;
+  background: #fff5f8;
+  color: #bf4d68;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.delivery-mode {
+  flex: 0 0 calc((100% - 10rpx) / 2);
+  box-sizing: border-box;
+  min-height: 108rpx;
+  border-radius: 18rpx;
+  border: 2rpx solid #ebd9e1;
+  background: #ffffff;
+  padding: 12rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.delivery-mode-active {
+  border-color: #df6f8b;
+  background: #fff1f5;
+}
+
+.delivery-mode-name {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #403640;
+}
+
+.delivery-mode-desc {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #8a7782;
+}
+
+.delivery-slot-row {
+  margin-top: 12rpx;
+  display: flex;
+  gap: 10rpx;
+  flex-wrap: wrap;
+}
+
+.delivery-slot {
+  min-width: 150rpx;
+  min-height: 52rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid #ead6de;
+  background: #ffffff;
+  color: #6f606a;
+  font-size: 23rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delivery-slot-active {
+  border-color: #df6f8b;
+  color: #bf4d68;
+  background: #fff2f5;
+  font-weight: 600;
+}
+
+.delivery-benefit {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: #8c6f7b;
+}
+
+.delivery-card + .form-card {
+  margin-top: 12rpx;
+}
+
+.form-item {
+  min-height: 94rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  border-bottom: 2rpx solid #f0e6ea;
+}
+
+.form-item.no-border {
+  border-bottom: none;
+}
+
+.label {
+  width: 136rpx;
+  font-size: 27rpx;
+  color: #675761;
+}
+
+.input {
+  flex: 1;
+  min-height: 76rpx;
+  font-size: 28rpx;
+  color: #352b33;
+}
+
+.section-head {
+  margin: 24rpx 2rpx 12rpx;
+}
+
+.item-card {
+  margin-bottom: 10rpx;
+  padding: 14rpx;
+  display: flex;
+  gap: 14rpx;
+}
+
+.item-cover {
+  width: 116rpx;
+  height: 116rpx;
+  border-radius: 16rpx;
+  background: linear-gradient(155deg, #ffe7ee 0%, #fff9fb 62%, #fff5e8 100%);
+  border: 2rpx solid #efdee5;
+  color: #bf4d68;
+  font-size: 44rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.item-cover-image {
+  width: 100%;
+  height: 100%;
+}
+
+.item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-title {
+  font-size: 29rpx;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #352b33;
+}
+
+.item-bottom {
+  margin-top: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.item-qty {
+  font-size: 26rpx;
+  color: #8f7d88;
+}
+
+.fee-card {
+  margin-top: 14rpx;
+  padding: 20rpx;
+}
+
+.fee-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 27rpx;
+  color: #675761;
+  min-height: 58rpx;
+}
+
+.fee-row.total-row {
+  margin-top: 8rpx;
+  padding-top: 10rpx;
+  border-top: 2rpx solid #f0e6ea;
+  color: #2f2830;
+  font-weight: 700;
+}
+
+.total-price {
+  color: #bf4d68;
+  font-size: 36rpx;
+}
+
+.checkout-bar {
+  position: fixed;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: calc(20rpx + env(safe-area-inset-bottom));
+  min-height: 116rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding: 14rpx;
+  z-index: 40;
+}
+
+.sum-label {
+  font-size: 24rpx;
+  color: #7f6f79;
+}
+
+.submit-btn {
+  min-width: 220rpx;
+}

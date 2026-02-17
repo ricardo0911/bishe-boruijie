@@ -1,0 +1,112 @@
+.profile-head {
+  padding: 26rpx 20rpx;
+  background: linear-gradient(135deg, #df6f8b 0%, #bf4d68 100%);
+  border: none;
+  color: #ffffff;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.46);
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52rpx;
+  font-weight: 700;
+}
+
+.name {
+  margin-top: 14rpx;
+  font-size: 40rpx;
+  font-weight: 700;
+}
+
+.meta {
+  margin-top: 8rpx;
+  display: block;
+  font-size: 25rpx;
+  opacity: 0.92;
+}
+
+.quick-card {
+  margin-top: 12rpx;
+  padding: 16rpx 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.quick-item {
+  width: 32%;
+  min-height: 120rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}
+
+.quick-icon {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 999rpx;
+  background: #ffeaf1;
+  color: #bf4d68;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.quick-label {
+  font-size: 24rpx;
+  color: #675761;
+}
+
+.menu-card {
+  margin-top: 12rpx;
+  padding: 0 20rpx;
+}
+
+.menu-item {
+  min-height: 92rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2rpx solid #f0e6ea;
+}
+
+.menu-item.no-border {
+  border-bottom: none;
+}
+
+.menu-text {
+  font-size: 29rpx;
+  color: #352b33;
+}
+
+.menu-arrow {
+  font-size: 30rpx;
+  color: #9a8893;
+}
+
+.tags-card {
+  margin-top: 12rpx;
+  padding: 20rpx;
+}
+
+.tags-title {
+  font-size: 27rpx;
+  color: #7f6f79;
+}
+
+.tags-text {
+  margin-top: 8rpx;
+  font-size: 29rpx;
+  color: #433942;
+  line-height: 1.6;
+}

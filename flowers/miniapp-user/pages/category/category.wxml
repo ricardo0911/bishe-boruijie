@@ -1,0 +1,45 @@
+<view class="container safe-bottom">
+  <view class="search-wrap card">
+    <input
+      class="search-input"
+      value="{{keyword}}"
+      placeholder="搜索鲜花、花束..."
+      bindinput="onInputKeyword"
+      confirm-type="search"
+    />
+  </view>
+
+  <scroll-view class="tab-scroll" scroll-x="true" enable-flex="true" show-scrollbar="false">
+    <view class="tab-wrap">
+      <view
+        wx:for="{{categories}}"
+        wx:key="key"
+        class="tab-pill {{currentCategory===item.key?'tab-pill-active':''}}"
+        data-key="{{item.key}}"
+        bindtap="onTapTab"
+      >
+        {{item.label}}
+      </view>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{products.length>0}}" class="product-grid">
+    <view class="product-card card" wx:for="{{products}}" wx:key="id" data-id="{{item.id}}" bindtap="onTapProduct">
+      <view class="product-cover">
+        <image wx:if="{{item.coverImage}}" class="product-image" src="{{item.coverImage}}" mode="aspectFill" />
+        <view wx:else class="product-badge">{{item.categoryShort}}</view>
+      </view>
+      <view class="product-content">
+        <text class="product-title">{{item.title}}</text>
+        <view class="price-row">
+          <text class="price-symbol">¥</text>
+          <text class="price-value">{{item.unitPrice}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{!loading && products.length===0}}" class="empty-wrap">
+    <text class="empty-title">暂无该分类商品</text>
+  </view>
+</view>

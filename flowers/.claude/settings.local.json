@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(/c/Users/root/AppData/Local/Programs/Python/Python312/python.exe --version)",
+      "Bash(/c/Python312/python.exe --version)",
+      "Bash(py --version)",
+      "Bash(dir:*)",
+      "Bash(mysql:*)",
+      "Bash(1 <<'SQL'\n-- 1. category 表添加 code 列\nALTER TABLE category ADD COLUMN code VARCHAR\\(32\\) NOT NULL DEFAULT '' AFTER id;\n\n-- 2. 给现有数据填充 code 值\nUPDATE category SET code = 'VALENTINE' WHERE name = '情人节';\nUPDATE category SET code = 'DAILY' WHERE name = '日常鲜花';\nUPDATE category SET code = 'MOTHER_DAY' WHERE name = '母亲节';\nUPDATE category SET code = 'BUSINESS' WHERE name = '商务用花';\nUPDATE category SET code = 'BIRTHDAY' WHERE name = '生日祝福';\n\n-- 3. 添加唯一索引\nALTER TABLE category ADD UNIQUE KEY uk_category_code \\(code\\);\nSQL)",
+      "Bash(java:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(curl:*)",
+      "Bash(pip install:*)",
+      "Bash(start \"\" \"C:\\\\Users\\\\root\\\\Desktop\\\\薄瑞捷\\\\flowers\\\\flower-web\\\\merchant\\\\index.html\")",
+      "Bash(start \"\" \"C:\\\\Users\\\\root\\\\Desktop\\\\薄瑞捷\\\\flowers\\\\flower-web\\\\admin\\\\index.html\")",
+      "Bash(mvn spring-boot:run:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd //c \"taskkill /PID 16068 /F\")",
+      "Bash(cmd //c \"start http://localhost:8080/merchant/index.html\")",
+      "Bash(cmd //c \"for /f \"\"tokens=5\"\" %a in \\(''netstat -ano ^| findstr :8080 ^| findstr LISTENING''\\) do taskkill /PID %a /F\")",
+      "Bash(cmd //c \"taskkill /PID 12792 /F\")",
+      "Bash(cmd //c \"echo test > C:\\\\Users\\\\root\\\\Desktop\\\\薄瑞捷\\\\flowers\\\\backend\\\\test.txt\")",
+      "Bash(cmd //c \"taskkill /PID 2436 /F\")",
+      "Bash(cmd //c \"taskkill /PID 4596 /F\")"
+    ]
+  }
+}

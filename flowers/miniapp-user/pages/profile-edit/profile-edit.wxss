@@ -1,0 +1,32 @@
+.form-card {
+  padding: 0 20rpx;
+}
+
+.form-item {
+  min-height: 96rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  border-bottom: 2rpx solid #f0e6ea;
+}
+
+.form-item.no-border {
+  border-bottom: none;
+}
+
+.label {
+  width: 140rpx;
+  font-size: 27rpx;
+  color: #675761;
+}
+
+.input {
+  flex: 1;
+  min-height: 76rpx;
+  font-size: 28rpx;
+  color: #352b33;
+}
+
+.save-btn {
+  margin-top: 22rpx;
+}

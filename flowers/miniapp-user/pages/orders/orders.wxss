@@ -1,0 +1,143 @@
+.tab-scroll {
+  white-space: nowrap;
+}
+
+.tab-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10rpx;
+  padding: 2rpx 2rpx 8rpx;
+}
+
+.tab-pill {
+  min-height: 80rpx;
+  padding: 0 24rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid #eadde3;
+  background: #ffffff;
+  color: #675761;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.tab-pill-active {
+  color: #ffffff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #df6f8b 0%, #bf4d68 100%);
+}
+
+.order-card {
+  margin-top: 12rpx;
+  padding: 14rpx;
+}
+
+.order-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.order-no {
+  font-size: 22rpx;
+  color: #8f7d88;
+}
+
+.status-pill {
+  min-height: 44rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  display: inline-flex;
+  align-items: center;
+}
+
+.status-default {
+  color: #62555f;
+  background: #f2eef1;
+}
+
+.status-success {
+  color: #2f8f63;
+  background: #e8f6ef;
+}
+
+.status-danger {
+  color: #cb4456;
+  background: #fdecef;
+}
+
+.line-item {
+  margin-top: 12rpx;
+  display: flex;
+  gap: 10rpx;
+}
+
+.line-cover {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 14rpx;
+  background: linear-gradient(155deg, #ffe7ee 0%, #fff9fb 62%, #fff5e8 100%);
+  border: 2rpx solid #efdee5;
+  color: #bf4d68;
+  font-size: 34rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.line-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.line-title {
+  font-size: 28rpx;
+  color: #352b33;
+  font-weight: 600;
+}
+
+.line-bottom {
+  margin-top: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.line-qty {
+  font-size: 24rpx;
+  color: #8f7d88;
+}
+
+.order-foot {
+  margin-top: 12rpx;
+  padding-top: 12rpx;
+  border-top: 2rpx solid #f0e6ea;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.total-text {
+  font-size: 27rpx;
+  color: #675761;
+}
+
+.action-group {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.action-btn {
+  min-height: 72rpx;
+  min-width: 136rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  font-size: 24rpx;
+}

@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+app:
+  web-root: ../flower-web/
+  upload-dir: uploads/
+
+spring:
+  application:
+    name: flower-shop-backend
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/flower_shop?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    time-zone: Asia/Shanghai
+  mvc:
+    format:
+      date-time: yyyy-MM-dd HH:mm:ss
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.flowershop: INFO

@@ -1,0 +1,39 @@
+<view class="container safe-bottom">
+  <view class="profile-head card">
+    <view class="avatar">花</view>
+    <text class="name">{{user.name}}</text>
+    <text class="meta">积分：{{user.points}}</text>
+    <text wx:if="{{user.phone}}" class="meta">手机号：{{user.phone}}</text>
+  </view>
+
+  <view class="card quick-card">
+    <view class="quick-item" bindtap="onGoOrders">
+      <view class="quick-icon">单</view>
+      <text class="quick-label">我的订单</text>
+    </view>
+    <view class="quick-item" bindtap="onGoCart">
+      <view class="quick-icon">购</view>
+      <text class="quick-label">购物车</text>
+    </view>
+    <view class="quick-item" bindtap="onGoCategory">
+      <view class="quick-icon">花</view>
+      <text class="quick-label">商品分类</text>
+    </view>
+  </view>
+
+  <view class="card menu-card">
+    <view class="menu-item" bindtap="onEditProfile">
+      <text class="menu-text">编辑个人资料</text>
+      <text class="menu-arrow">></text>
+    </view>
+    <view class="menu-item no-border" bindtap="onGoOrders">
+      <text class="menu-text">查看全部订单</text>
+      <text class="menu-arrow">></text>
+    </view>
+  </view>
+
+  <view class="card tags-card" wx:if="{{user.preferenceTags}}">
+    <text class="tags-title">偏好标签</text>
+    <text class="tags-text">{{user.preferenceTags}}</text>
+  </view>
+</view>

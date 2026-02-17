@@ -1,0 +1,126 @@
+<view class="container safe-bottom">
+  <view class="search-wrap card" bindtap="goCategoryPage">
+    <text class="search-placeholder">搜索鲜花、花束、节日主题</text>
+  </view>
+
+  <swiper class="hero-swiper" autoplay="true" interval="3500" circular="true" indicator-dots="true" indicator-active-color="#ffffff">
+    <swiper-item wx:for="{{banners}}" wx:key="title">
+      <view class="hero-item" style="background: {{item.bg}};">
+        <text class="hero-title">{{item.title}}</text>
+        <text class="hero-sub">{{item.subTitle}}</text>
+      </view>
+    </swiper-item>
+  </swiper>
+
+  <view class="category-grid card">
+    <view class="category-item" wx:for="{{categories}}" wx:key="key" data-key="{{item.key}}" bindtap="onTapCategory">
+      <view class="category-badge">{{item.short}}</view>
+      <text class="category-label">{{item.label}}</text>
+    </view>
+  </view>
+
+  <view class="creative-card card">
+    <view class="creative-head">
+      <view>
+        <text class="creative-title">送花灵感实验室</text>
+        <text class="creative-sub">场景 + 预算，快速选出更合适的花束</text>
+      </view>
+      <view class="creative-refresh" bindtap="onRefreshInspiration">换一组</view>
+    </view>
+
+    <scroll-view scroll-x="true" class="chip-row" show-scrollbar="false">
+      <view class="chip-group">
+        <view
+          wx:for="{{sceneOptions}}"
+          wx:key="key"
+          class="scene-chip {{selectedSceneKey===item.key ? 'scene-chip-active' : ''}}"
+          data-key="{{item.key}}"
+          bindtap="onPickScene"
+        >
+          <text class="scene-chip-title">{{item.label}}</text>
+          <text class="scene-chip-sub">{{item.subtitle}}</text>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view class="budget-row">
+      <view
+        wx:for="{{budgetOptions}}"
+        wx:key="key"
+        class="budget-pill {{selectedBudgetKey===item.key ? 'budget-pill-active' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onPickBudget"
+      >
+        {{item.label}}
+      </view>
+    </view>
+
+    <view class="inspiration-slogan">{{inspirationSlogan}}</view>
+
+    <view class="inspiration-list" wx:if="{{inspirationProducts.length>0}}">
+      <view class="inspiration-item" wx:for="{{inspirationProducts}}" wx:key="id" data-id="{{item.id}}" bindtap="onTapProduct">
+        <view class="inspiration-rank">TOP{{index+1}}</view>
+        <image wx:if="{{item.coverImage}}" class="inspiration-image" src="{{item.coverImage}}" mode="aspectFill" />
+        <view wx:else class="inspiration-badge">{{item.categoryShort}}</view>
+        <view class="inspiration-info">
+          <text class="inspiration-title">{{item.title}}</text>
+          <text class="inspiration-reason">{{item.reason}}</text>
+          <view class="inspiration-bottom">
+            <text class="inspiration-sales" wx:if="{{item.recentSales>0}}">近30天 {{item.recentSales}} 单</text>
+            <text class="inspiration-price">¥{{item.unitPrice}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="gift-card" wx:if="{{giftMessage}}">
+      <text class="gift-title">祝福卡文案</text>
+      <text class="gift-message">{{giftMessage}}</text>
+      <view class="gift-copy" bindtap="onCopyGiftMessage">复制文案</view>
+    </view>
+  </view>
+
+  <view class="section-head">
+    <text class="section-title">为你推荐</text>
+    <text class="section-action" bindtap="goCategoryPage">查看全部</text>
+  </view>
+  <view class="product-grid">
+    <view class="product-card card" wx:for="{{recommendProducts}}" wx:key="id" data-id="{{item.id}}" bindtap="onTapProduct">
+      <view class="product-cover">
+        <image wx:if="{{item.coverImage}}" class="product-image" src="{{item.coverImage}}" mode="aspectFill" />
+        <view wx:else class="product-badge">{{item.categoryShort}}</view>
+      </view>
+      <view class="product-content">
+        <text class="product-title">{{item.title}}</text>
+        <text wx:if="{{item.recentSales>0}}" class="recent-sales">近30天销量 {{item.recentSales}}</text>
+        <view class="price-row">
+          <text class="price-symbol">¥</text>
+          <text class="price-value">{{item.unitPrice}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-head section-gap">
+    <text class="section-title">热销花束</text>
+  </view>
+  <view class="product-grid">
+    <view class="product-card card" wx:for="{{hotProducts}}" wx:key="id" data-id="{{item.id}}" bindtap="onTapProduct">
+      <view class="product-cover">
+        <image wx:if="{{item.coverImage}}" class="product-image" src="{{item.coverImage}}" mode="aspectFill" />
+        <view wx:else class="product-badge">{{item.categoryShort}}</view>
+      </view>
+      <view class="product-content">
+        <text class="product-title">{{item.title}}</text>
+        <view class="price-row">
+          <text class="price-symbol">¥</text>
+          <text class="price-value">{{item.unitPrice}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{!loading && hotProducts.length === 0}}" class="empty-wrap">
+    <text class="empty-title">暂无在售商品</text>
+  </view>
+</view>

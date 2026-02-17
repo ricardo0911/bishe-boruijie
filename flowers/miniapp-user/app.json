@@ -1,0 +1,59 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/category/category",
+    "pages/cart/cart",
+    "pages/orders/orders",
+    "pages/profile/profile",
+    "pages/detail/detail",
+    "pages/checkout/checkout",
+    "pages/profile-edit/profile-edit"
+  ],
+  "window": {
+    "navigationBarTitleText": "花语心选",
+    "navigationBarBackgroundColor": "#fff8f6",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#fff7f4",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#8f7d88",
+    "selectedColor": "#be3f58",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页",
+        "iconPath": "assets/tab/normal.png",
+        "selectedIconPath": "assets/tab/active.png"
+      },
+      {
+        "pagePath": "pages/category/category",
+        "text": "分类",
+        "iconPath": "assets/tab/normal.png",
+        "selectedIconPath": "assets/tab/active.png"
+      },
+      {
+        "pagePath": "pages/cart/cart",
+        "text": "购物车",
+        "iconPath": "assets/tab/normal.png",
+        "selectedIconPath": "assets/tab/active.png"
+      },
+      {
+        "pagePath": "pages/orders/orders",
+        "text": "订单",
+        "iconPath": "assets/tab/normal.png",
+        "selectedIconPath": "assets/tab/active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/tab/normal.png",
+        "selectedIconPath": "assets/tab/active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

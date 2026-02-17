@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fde7f0"/>
+      <stop offset="1" stop-color="#f9d5e5"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#bg)"/>
+  <g transform="translate(400 350)">
+    <path d="M0 130c-94-58-158-118-158-190 0-46 36-82 82-82 32 0 60 18 76 44 16-26 44-44 76-44 46 0 82 36 82 82 0 72-64 132-158 190z" fill="#d85b86"/>
+    <circle cx="-78" cy="-26" r="46" fill="#ea8fb0"/>
+    <circle cx="78" cy="-26" r="46" fill="#e37da4"/>
+  </g>
+  <polygon points="270,470 530,470 460,620 340,620" fill="#f7ead6" stroke="#dac4a8" stroke-width="10"/>
+  <text x="400" y="710" text-anchor="middle" font-family="Arial, sans-serif" font-size="62" fill="#b04f74" font-weight="700">Pink Love</text>
+</svg>
