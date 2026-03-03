@@ -88,7 +88,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Flower backend API smoke test")
     parser.add_argument(
         "--base-url",
-        default="http://127.0.0.1:8080/api/v1",
+        default="http://127.0.0.1:18080/api/v1",
         help="Backend API base URL",
     )
     parser.add_argument(

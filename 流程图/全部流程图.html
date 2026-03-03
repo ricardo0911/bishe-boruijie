@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>图4-1~图4-8 流程图（单文件）</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "宋体", "SimSun", serif;
+      background: #ffffff;
+      color: #222;
+      display: flex;
+      justify-content: center;
+      padding: 10px 8px 20px;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+    .page {
+      width: min(700px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card {
+      border: 1px solid #e2e2e2;
+      padding: 4px 4px 6px;
+      background: #fff;
+    }
+    .caption {
+      text-align: center;
+      font-size: 14px;
+      margin-top: 4px;
+      letter-spacing: 1px;
+    }
+    .flow-svg {
+      display: block;
+      width: 620px;
+      height: 620px;
+      max-width: 100%;
+      margin: 0 auto;
+      background: #fff;
+    }
+      .node, .tag, .caption, svg text {
+      font-family: "宋体", "SimSun", serif;
+    }
+  </style>
+</head>
+<body>
+  <main class="page" id="app"></main>
+
+  <script>
+    const NS = "http://www.w3.org/2000/svg";
+    const W = 760;
+    const H = 760;
+    const CENTER_X = 380;
+    const RECT_W = 176;
+    const RECT_H = 70;
+    const DIA_W = 176;
+    const DIA_H = 94;
+    const TEXT_SIZE = 24;
+
+    const flows = [
+      {
+        caption: "图4-1 下单与库存锁定流程图",
+        nodes: [
+          { id: "s", type: "term", x: 380, y: 60, text: "开始" },
+          { id: "n1", type: "proc", x: 380, y: 180, text: "提交订单" },
+          { id: "n2", type: "proc", x: 380, y: 300, text: "库存锁定" },
+          { id: "d1", type: "decision", x: 380, y: 430, text: "库存充足" },
+          { id: "n3", type: "proc", x: 380, y: 560, text: "进入支付" },
+          { id: "e", type: "term", x: 380, y: 680, text: "结束" },
+          { id: "f1", type: "proc", x: 160, y: 560, text: "释放锁定", fontSize: 26 }
+        ],
+        edges: [
+          { points: [[380, 95], [380, 145]] },
+          { points: [[380, 215], [380, 265]] },
+          { points: [[380, 335], [380, 383]] },
+          { points: [[380, 477], [380, 525]], label: "是", lx: 394, ly: 500 },
+          { points: [[380, 595], [380, 645]] },
+          { points: [[292, 430], [160, 430], [160, 525]], label: "否", lx: 174, ly: 410 },
+          { points: [[248, 560], [292, 560]] }
+        ]
+      },
+      {
+        caption: "图4-2 支付确认与库存扣减流程图",
+        nodes: [
+          { id: "s", type: "term", x: 380, y: 60, text: "开始" },
+          { id: "n1", type: "proc", x: 380, y: 180, text: "支付回调" },
+          { id: "n2", type: "proc", x: 380, y: 300, text: "校验订单" },
+          { id: "d1", type: "decision", x: 380, y: 430, text: "支付成功" },
+          { id: "n3", type: "proc", x: 380, y: 560, text: "扣减库存" },
+          { id: "e", type: "term", x: 380, y: 680, text: "结束" },
+          { id: "f1", type: "proc", x: 160, y: 560, text: "标记失败", fontSize: 26 }
+        ],
+        edges: [
+          { points: [[380, 95], [380, 145]] },
+          { points: [[380, 215], [380, 265]] },
+          { points: [[380, 335], [380, 383]] },
+          { points: [[380, 477], [380, 525]], label: "是", lx: 394, ly: 500 },
+          { points: [[380, 595], [380, 645]] },
+          { points: [[292, 430], [160, 430], [160, 525]], label: "否", lx: 174, ly: 410 },
+          { points: [[248, 560], [292, 560]] }
+        ]
+      },
+      {
+        caption: "图4-3 取消退款回滚流程图",
+        nodes: [
+          { id: "s", type: "term", x: 380, y: 60, text: "开始" },
+          { id: "n1", type: "proc", x: 380, y: 180, text: "发起取消/退款", fontSize: 24 },
+          { id: "n2", type: "proc", x: 380, y: 300, text: "执行回滚" },
+          { id: "d1", type: "decision", x: 380, y: 430, text: "回滚成功" },
+          { id: "n3", type: "proc", x: 380, y: 560, text: "恢复库存" },
+          { id: "e", type: "term", x: 380, y: 680, text: "结束" },
+          { id: "f1", type: "proc", x: 160, y: 560, text: "人工处理", fontSize: 26 }
+        ],
+        edges: [
+          { points: [[380, 95], [380, 145]] },
+          { points: [[380, 215], [380, 265]] },
+          { points: [[380, 335], [380, 383]] },
+          { points: [[380, 477], [380, 525]], label: "是", lx: 394, ly: 500 },
+          { points: [[380, 595], [380, 645]] },
+          { points: [[292, 430], [160, 430], [160, 525]], label: "否", lx: 174, ly: 410 },
+          { points: [[248, 560], [292, 560]] }
+        ]
+      },
+      {
+        caption: "图4-4 推荐与补货联动流程图",
+        nodes: [
+          { id: "s", type: "term", x: 380, y: 60, text: "开始" },
+          { id: "n1", type: "proc", x: 380, y: 180, text: "汇总销售数据", fontSize: 24 },
+          { id: "n2", type: "proc", x: 380, y: 300, text: "生成补货建议", fontSize: 24 },
+          { id: "d1", type: "decision", x: 380, y: 430, text: "商家确认" },
+          { id: "n3", type: "proc", x: 380, y: 560, text: "同步推荐结果", fontSize: 24 },
+          { id: "e", type: "term", x: 380, y: 680, text: "结束" },
+          { id: "f1", type: "proc", x: 160, y: 560, text: "返回调整", fontSize: 26 }
+        ],
+        edges: [
+          { points: [[380, 95], [380, 145]] },
+          { points: [[380, 215], [380, 265]] },
+          { points: [[380, 335], [380, 383]] },
+          { points: [[380, 477], [380, 525]], label: "是", lx: 394, ly: 500 },
+          { points: [[380, 595], [380, 645]] },
+          { points: [[292, 430], [160, 430], [160, 525]], label: "否", lx: 174, ly: 410 },
+          { points: [[248, 560], [292, 560]] }
+        ]
+      },
+      {
+        caption: "图4-5 商家运营治理流程图",
+        nodes: [
+          { id: "s", type: "term", x: 380, y: 60, text: "开始" },
+          { id: "n1", type: "proc", x: 380, y: 180, text: "查看运营看板", fontSize: 24 },
+          { id: "n2", type: "proc", x: 380, y: 300, text: "处理库存预警", fontSize: 24 },
+          { id: "n3", type: "proc", x: 380, y: 420, text: "执行经营策略", fontSize: 24 },
+          { id: "n4", type: "proc", x: 380, y: 540, text: "复盘运营结果", fontSize: 24 },
+          { id: "e", type: "term", x: 380, y: 660, text: "结束" }
+        ],
+        edges: [
+          { points: [[380, 95], [380, 145]] },
+          { points: [[380, 215], [380, 265]] },
+          { points: [[380, 335], [380, 385]] },
+          { points: [[380, 455], [380, 505]] },
+          { points: [[380, 575], [380, 625]] }
+        ]
+      },
+      {
+        caption: "图4-6 管理员全局看板监测流程图",
+        nodes: [
+          { id: "s", type: "term", x: 380, y: 60, text: "开始" },
+          { id: "n1", type: "proc", x: 380, y: 180, text: "采集全局指标", fontSize: 24 },
+          { id: "d1", type: "decision", x: 380, y: 310, text: "发现异常" },
+          { id: "n2", type: "proc", x: 380, y: 440, text: "触发告警通知", fontSize: 24 },
+          { id: "n3", type: "proc", x: 380, y: 560, text: "跟踪恢复状态", fontSize: 24 },
+          { id: "e", type: "term", x: 380, y: 680, text: "结束" },
+          { id: "f1", type: "proc", x: 160, y: 440, text: "继续监测", fontSize: 26 }
+        ],
+        edges: [
+          { points: [[380, 95], [380, 145]] },
+          { points: [[380, 215], [380, 263]] },
+          { points: [[380, 357], [380, 405]], label: "是", lx: 394, ly: 382 },
+          { points: [[380, 475], [380, 525]] },
+          { points: [[380, 595], [380, 645]] },
+          { points: [[292, 310], [160, 310], [160, 405]], label: "否", lx: 174, ly: 290 },
+          { points: [[248, 440], [292, 440]] }
+        ]
+      },
+      {
+        caption: "图4-7 管理员订单监管处置流程图",
+        nodes: [
+          { id: "s", type: "term", x: 380, y: 60, text: "开始" },
+          { id: "n1", type: "proc", x: 380, y: 180, text: "接收异常订单", fontSize: 24 },
+          { id: "d1", type: "decision", x: 380, y: 310, text: "人工介入" },
+          { id: "n2", type: "proc", x: 380, y: 440, text: "人工处置结果", fontSize: 24 },
+          { id: "n3", type: "proc", x: 380, y: 560, text: "回写订单状态", fontSize: 24 },
+          { id: "e", type: "term", x: 380, y: 680, text: "结束" },
+          { id: "f1", type: "proc", x: 160, y: 440, text: "自动放行", fontSize: 26 }
+        ],
+        edges: [
+          { points: [[380, 95], [380, 145]] },
+          { points: [[380, 215], [380, 263]] },
+          { points: [[380, 357], [380, 405]], label: "是", lx: 394, ly: 382 },
+          { points: [[380, 475], [380, 525]] },
+          { points: [[380, 595], [380, 645]] },
+          { points: [[292, 310], [160, 310], [160, 405]], label: "否", lx: 174, ly: 290 },
+          { points: [[248, 440], [292, 440]] }
+        ]
+      },
+      {
+        caption: "图4-8 管理员系统参数发布流程图",
+        nodes: [
+          { id: "s", type: "term", x: 380, y: 60, text: "开始" },
+          { id: "n1", type: "proc", x: 380, y: 180, text: "编辑参数配置", fontSize: 24 },
+          { id: "d1", type: "decision", x: 380, y: 310, text: "审批通过" },
+          { id: "n2", type: "proc", x: 380, y: 440, text: "灰度发布", fontSize: 24 },
+          { id: "n3", type: "proc", x: 380, y: 560, text: "全量生效", fontSize: 24 },
+          { id: "e", type: "term", x: 380, y: 680, text: "结束" },
+          { id: "f1", type: "proc", x: 160, y: 440, text: "退回修改", fontSize: 26 }
+        ],
+        edges: [
+          { points: [[380, 95], [380, 145]] },
+          { points: [[380, 215], [380, 263]] },
+          { points: [[380, 357], [380, 405]], label: "是", lx: 394, ly: 382 },
+          { points: [[380, 475], [380, 525]] },
+          { points: [[380, 595], [380, 645]] },
+          { points: [[292, 310], [160, 310], [160, 405]], label: "否", lx: 174, ly: 290 },
+          { points: [[248, 440], [292, 440]] }
+        ]
+      }
+    ];
+
+    function addText(svg, x, y, text, size = TEXT_SIZE) {
+      const lines = String(text).split("\n");
+      const g = document.createElementNS(NS, "g");
+      lines.forEach((line, idx) => {
+        const t = document.createElementNS(NS, "text");
+        t.setAttribute("x", x);
+        t.setAttribute("y", y + (idx - (lines.length - 1) / 2) * (size * 1.1));
+        t.setAttribute("text-anchor", "middle");
+        t.setAttribute("dominant-baseline", "middle");
+        t.setAttribute("font-size", String(size));
+        t.setAttribute("font-family", "宋体, SimSun, serif");
+        t.textContent = line;
+        g.appendChild(t);
+      });
+      svg.appendChild(g);
+    }
+
+    function drawNode(svg, node) {
+      const fontSize = TEXT_SIZE;
+      if (node.type === "decision") {
+        const p = document.createElementNS(NS, "polygon");
+        const left = node.x - DIA_W / 2;
+        const right = node.x + DIA_W / 2;
+        const top = node.y - DIA_H / 2;
+        const bottom = node.y + DIA_H / 2;
+        p.setAttribute("points", `${node.x},${top} ${right},${node.y} ${node.x},${bottom} ${left},${node.y}`);
+        p.setAttribute("fill", "#fff");
+        p.setAttribute("stroke", "#4e5560");
+        p.setAttribute("stroke-width", "3");
+        svg.appendChild(p);
+        addText(svg, node.x, node.y, node.text, fontSize);
+        return;
+      }
+
+      const r = document.createElementNS(NS, "rect");
+      r.setAttribute("x", String(node.x - RECT_W / 2));
+      r.setAttribute("y", String(node.y - RECT_H / 2));
+      r.setAttribute("width", String(RECT_W));
+      r.setAttribute("height", String(RECT_H));
+      r.setAttribute("fill", "#fff");
+      r.setAttribute("stroke", "#4e5560");
+      r.setAttribute("stroke-width", "3");
+      if (node.type === "term") {
+        r.setAttribute("rx", "35");
+        r.setAttribute("ry", "35");
+      }
+      svg.appendChild(r);
+      addText(svg, node.x, node.y, node.text, fontSize);
+    }
+
+    function drawEdge(svg, edge) {
+      const pl = document.createElementNS(NS, "polyline");
+      pl.setAttribute("points", edge.points.map(p => `${p[0]},${p[1]}`).join(" "));
+      pl.setAttribute("fill", "none");
+      pl.setAttribute("stroke", "#4e5560");
+      pl.setAttribute("stroke-width", "3");
+      pl.setAttribute("marker-end", "url(#arrow)");
+      svg.appendChild(pl);
+
+      if (edge.label) {
+        addText(svg, edge.lx, edge.ly, edge.label, TEXT_SIZE);
+      }
+    }
+
+    function createFlowCard(flow) {
+      const card = document.createElement("section");
+      card.className = "card";
+
+      const svg = document.createElementNS(NS, "svg");
+      svg.classList.add("flow-svg");
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+
+      const defs = document.createElementNS(NS, "defs");
+      const marker = document.createElementNS(NS, "marker");
+      marker.setAttribute("id", "arrow");
+      marker.setAttribute("markerWidth", "6");
+      marker.setAttribute("markerHeight", "6");
+      marker.setAttribute("refX", "5");
+      marker.setAttribute("refY", "3");
+      marker.setAttribute("orient", "auto");
+      marker.setAttribute("markerUnits", "strokeWidth");
+      const path = document.createElementNS(NS, "path");
+      path.setAttribute("d", "M0,0 L6,3 L0,6 z");
+      path.setAttribute("fill", "#3f4650");
+      marker.appendChild(path);
+      defs.appendChild(marker);
+      svg.appendChild(defs);
+
+      flow.edges.forEach(e => drawEdge(svg, e));
+      flow.nodes.forEach(n => drawNode(svg, n));
+
+      const caption = document.createElement("div");
+      caption.className = "caption";
+      caption.textContent = flow.caption;
+
+      card.appendChild(svg);
+      card.appendChild(caption);
+      return card;
+    }
+
+    const app = document.getElementById("app");
+    flows.forEach(flow => app.appendChild(createFlowCard(flow)));
+  </script>
+</body>
+</html>

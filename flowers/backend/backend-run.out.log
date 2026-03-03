@@ -1,0 +1,75 @@
+[INFO] Scanning for projects...
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/org/cyclonedx/maven-metadata.xml
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/org/graalvm/buildtools/maven-metadata.xml
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/io/github/git-commit-id/maven-metadata.xml
+Progress (1): 243 BProgress (2): 243 B | 256 B                           Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/org/graalvm/buildtools/maven-metadata.xml (243 B at 431 B/s)
+Progress (2): 256 B | 244 B[WARNING] Could not validate integrity of download from https://maven.aliyun.com/repository/public/io/github/git-commit-id/maven-metadata.xml
+org.eclipse.aether.transfer.ChecksumFailureException: Checksum validation failed, no checksums available
+    at org.eclipse.aether.internal.impl.AbstractChecksumPolicy.onNoMoreChecksums (AbstractChecksumPolicy.java:63)
+    at org.eclipse.aether.connector.basic.ChecksumValidator.validate (ChecksumValidator.java:112)
+    at org.eclipse.aether.connector.basic.BasicRepositoryConnector$GetTaskRunner.runTask (BasicRepositoryConnector.java:462)
+    at org.eclipse.aether.connector.basic.BasicRepositoryConnector$TaskRunner.run (BasicRepositoryConnector.java:392)
+    at org.eclipse.aether.util.concurrency.RunnableErrorForwarder.lambda$wrap$0 (RunnableErrorForwarder.java:66)
+    at org.eclipse.aether.connector.basic.BasicRepositoryConnector.get (BasicRepositoryConnector.java:212)
+    at org.eclipse.aether.internal.impl.DefaultMetadataResolver$ResolveTask.run (DefaultMetadataResolver.java:556)
+    at org.eclipse.aether.util.concurrency.RunnableErrorForwarder.lambda$wrap$0 (RunnableErrorForwarder.java:66)
+    at java.util.concurrent.ThreadPoolExecutor.runWorker (ThreadPoolExecutor.java:1136)
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run (ThreadPoolExecutor.java:635)
+    at java.lang.Thread.run (Thread.java:842)
+                           [WARNING] Checksum validation failed, no checksums available from aliyunmaven for https://maven.aliyun.com/repository/public/io/github/git-commit-id/maven-metadata.xml
+Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/io/github/git-commit-id/maven-metadata.xml (256 B at 374 B/s)
+Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/org/cyclonedx/maven-metadata.xml (244 B at 324 B/s)
+[INFO] 
+[INFO] -----------------< com.flowershop:flower-shop-backend >-----------------
+[INFO] Building flower-shop-backend 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.3.8:run (default-cli) > test-compile @ flower-shop-backend >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ flower-shop-backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 33 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ flower-shop-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ flower-shop-backend ---
+[INFO] skip non existing resourceDirectory C:\Users\root\Desktop\±¡î£½à\flowers\backend\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ flower-shop-backend ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] <<< spring-boot:3.3.8:run (default-cli) < test-compile @ flower-shop-backend <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.3.8:run (default-cli) @ flower-shop-backend ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.8)
+
+2026-03-02T15:41:41.134+08:00  INFO 14784 --- [flower-shop-backend] [           main] com.flowershop.FlowerShopApplication     : Starting FlowerShopApplication using Java 17.0.12 with PID 14784 (C:\Users\root\Desktop\±¡î£½à\flowers\backend\target\classes started by root in C:\Users\root\Desktop\±¡î£½à\flowers\backend)
+2026-03-02T15:41:41.136+08:00  INFO 14784 --- [flower-shop-backend] [           main] com.flowershop.FlowerShopApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-03-02T15:41:42.572+08:00  INFO 14784 --- [flower-shop-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 18080 (http)
+2026-03-02T15:41:42.588+08:00  INFO 14784 --- [flower-shop-backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-03-02T15:41:42.588+08:00  INFO 14784 --- [flower-shop-backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
+2026-03-02T15:41:42.642+08:00  INFO 14784 --- [flower-shop-backend] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-03-02T15:41:42.643+08:00  INFO 14784 --- [flower-shop-backend] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1458 ms
+2026-03-02T15:41:42.946+08:00  INFO 14784 --- [flower-shop-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-03-02T15:41:43.126+08:00  INFO 14784 --- [flower-shop-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@447521e
+2026-03-02T15:41:43.128+08:00  INFO 14784 --- [flower-shop-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-03-02T15:41:44.198+08:00  INFO 14784 --- [flower-shop-backend] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-03-02T15:41:44.283+08:00  INFO 14784 --- [flower-shop-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 18080 (http) with context path '/'
+2026-03-02T15:41:44.319+08:00  INFO 14784 --- [flower-shop-backend] [           main] com.flowershop.FlowerShopApplication     : Started FlowerShopApplication in 3.57 seconds (process running for 3.853)
+2026-03-02T15:42:04.606+08:00  INFO 14784 --- [flower-shop-backend] [io-18080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-02T15:42:04.607+08:00  INFO 14784 --- [flower-shop-backend] [io-18080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-03-02T15:42:04.610+08:00  INFO 14784 --- [flower-shop-backend] [io-18080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+2026-03-03T04:30:37.745+08:00  WARN 14784 --- [flower-shop-backend] [l-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=4h50m17s797ms670?s100ns).
+2026-03-03T10:32:19.703+08:00  WARN 14784 --- [flower-shop-backend] [l-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=6h1m45s249ms746?s500ns).

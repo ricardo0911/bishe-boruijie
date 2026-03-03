@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>鲜花商城系统模块图</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "SimSun", "宋体", serif;
+      background: #fff;
+      color: #222;
+      padding: 30px 10px 36px;
+      display: flex;
+      justify-content: center;
+    }
+    .page { width: min(980px, 100%); }
+    .diagram {
+      width: 940px;
+      height: 640px;
+      position: relative;
+      margin: 0 auto;
+      border: 1px solid #d8d8d8;
+      background: #fff;
+    }
+    .node {
+      position: absolute;
+      border: 1.5px solid #7a7a7a;
+      background: #f8f8f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 28px;
+      color: #444;
+      line-height: 1.25;
+      padding: 0 6px;
+      white-space: nowrap;
+      z-index: 2;
+    }
+    .svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .caption {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="diagram" id="diagram"></div>
+    <div class="caption">图 4-5 鲜花商城系统模块图</div>
+  </main>
+
+  <script>
+    const diagram = document.getElementById('diagram');
+
+    const nodes = [
+      { id: 'root', label: '鲜花商城系统', x: 312, y: 28, w: 316, h: 72, fontSize: 44 },
+      { id: 'n1', label: '用户端\n小程序', x: 26, y: 194, w: 128, h: 280 },
+      { id: 'n2', label: '商家端\nWeb', x: 178, y: 194, w: 128, h: 280 },
+      { id: 'n3', label: '后台\n管理端', x: 330, y: 194, w: 128, h: 280 },
+      { id: 'n4', label: '订单与\n支付服务', x: 482, y: 194, w: 128, h: 280 },
+      { id: 'n5', label: '库存与\n售后服务', x: 634, y: 194, w: 128, h: 280 },
+      { id: 'n6', label: '数据分析\n与推荐', x: 786, y: 194, w: 128, h: 280 }
+    ];
+
+    const map = {};
+    nodes.forEach((n) => {
+      const el = document.createElement('div');
+      el.className = 'node';
+      el.style.left = n.x + 'px';
+      el.style.top = n.y + 'px';
+      el.style.width = n.w + 'px';
+      el.style.height = n.h + 'px';
+      if (n.fontSize) {
+        el.style.fontSize = n.fontSize + 'px';
+      }
+      el.innerHTML = n.label.replace(/\n/g, '<br/>');
+      diagram.appendChild(el);
+      map[n.id] = n;
+    });
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'svg');
+    svg.setAttribute('viewBox', '0 0 940 640');
+    diagram.appendChild(svg);
+
+    const root = map.root;
+    const trunkTop = root.y + root.h;
+    const trunkBottom = 152;
+
+    function line(x1, y1, x2, y2) {
+      const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      l.setAttribute('x1', x1);
+      l.setAttribute('y1', y1);
+      l.setAttribute('x2', x2);
+      l.setAttribute('y2', y2);
+      l.setAttribute('stroke', '#666');
+      l.setAttribute('stroke-width', '2');
+      svg.appendChild(l);
+    }
+
+    const rootCx = root.x + root.w / 2;
+    line(rootCx, trunkTop, rootCx, trunkBottom);
+
+    const childIds = ['n1', 'n2', 'n3', 'n4', 'n5', 'n6'];
+    const left = map.n1.x + map.n1.w / 2;
+    const right = map.n6.x + map.n6.w / 2;
+    line(left, trunkBottom, right, trunkBottom);
+
+    childIds.forEach((id) => {
+      const c = map[id];
+      const cx = c.x + c.w / 2;
+      line(cx, trunkBottom, cx, c.y);
+    });
+  </script>
+</body>
+</html>

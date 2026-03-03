@@ -10,6 +10,8 @@ import com.flowershop.dto.OrderSummaryResponse;
 import com.flowershop.dto.PayOrderRequest;
 import com.flowershop.dto.SimpleActionResponse;
 import com.flowershop.exception.BusinessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -33,6 +35,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class OrderService {
 
+    private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
     private static final int FALLBACK_LOCK_MINUTES = 30;
 
     private final JdbcTemplate jdbcTemplate;
@@ -81,7 +84,7 @@ public class OrderService {
 
             List<ProductService.BomDemand> demands = productService.getBomDemands(product.id());
             if (demands.isEmpty()) {
-                throw new BusinessException("BOM_NOT_FOUND", "商品缺少BOM配置，无法扣减库存: " + product.title());
+                throw new BusinessException("BOM_NOT_FOUND", "\u5546\u54c1\u7f3a\u5c11BOM\u914d\u7f6e\uff0c\u65e0\u6cd5\u6263\u51cf\u5e93\u5b58: " + product.title());
             }
             for (ProductService.BomDemand demand : demands) {
                 BigDecimal needQty = demand.dosage().multiply(BigDecimal.valueOf(line.getQuantity()));
@@ -114,17 +117,19 @@ public class OrderService {
 
         List<OrderItemResponse> items = jdbcTemplate.query(
             """
-            SELECT product_id, product_title, unit_price, quantity, line_amount
-            FROM order_item
-            WHERE order_id = ?
-            ORDER BY id
+            SELECT oi.product_id, oi.product_title, oi.unit_price, oi.quantity, oi.line_amount, p.cover_image
+            FROM order_item oi
+            LEFT JOIN product p ON p.id = oi.product_id
+            WHERE oi.order_id = ?
+            ORDER BY oi.id
             """,
             (rs, rowNum) -> new OrderItemResponse(
                 rs.getLong("product_id"),
                 rs.getString("product_title"),
                 rs.getBigDecimal("unit_price"),
                 rs.getInt("quantity"),
-                rs.getBigDecimal("line_amount")
+                rs.getBigDecimal("line_amount"),
+                rs.getString("cover_image")
             ),
             snapshot.id()
         );
@@ -207,7 +212,7 @@ public class OrderService {
         return buildOrderSummaries(orders);
     }
 
-    /** 商家端：按状态查询所有订单 */
+    /** Merchant side: list all orders by status. */
     public List<OrderSummaryResponse> listAllOrders(String status, Integer limit) {
         int safeLimit = limit == null ? 50 : Math.max(1, Math.min(limit, 200));
         List<OrderSnapshot> orders;
@@ -250,10 +255,10 @@ public class OrderService {
     public SimpleActionResponse payOrder(String orderNo, PayOrderRequest request) {
         OrderSnapshot order = getOrderForUpdate(orderNo);
         if ("PAID".equals(order.status()) || "COMPLETED".equals(order.status())) {
-            return new SimpleActionResponse(orderNo, order.status(), "订单已支付");
+            return new SimpleActionResponse(orderNo, order.status(), "\u8ba2\u5355\u5df2\u652f\u4ed8");
         }
         if (!"LOCKED".equals(order.status())) {
-            throw new BusinessException("ORDER_STATUS_INVALID", "当前状态不可支付: " + order.status());
+            throw new BusinessException("ORDER_STATUS_INVALID", "\u5f53\u524d\u72b6\u6001\u4e0d\u53ef\u652f\u4ed8: " + order.status());
         }
 
         if (order.lockExpireAt() != null && order.lockExpireAt().isBefore(LocalDateTime.now())) {
@@ -267,11 +272,18 @@ public class OrderService {
                     updated_at = NOW()
                 WHERE id = ?
                 """,
-                appendRemark(order.remark(), "支付超时自动取消"),
+                appendRemark(order.remark(), "\u652f\u4ed8\u8d85\u65f6\u81ea\u52a8\u53d6\u6d88"),
                 order.id()
             );
-            throw new BusinessException("ORDER_EXPIRED", "订单超时未支付，库存已释放");
+            throw new BusinessException("ORDER_EXPIRED", "\u8ba2\u5355\u8d85\u65f6\u672a\u652f\u4ed8\uff0c\u5e93\u5b58\u5df2\u91ca\u653e");
         }
+
+        String paymentChannel = request.getPaymentChannel() == null || request.getPaymentChannel().isBlank()
+            ? "WECHAT_MINI"
+            : request.getPaymentChannel().trim();
+        String paymentNo = request.getPaymentNo() == null || request.getPaymentNo().isBlank()
+            ? "WX" + System.currentTimeMillis()
+            : request.getPaymentNo().trim();
 
         inventoryService.confirmLockedMaterials(order.id());
         jdbcTemplate.update(
@@ -280,22 +292,23 @@ public class OrderService {
             SET status = 'PAID', pay_time = NOW(), payment_channel = ?, payment_no = ?, updated_at = NOW()
             WHERE id = ?
             """,
-            request.getPaymentChannel(),
-            request.getPaymentNo(),
+            paymentChannel,
+            paymentNo,
             order.id()
         );
 
-        return new SimpleActionResponse(orderNo, "PAID", "支付成功并完成库存扣减");
+        insertPaymentLog(order.id(), orderNo, paymentNo, paymentChannel, order.paymentAmount());
+        return new SimpleActionResponse(orderNo, "PAID", "\u652f\u4ed8\u6210\u529f\u5e76\u5b8c\u6210\u5e93\u5b58\u6263\u51cf");
     }
 
     @Transactional
     public SimpleActionResponse confirmOrder(String orderNo) {
         OrderSnapshot order = getOrderForUpdate(orderNo);
         if ("CONFIRMED".equals(order.status())) {
-            return new SimpleActionResponse(orderNo, "CONFIRMED", "订单已确认");
+            return new SimpleActionResponse(orderNo, "CONFIRMED", "\u8ba2\u5355\u5df2\u786e\u8ba4");
         }
         if (!"PAID".equals(order.status())) {
-            throw new BusinessException("ORDER_STATUS_INVALID", "当前状态不可确认: " + order.status());
+            throw new BusinessException("ORDER_STATUS_INVALID", "\u5f53\u524d\u72b6\u6001\u4e0d\u53ef\u786e\u8ba4: " + order.status());
         }
         jdbcTemplate.update(
             """
@@ -305,17 +318,17 @@ public class OrderService {
             """,
             order.id()
         );
-        return new SimpleActionResponse(orderNo, "CONFIRMED", "订单已确认发货");
+        return new SimpleActionResponse(orderNo, "CONFIRMED", "\u8ba2\u5355\u5df2\u786e\u8ba4\u53d1\u8d27");
     }
 
     @Transactional
     public SimpleActionResponse completeOrder(String orderNo) {
         OrderSnapshot order = getOrderForUpdate(orderNo);
         if ("COMPLETED".equals(order.status())) {
-            return new SimpleActionResponse(orderNo, "COMPLETED", "订单已完成");
+            return new SimpleActionResponse(orderNo, "COMPLETED", "\u8ba2\u5355\u5df2\u5b8c\u6210");
         }
         if (!"PAID".equals(order.status()) && !"CONFIRMED".equals(order.status())) {
-            throw new BusinessException("ORDER_STATUS_INVALID", "当前状态不可完成: " + order.status());
+            throw new BusinessException("ORDER_STATUS_INVALID", "\u5f53\u524d\u72b6\u6001\u4e0d\u53ef\u5b8c\u6210: " + order.status());
         }
         jdbcTemplate.update(
             """
@@ -325,18 +338,18 @@ public class OrderService {
             """,
             order.id()
         );
-        return new SimpleActionResponse(orderNo, "COMPLETED", "订单已完成");
+        return new SimpleActionResponse(orderNo, "COMPLETED", "\u8ba2\u5355\u5df2\u5b8c\u6210");
     }
 
     @Transactional
     public SimpleActionResponse cancelOrder(String orderNo, CancelOrderRequest request) {
         OrderSnapshot order = getOrderForUpdate(orderNo);
         String reason = request == null || request.getReason() == null || request.getReason().isBlank()
-            ? "用户取消"
+            ? "\u7528\u6237\u53d6\u6d88"
             : request.getReason().trim();
 
         if ("CANCELLED".equals(order.status()) || "REFUNDED".equals(order.status())) {
-            return new SimpleActionResponse(orderNo, order.status(), "订单已取消或已退款");
+            return new SimpleActionResponse(orderNo, order.status(), "\u8ba2\u5355\u5df2\u53d6\u6d88\u6216\u5df2\u9000\u6b3e");
         }
 
         if ("LOCKED".equals(order.status()) || "CREATED".equals(order.status())) {
@@ -350,7 +363,7 @@ public class OrderService {
                 appendRemark(order.remark(), reason),
                 order.id()
             );
-            return new SimpleActionResponse(orderNo, "CANCELLED", "取消成功，锁库存已回滚");
+            return new SimpleActionResponse(orderNo, "CANCELLED", "\u53d6\u6d88\u6210\u529f\uff0c\u9501\u5b9a\u5e93\u5b58\u5df2\u56de\u8865");
         }
 
         if ("PAID".equals(order.status()) || "CONFIRMED".equals(order.status()) || "COMPLETED".equals(order.status())) {
@@ -364,10 +377,10 @@ public class OrderService {
                 appendRemark(order.remark(), reason),
                 order.id()
             );
-            return new SimpleActionResponse(orderNo, "REFUNDED", "退款成功，库存已回补");
+            return new SimpleActionResponse(orderNo, "REFUNDED", "\u9000\u6b3e\u6210\u529f\uff0c\u5e93\u5b58\u5df2\u56de\u8865");
         }
 
-        throw new BusinessException("ORDER_STATUS_INVALID", "当前状态不可取消: " + order.status());
+        throw new BusinessException("ORDER_STATUS_INVALID", "\u5f53\u524d\u72b6\u6001\u4e0d\u53ef\u53d6\u6d88: " + order.status());
     }
 
     @Transactional
@@ -395,14 +408,14 @@ public class OrderService {
                     updated_at = NOW()
                 WHERE id = ?
                 """,
-                appendRemark(order.remark(), "超时未支付自动取消"),
+                appendRemark(order.remark(), "\u8d85\u65f6\u672a\u652f\u4ed8\u81ea\u52a8\u53d6\u6d88"),
                 order.id()
             );
         }
         return expiredOrders.size();
     }
 
-    // ===== 内部辅助方法 =====
+    // ===== Internal helper methods =====
 
     private void ensureUserExists(Long userId) {
         Integer count = jdbcTemplate.queryForObject(
@@ -411,7 +424,7 @@ public class OrderService {
             userId
         );
         if (count == null || count == 0) {
-            throw new BusinessException("USER_NOT_FOUND", "用户不存在: " + userId);
+            throw new BusinessException("USER_NOT_FOUND", "\u7528\u6237\u4e0d\u5b58\u5728: " + userId);
         }
     }
 
@@ -438,7 +451,7 @@ public class OrderService {
         }, keyHolder);
 
         if (updated == 0 || keyHolder.getKey() == null) {
-            throw new BusinessException("CREATE_ORDER_FAILED", "创建订单失败");
+            throw new BusinessException("CREATE_ORDER_FAILED", "\u521b\u5efa\u8ba2\u5355\u5931\u8d25");
         }
         return keyHolder.getKey().longValue();
     }
@@ -471,7 +484,7 @@ public class OrderService {
             orderNo
         );
         if (orders.isEmpty()) {
-            throw new BusinessException("ORDER_NOT_FOUND", "订单不存在: " + orderNo);
+            throw new BusinessException("ORDER_NOT_FOUND", "\u8ba2\u5355\u4e0d\u5b58\u5728: " + orderNo);
         }
         return orders.get(0);
     }
@@ -490,7 +503,7 @@ public class OrderService {
             orderNo
         );
         if (orders.isEmpty()) {
-            throw new BusinessException("ORDER_NOT_FOUND", "订单不存在: " + orderNo);
+            throw new BusinessException("ORDER_NOT_FOUND", "\u8ba2\u5355\u4e0d\u5b58\u5728: " + orderNo);
         }
         return orders.get(0);
     }
@@ -518,10 +531,11 @@ public class OrderService {
         List<Long> orderIds = orders.stream().map(OrderSnapshot::id).toList();
         String placeholders = String.join(",", Collections.nCopies(orderIds.size(), "?"));
         String itemSql = """
-            SELECT order_id, product_id, product_title, unit_price, quantity, line_amount
-            FROM order_item
-            WHERE order_id IN (%s)
-            ORDER BY order_id DESC, id ASC
+            SELECT oi.order_id, oi.product_id, oi.product_title, oi.unit_price, oi.quantity, oi.line_amount, p.cover_image
+            FROM order_item oi
+            LEFT JOIN product p ON p.id = oi.product_id
+            WHERE oi.order_id IN (%s)
+            ORDER BY oi.order_id DESC, oi.id ASC
             """.formatted(placeholders);
 
         List<OrderItemRow> itemRows = jdbcTemplate.query(
@@ -532,7 +546,8 @@ public class OrderService {
                 rs.getString("product_title"),
                 rs.getBigDecimal("unit_price"),
                 rs.getInt("quantity"),
-                rs.getBigDecimal("line_amount")
+                rs.getBigDecimal("line_amount"),
+                rs.getString("cover_image")
             ),
             orderIds.toArray()
         );
@@ -548,7 +563,8 @@ public class OrderService {
                 row.productTitle(),
                 row.unitPrice(),
                 row.quantity(),
-                row.lineAmount()
+                row.lineAmount(),
+                row.coverImage()
             ));
         }
 
@@ -583,6 +599,26 @@ public class OrderService {
         return value == null ? BigDecimal.ZERO : value;
     }
 
+    private void insertPaymentLog(Long orderId, String orderNo, String paymentNo, String paymentChannel, BigDecimal payAmount) {
+        try {
+            jdbcTemplate.update(
+                """
+                INSERT INTO payment_log(
+                    order_id, order_no, transaction_id, payment_channel, pay_amount, result_code, notify_time, created_at
+                ) VALUES (?, ?, ?, ?, ?, 'SUCCESS', NOW(), NOW())
+                """,
+                orderId,
+                orderNo,
+                paymentNo,
+                paymentChannel,
+                payAmount == null ? BigDecimal.ZERO : payAmount
+            );
+        } catch (Exception e) {
+            logger.error("insert payment_log failed, orderNo={}", orderNo, e);
+            throw new BusinessException("PAYMENT_LOG_WRITE_FAILED", "\u652f\u4ed8\u8bb0\u5f55\u5199\u5165\u5931\u8d25");
+        }
+    }
+
     private static String generateOrderNo() {
         String timePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         int randomPart = ThreadLocalRandom.current().nextInt(1000, 9999);
@@ -599,7 +635,8 @@ public class OrderService {
         String productTitle,
         BigDecimal unitPrice,
         Integer quantity,
-        BigDecimal lineAmount
+        BigDecimal lineAmount,
+        String coverImage
     ) {
     }
 

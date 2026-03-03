@@ -1,0 +1,194 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>图2-1 系统总用例图</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "SimSun", "宋体", serif;
+      background: #fff;
+      color: #222;
+      padding: 16px 8px 24px;
+    }
+    .page { width: 1600px; margin: 0 auto; }
+    .diagram {
+      position: relative;
+      width: 1600px;
+      height: 980px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .boundary {
+      position: absolute;
+      left: 260px;
+      top: 100px;
+      width: 1080px;
+      height: 780px;
+      border: 1.6px solid #666;
+      background: #fff;
+      z-index: 0;
+    }
+    .boundary-title {
+      position: absolute;
+      left: 14px;
+      top: -14px;
+      padding: 0 6px;
+      background: #fff;
+      font-size: 22px;
+      color: #222;
+    }
+    .actor {
+      position: absolute;
+      width: 96px;
+      text-align: center;
+      z-index: 3;
+    }
+    .head {
+      width: 24px;
+      height: 24px;
+      border: 1.6px solid #333;
+      border-radius: 50%;
+      margin: 0 auto;
+      background: #fff;
+    }
+    .body {
+      width: 1.6px;
+      height: 28px;
+      background: #333;
+      margin: 0 auto;
+    }
+    .arms {
+      width: 40px;
+      height: 1.6px;
+      background: #333;
+      margin: -20px auto 0;
+    }
+    .legs {
+      position: relative;
+      width: 34px;
+      height: 24px;
+      margin: 0 auto;
+    }
+    .legs::before,
+    .legs::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      width: 1.6px;
+      height: 24px;
+      background: #333;
+    }
+    .legs::before { left: 8px; transform: rotate(18deg); }
+    .legs::after { right: 8px; transform: rotate(-18deg); }
+    .actor-label {
+      margin-top: 4px;
+      font-size: 28px;
+      white-space: nowrap;
+    }
+    .oval {
+      position: absolute;
+      min-width: 210px;
+      height: 60px;
+      padding: 0 18px;
+      border: 1.6px solid #2f5f90;
+      border-radius: 999px;
+      background: #b9d7f3;
+      color: #111;
+      text-align: center;
+      font-size: 24px;
+      line-height: 60px;
+      white-space: nowrap;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+    }
+    .wide { min-width: 320px; }
+    .twolines {
+      height: 74px;
+      line-height: 1.24;
+      padding-top: 11px;
+      white-space: normal;
+      font-size: 22px;
+    }
+    .svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .caption {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="diagram">
+      <div class="boundary">
+        <div class="boundary-title">花店智能管理系统</div>
+      </div>
+
+      <svg class="svg" viewBox="0 0 1600 980" xmlns="http://www.w3.org/2000/svg">
+        <!-- 用户 -->
+        <polyline points="170,470 360,470 360,190 640,190" fill="none" stroke="#444" stroke-width="1.6"/>
+        <line x1="170" y1="470" x2="560" y2="320" stroke="#444" stroke-width="1.6"/>
+        <line x1="170" y1="470" x2="560" y2="430" stroke="#444" stroke-width="1.6"/>
+        <line x1="170" y1="470" x2="560" y2="540" stroke="#444" stroke-width="1.6"/>
+        <line x1="170" y1="470" x2="560" y2="650" stroke="#444" stroke-width="1.6"/>
+
+        <!-- 商家 -->
+        <polyline points="800,960 800,760 800,220" fill="none" stroke="#444" stroke-width="1.6"/>
+        <line x1="800" y1="960" x2="800" y2="320" stroke="#444" stroke-width="1.6"/>
+        <line x1="800" y1="960" x2="800" y2="430" stroke="#444" stroke-width="1.6"/>
+        <line x1="800" y1="960" x2="800" y2="540" stroke="#444" stroke-width="1.6"/>
+        <line x1="800" y1="960" x2="800" y2="650" stroke="#444" stroke-width="1.6"/>
+
+        <!-- 管理员 -->
+        <polyline points="1430,470 1240,470 1240,190 960,190" fill="none" stroke="#444" stroke-width="1.6"/>
+        <line x1="1430" y1="470" x2="1040" y2="320" stroke="#444" stroke-width="1.6"/>
+        <line x1="1430" y1="470" x2="1040" y2="430" stroke="#444" stroke-width="1.6"/>
+        <line x1="1430" y1="470" x2="1040" y2="540" stroke="#444" stroke-width="1.6"/>
+        <line x1="1430" y1="470" x2="1040" y2="650" stroke="#444" stroke-width="1.6"/>
+      </svg>
+
+      <div class="actor" style="left:120px; top:420px;">
+        <div class="head"></div><div class="body"></div><div class="arms"></div><div class="legs"></div>
+        <div class="actor-label">用户</div>
+      </div>
+
+      <div class="actor" style="left:750px; top:910px;">
+        <div class="head"></div><div class="body"></div><div class="arms"></div><div class="legs"></div>
+        <div class="actor-label">商家</div>
+      </div>
+
+      <div class="actor" style="left:1380px; top:420px;">
+        <div class="head"></div><div class="body"></div><div class="arms"></div><div class="legs"></div>
+        <div class="actor-label">管理员</div>
+      </div>
+
+      <div class="oval wide" style="left:800px; top:190px;">通用账户能力（登录/个人信息/退出）</div>
+
+      <div class="oval wide" style="left:560px; top:320px;">浏览与检索商品</div>
+      <div class="oval" style="left:560px; top:430px;">购物车结算</div>
+      <div class="oval" style="left:560px; top:540px;">下单与支付</div>
+      <div class="oval wide" style="left:560px; top:650px;">订单追踪与售后</div>
+
+      <div class="oval" style="left:800px; top:320px;">商品维护</div>
+      <div class="oval" style="left:800px; top:430px;">订单处理</div>
+      <div class="oval" style="left:800px; top:540px;">库存预警</div>
+      <div class="oval wide twolines" style="left:800px; top:650px;">销量分析与<br/>补货建议</div>
+
+      <div class="oval" style="left:1040px; top:320px;">用户治理</div>
+      <div class="oval" style="left:1040px; top:430px;">商家治理</div>
+      <div class="oval" style="left:1040px; top:540px;">订单监管</div>
+      <div class="oval wide twolines" style="left:1040px; top:650px;">系统配置与<br/>异常治理</div>
+    </div>
+    <div class="caption">图2-1 系统总用例图</div>
+  </main>
+</body>
+</html>

@@ -1,10 +1,11 @@
 USE flower_shop;
+SET NAMES utf8mb4;
 
-INSERT INTO user_customer (openid, name, phone, points, preference_tags)
+INSERT INTO user_customer (openid, name, phone, points)
 VALUES
-('wx_u_1001', '林小雨', '13800000001', 120, '清新,简约'),
-('wx_u_1002', '陈子墨', '13800000002', 80, '浪漫,节日'),
-('wx_u_1003', '赵一宁', '13800000003', 40, '商务,高端');
+('wx_u_1001', '林小雨', '13800000001', 120),
+('wx_u_1002', '陈子墨', '13800000002', 80),
+('wx_u_1003', '赵一宁', '13800000003', 40);
 
 INSERT INTO flower_material (name, category, unit, sale_price, cost_price, shelf_life_days, warn_threshold, image_url)
 VALUES
@@ -17,14 +18,14 @@ VALUES
 
 INSERT INTO product (title, type, category, base_price, packaging_fee, delivery_fee, description, cover_image, status)
 VALUES
-('浪漫11枝红玫瑰', 'BOUQUET', 'VALENTINE', 0.00, 6.00, 8.00, '经典告白款，适用于纪念日和节日。', 'https://images.unsplash.com/photo-1563436798111-3763e8457811?auto=format&fit=crop&w=1200&q=80', 'ON_SALE'),
-('清新百合花束', 'BOUQUET', 'DAILY', 0.00, 5.00, 8.00, '适合日常送礼，风格简约。', 'https://images.unsplash.com/photo-1765614767021-623ed748ab9d?auto=format&fit=crop&w=1200&q=80', 'ON_SALE'),
-('康乃馨关怀款', 'BOUQUET', 'MOTHER_DAY', 0.00, 4.00, 8.00, '母亲节与探访场景热销。', 'https://images.unsplash.com/photo-1741637723809-64f54d36bcc6?auto=format&fit=crop&w=1200&q=80', 'ON_SALE'),
-('法式香槟玫瑰花束', 'BOUQUET', 'DAILY', 0.00, 6.00, 8.00, '法式配色，适合约会与纪念日场景。', 'https://images.unsplash.com/photo-1533793241176-a270e75ef2ad?auto=format&fit=crop&w=1200&q=80', 'ON_SALE'),
-('向日葵元气花束', 'BOUQUET', 'BIRTHDAY', 0.00, 5.00, 8.00, '明亮活力，适合生日祝福与开业庆贺。', 'https://images.unsplash.com/photo-1594797075747-1e99f592b285?auto=format&fit=crop&w=1200&q=80', 'ON_SALE'),
-('白绿商务花束', 'BOUQUET', 'BUSINESS', 0.00, 7.00, 8.00, '商务拜访与会议场景优选。', 'https://images.unsplash.com/photo-1765614767021-623ed748ab9d?auto=format&fit=crop&w=1200&q=80', 'ON_SALE'),
-('粉色告白花束', 'BOUQUET', 'VALENTINE', 0.00, 6.00, 8.00, '粉系浪漫组合，适合告白与周年纪念。', 'https://images.unsplash.com/photo-1609840533612-0cdfb9418281?auto=format&fit=crop&w=1200&q=80', 'ON_SALE'),
-('暖心康乃馨礼盒', 'BOUQUET', 'MOTHER_DAY', 0.00, 4.00, 8.00, '关怀主题，适合探望与节日赠礼。', 'https://images.unsplash.com/photo-1583086804996-424d089537cb?auto=format&fit=crop&w=1200&q=80', 'ON_SALE');
+('浪漫11枝红玫瑰', 'BOUQUET', 'VALENTINE', 0.00, 6.00, 8.00, '经典告白款，适用于纪念日和节日。', '/images/products/custom/rose-black-baccara.jpg', 'ON_SALE'),
+('清新百合花束', 'BOUQUET', 'DAILY', 0.00, 5.00, 8.00, '适合日常送礼，风格简约。', '/images/products/custom/rose-amour.jpg', 'ON_SALE'),
+('康乃馨关怀款', 'BOUQUET', 'MOTHER_DAY', 0.00, 4.00, 8.00, '母亲节与探访场景热销。', '/images/products/custom/rose-zhenai.jpg', 'ON_SALE'),
+('法式香槟玫瑰花束', 'BOUQUET', 'DAILY', 0.00, 6.00, 8.00, '法式配色，适合约会与纪念日场景。', '/images/products/custom/rose-explorer.jpg', 'ON_SALE'),
+('向日葵元气花束', 'BOUQUET', 'BIRTHDAY', 0.00, 5.00, 8.00, '明亮活力，适合生日祝福与开业庆贺。', '/images/products/custom/rose-freedom.jpg', 'ON_SALE'),
+('白绿商务花束', 'BOUQUET', 'BUSINESS', 0.00, 7.00, 8.00, '商务拜访与会议场景优选。', '/images/products/custom/rose-lisi.jpg', 'ON_SALE'),
+('粉色告白花束', 'BOUQUET', 'VALENTINE', 0.00, 6.00, 8.00, '粉系浪漫组合，适合告白与周年纪念。', '/images/products/custom/rose-baoliandeng.jpg', 'ON_SALE'),
+('暖心康乃馨礼盒', 'BOUQUET', 'MOTHER_DAY', 0.00, 4.00, 8.00, '关怀主题，适合探望与节日赠礼。', '/images/products/custom/rose-carola.jpg', 'ON_SALE');
 
 INSERT INTO product_bom (product_id, flower_id, dosage, loss_rate)
 VALUES

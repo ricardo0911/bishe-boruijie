@@ -5,7 +5,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M12 22c-4-3-8-6-8-10a4 4 0 0 1 8 0 4 4 0 0 1 8 0c0 4-4 7-8 10z" />
         </svg>
-        管理员后台
+        花之都 · 管理中枢
       </div>
       <nav class="sidebar-nav">
         <router-link class="nav-item" to="/admin" exact-active-class="active">
@@ -27,6 +27,17 @@
       </nav>
     </aside>
     <main class="main-content">
+      <section class="brand-bar" aria-label="花之都品牌标识区">
+        <div>
+          <p class="brand-subtitle">FLOWER CAPITAL CONSOLE</p>
+          <h2 class="brand-title">花之都 · 城市花艺运营台</h2>
+        </div>
+        <div class="brand-pills">
+          <span class="brand-pill">雅致</span>
+          <span class="brand-pill">新鲜</span>
+          <span class="brand-pill">可信赖</span>
+        </div>
+      </section>
       <router-view />
     </main>
   </div>

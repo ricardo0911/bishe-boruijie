@@ -2,6 +2,121 @@
   padding-bottom: calc(176rpx + env(safe-area-inset-bottom));
 }
 
+.mode-tip {
+  margin: 0 20rpx 16rpx;
+  padding: 14rpx 18rpx;
+  border-radius: 12rpx;
+  background: #fff6e8;
+  color: #8a5a17;
+  font-size: 24rpx;
+}
+
+/* 地址卡片 */
+.address-card {
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  background: linear-gradient(160deg, #fffefe 0%, #fff7f9 62%, #fffdf8 100%);
+  border: 2rpx solid #eedce4;
+}
+
+.address-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.address-header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.address-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2f2830;
+}
+
+.address-phone {
+  font-size: 26rpx;
+  color: #675761;
+}
+
+.default-tag {
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
+  background: #bf4d68;
+  color: #ffffff;
+  font-size: 20rpx;
+}
+
+.address-detail {
+  margin-top: 12rpx;
+  font-size: 27rpx;
+  color: #352b33;
+  line-height: 1.4;
+}
+
+.address-empty {
+  flex: 1;
+  min-height: 80rpx;
+  display: flex;
+  align-items: center;
+}
+
+.address-empty-text {
+  font-size: 28rpx;
+  color: #bf4d68;
+}
+
+.address-arrow {
+  font-size: 36rpx;
+  color: #a08f99;
+  font-weight: 300;
+}
+
+/* 优惠券卡片 */
+.coupon-card {
+  margin-top: 12rpx;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.coupon-mode-tip {
+  margin: 0 20rpx 12rpx;
+  padding: 12rpx 16rpx;
+  border-radius: 10rpx;
+  background: #fff6e8;
+  color: #8a5a17;
+  font-size: 22rpx;
+}
+
+.coupon-label {
+  font-size: 28rpx;
+  color: #675761;
+}
+
+.coupon-value {
+  flex: 1;
+  text-align: right;
+  font-size: 26rpx;
+  color: #8f7d88;
+}
+
+.coupon-selected {
+  color: #bf4d68;
+  font-weight: 600;
+}
+
+.coupon-arrow {
+  font-size: 36rpx;
+  color: #a08f99;
+  font-weight: 300;
+}
+
 .form-card {
   padding: 0 20rpx;
 }
@@ -118,6 +233,19 @@
 
 .delivery-card + .form-card {
   margin-top: 12rpx;
+}
+
+.coupon-card + .fee-card {
+  margin-top: 12rpx;
+}
+
+.discount-row {
+  color: #bf4d68;
+}
+
+.discount-price {
+  color: #bf4d68;
+  font-weight: 600;
 }
 
 .form-item {

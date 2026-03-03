@@ -1,0 +1,195 @@
+.pay-page {
+  min-height: 100vh;
+  padding: 24rpx 24rpx calc(36rpx + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, #ecfff5 0%, #f7fbff 40%, #ffffff 100%);
+  box-sizing: border-box;
+}
+
+.pay-brand {
+  padding: 8rpx 4rpx 20rpx;
+}
+
+.pay-brand-title {
+  display: block;
+  font-size: 44rpx;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #1f2a33;
+}
+
+.pay-brand-sub {
+  margin-top: 8rpx;
+  display: block;
+  font-size: 24rpx;
+  color: #5d6d79;
+}
+
+.card {
+  border-radius: 24rpx;
+  background: #ffffff;
+  box-shadow: 0 12rpx 30rpx rgba(12, 28, 41, 0.08);
+}
+
+.amount-card {
+  padding: 32rpx 28rpx;
+  text-align: center;
+}
+
+.amount-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.amount-symbol {
+  margin-right: 8rpx;
+  font-size: 42rpx;
+  color: #1f2a33;
+  font-weight: 600;
+}
+
+.amount-value {
+  font-size: 78rpx;
+  line-height: 1;
+  color: #1f2a33;
+  font-weight: 800;
+}
+
+.amount-tip {
+  margin-top: 14rpx;
+  display: block;
+  color: #5f6f7b;
+  font-size: 24rpx;
+}
+
+.order-card {
+  margin-top: 18rpx;
+  padding: 18rpx 24rpx;
+}
+
+.info-row {
+  min-height: 66rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  border-bottom: 1rpx solid #edf1f5;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 26rpx;
+  color: #6f7f8b;
+}
+
+.info-value {
+  flex: 1;
+  text-align: right;
+  font-size: 26rpx;
+  color: #202c36;
+}
+
+.text-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.method-card {
+  margin-top: 18rpx;
+  padding: 22rpx 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.method-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  min-width: 0;
+}
+
+.wechat-icon {
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 18rpx;
+  background: #07c160;
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.method-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.method-title {
+  font-size: 30rpx;
+  color: #17232d;
+  font-weight: 700;
+}
+
+.method-desc {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #6f7f8b;
+}
+
+.method-tag {
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  background: #e7f8ef;
+  color: #07a152;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.safe-tip {
+  margin-top: 22rpx;
+  text-align: center;
+  font-size: 22rpx;
+  color: #8a98a3;
+}
+
+.pay-actions {
+  margin-top: 28rpx;
+}
+
+.pay-btn {
+  height: 92rpx;
+  border-radius: 20rpx;
+  background: #07c160;
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 92rpx;
+}
+
+.pay-btn::after {
+  border: none;
+}
+
+.cancel-btn {
+  margin-top: 14rpx;
+  height: 82rpx;
+  border-radius: 20rpx;
+  background: #f2f6f9;
+  color: #5f6f7b;
+  font-size: 28rpx;
+  line-height: 82rpx;
+}
+
+.cancel-btn::after {
+  border: none;
+}

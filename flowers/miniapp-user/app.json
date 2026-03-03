@@ -1,16 +1,21 @@
 {
   "pages": [
     "pages/home/home",
+    "pages/search/search",
     "pages/category/category",
     "pages/cart/cart",
     "pages/orders/orders",
     "pages/profile/profile",
     "pages/detail/detail",
     "pages/checkout/checkout",
-    "pages/profile-edit/profile-edit"
+    "pages/pay/pay",
+    "pages/profile-edit/profile-edit",
+    "pages/address-list/address-list",
+    "pages/address-edit/address-edit",
+    "pages/order-detail/order-detail"
   ],
   "window": {
-    "navigationBarTitleText": "花语心选",
+    "navigationBarTitleText": "花之都",
     "navigationBarBackgroundColor": "#fff8f6",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#fff7f4",
@@ -18,7 +23,7 @@
   },
   "tabBar": {
     "color": "#8f7d88",
-    "selectedColor": "#be3f58",
+    "selectedColor": "#bb5476",
     "backgroundColor": "#ffffff",
     "borderStyle": "black",
     "list": [

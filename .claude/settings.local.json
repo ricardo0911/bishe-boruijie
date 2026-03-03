@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(wc:*)",
+      "Bash(find:*)",
+      "Bash(mvn clean:*)",
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Bash(mysql:*)",
+      "Bash(ls:*)"
+    ]
+  }
+}

@@ -9,7 +9,10 @@ const routes = [
       { path: 'products', component: () => import('../views/merchant/Products.vue') },
       { path: 'flowers', component: () => import('../views/merchant/Flowers.vue') },
       { path: 'orders', component: () => import('../views/merchant/Orders.vue') },
-      { path: 'inventory', component: () => import('../views/merchant/Inventory.vue') }
+      { path: 'inventory', component: () => import('../views/merchant/Inventory.vue') },
+      { path: 'inventory-alert', component: () => import('../views/merchant/InventoryAlert.vue') },
+      { path: 'sales-report', component: () => import('../views/merchant/SalesReport.vue') },
+      { path: 'template', component: () => import('../views/merchant/MerchantTemplate.vue') }
     ]
   },
   {

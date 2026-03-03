@@ -1,0 +1,290 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>鲜花商城系统用例图</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "SimSun", "宋体", serif;
+      background: #fff;
+      color: #222;
+      padding: 22px 10px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 56px;
+    }
+    .page {
+      width: min(980px, 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      page-break-after: always;
+      break-after: page;
+    }
+    .page:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+    .diagram {
+      position: relative;
+      width: 920px;
+      height: 760px;
+      border: 1px solid #d8d8d8;
+      background: #fff;
+    }
+    .boundary {
+      position: absolute;
+      left: 150px;
+      top: 44px;
+      width: 700px;
+      height: 650px;
+      border: 1.5px solid #333;
+      z-index: 1;
+      background: #fff;
+    }
+    .boundary-title {
+      position: absolute;
+      left: 8px;
+      top: -16px;
+      padding: 0 4px;
+      background: #fff;
+      font-size: 13px;
+      color: #222;
+    }
+    .actor {
+      position: absolute;
+      width: 52px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 3;
+    }
+    .head {
+      width: 18px;
+      height: 18px;
+      border: 1.4px solid #333;
+      border-radius: 50%;
+      background: #f7e2c4;
+    }
+    .body { width: 1.4px; height: 22px; background: #333; }
+    .arms { width: 30px; height: 1.4px; background: #333; margin-top: -15px; }
+    .legs {
+      position: relative;
+      width: 24px;
+      height: 20px;
+      margin-top: -1px;
+    }
+    .legs::before,
+    .legs::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 1.4px;
+      height: 20px;
+      background: #333;
+    }
+    .legs::before { left: 3px; transform: rotate(16deg); }
+    .legs::after { right: 3px; transform: rotate(-16deg); }
+    .actor-label {
+      margin-top: 4px;
+      font-size: 24px;
+      white-space: nowrap;
+    }
+    .oval {
+      position: absolute;
+      min-width: 150px;
+      padding: 9px 16px;
+      border: 1.5px solid #2f5f8f;
+      border-radius: 999px;
+      background: #9fc5eb;
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      white-space: nowrap;
+      color: #000;
+    }
+    .small { min-width: 132px; font-size: 20px; }
+    .svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .caption {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    function buildPage(title, actors, usecases, lines, caption) {
+      const page = document.createElement('section');
+      page.className = 'page';
+
+      const diagram = document.createElement('div');
+      diagram.className = 'diagram';
+
+      const boundary = document.createElement('div');
+      boundary.className = 'boundary';
+      const bt = document.createElement('div');
+      bt.className = 'boundary-title';
+      bt.textContent = title;
+      boundary.appendChild(bt);
+      diagram.appendChild(boundary);
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'svg');
+      svg.setAttribute('viewBox', '0 0 920 760');
+      diagram.appendChild(svg);
+
+      const points = {};
+      actors.forEach((info) => {
+        const actor = document.createElement('div');
+        actor.className = 'actor';
+        actor.style.left = info.left + 'px';
+        actor.style.top = info.top + 'px';
+        ['head', 'body', 'arms', 'legs'].forEach((cls) => {
+          const d = document.createElement('div');
+          d.className = cls;
+          actor.appendChild(d);
+        });
+        const actorText = document.createElement('div');
+        actorText.className = 'actor-label';
+        actorText.textContent = info.label;
+        actor.appendChild(actorText);
+        diagram.appendChild(actor);
+        points[info.id] = { x: info.left + 25, y: info.top + 67 };
+      });
+
+      function oval(id, x, y, text, small) {
+        const o = document.createElement('div');
+        o.className = 'oval' + (small ? ' small' : '');
+        o.style.left = x + 'px';
+        o.style.top = y + 'px';
+        o.textContent = text;
+        diagram.appendChild(o);
+        points[id] = { x, y };
+      }
+
+      usecases.forEach((u) => oval(u.id, u.x, u.y, u.label, u.small));
+
+      function line(from, to, dashed, label) {
+        const a = points[from];
+        const b = points[to];
+        if (!a || !b) return;
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', a.x);
+        l.setAttribute('y1', a.y);
+        l.setAttribute('x2', b.x);
+        l.setAttribute('y2', b.y);
+        l.setAttribute('stroke', '#333');
+        l.setAttribute('stroke-width', '1.6');
+        if (dashed) l.setAttribute('stroke-dasharray', '8 6');
+        svg.appendChild(l);
+
+        if (label) {
+          const tx = (a.x + b.x) / 2;
+          const ty = (a.y + b.y) / 2 - 8;
+          const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          t.setAttribute('x', tx);
+          t.setAttribute('y', ty);
+          t.setAttribute('font-size', '14');
+          t.setAttribute('fill', '#333');
+          t.setAttribute('text-anchor', 'middle');
+          t.textContent = label;
+          svg.appendChild(t);
+        }
+      }
+
+      lines.forEach((ln) => line(ln.from, ln.to, ln.dashed, ln.label));
+
+      const cp = document.createElement('div');
+      cp.className = 'caption';
+      cp.textContent = caption;
+
+      page.appendChild(diagram);
+      page.appendChild(cp);
+      document.body.appendChild(page);
+    }
+
+    buildPage(
+      'uc Customer',
+      [{ id: 'actor', label: '用户', left: 170, top: 305 }],
+      [
+        { id: 'join', x: 340, y: 170, label: '浏览商品' },
+        { id: 'cart', x: 570, y: 170, label: '加入购物车' },
+        { id: 'create', x: 340, y: 300, label: '创建订单' },
+        { id: 'pay', x: 570, y: 300, label: '在线支付' },
+        { id: 'cancel', x: 760, y: 300, label: '取消订单', small: true },
+        { id: 'review', x: 340, y: 430, label: '评价订单' },
+        { id: 'after', x: 570, y: 430, label: '申请售后' },
+        { id: 'address', x: 340, y: 560, label: '管理地址' },
+        { id: 'favorite', x: 570, y: 560, label: '收藏商品' }
+      ],
+      [
+        { from: 'actor', to: 'join' },
+        { from: 'actor', to: 'cart' },
+        { from: 'actor', to: 'create' },
+        { from: 'actor', to: 'pay' },
+        { from: 'actor', to: 'review' },
+        { from: 'actor', to: 'after' },
+        { from: 'actor', to: 'address' },
+        { from: 'actor', to: 'favorite' },
+        { from: 'create', to: 'pay', dashed: true, label: '<<include>>' },
+        { from: 'create', to: 'cancel', dashed: true, label: '<<include>>' }
+      ],
+      '图 4-6 用户用例图'
+    );
+
+    buildPage(
+      'uc Merchant',
+      [{ id: 'merchant', label: '商家', left: 170, top: 305 }],
+      [
+        { id: 'p1', x: 340, y: 170, label: '商品管理' },
+        { id: 'p2', x: 570, y: 170, label: '花材管理' },
+        { id: 'p3', x: 760, y: 170, label: '库存预警' },
+        { id: 'p4', x: 340, y: 330, label: '订单处理' },
+        { id: 'p5', x: 570, y: 330, label: '支付回调处理' }
+      ],
+      [
+        { from: 'merchant', to: 'p1' },
+        { from: 'merchant', to: 'p2' },
+        { from: 'merchant', to: 'p3' },
+        { from: 'merchant', to: 'p4' },
+        { from: 'merchant', to: 'p5' },
+        { from: 'p2', to: 'p3', dashed: true, label: '<<include>>' },
+        { from: 'p4', to: 'p5', dashed: true, label: '<<include>>' }
+      ],
+      '图 4-7 商家用例图'
+    );
+
+    buildPage(
+      'uc Admin',
+      [{ id: 'admin', label: '管理员', left: 170, top: 305 }],
+      [
+        { id: 'a1', x: 340, y: 220, label: '售后审核' },
+        { id: 'a2', x: 570, y: 220, label: '系统配置' },
+        { id: 'a3', x: 340, y: 430, label: '统计分析' },
+        { id: 'a4', x: 570, y: 430, label: '商家管理' }
+      ],
+      [
+        { from: 'admin', to: 'a1' },
+        { from: 'admin', to: 'a2' },
+        { from: 'admin', to: 'a3' },
+        { from: 'admin', to: 'a4' },
+        { from: 'a1', to: 'a3', dashed: true, label: '<<include>>' }
+      ],
+      '图 4-8 管理员用例图'
+    );
+  </script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>实体类图</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "SimSun", "宋体", serif;
+      background: #ffffff;
+      color: #222;
+      padding: 20px 10px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 58px;
+    }
+    .page {
+      width: min(980px, 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      page-break-after: always;
+      break-after: page;
+    }
+    .page:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+    .entity-wrap {
+      position: relative;
+      width: 920px;
+      height: 660px;
+      background: #ffffff;
+    }
+    .entity-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .entity-center {
+      position: absolute;
+      width: 200px;
+      height: 96px;
+      transform: translate(-50%, -50%);
+      background: #ffffff;
+      color: #222;
+      border: 3px solid #444a52;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 36px;
+      letter-spacing: 1px;
+      z-index: 3;
+    }
+    .attr {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      width: 168px;
+      height: 84px;
+      text-align: center;
+      border-radius: 999px;
+      border: 3px solid #444a52;
+      background: #ffffff;
+      color: #222;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      white-space: nowrap;
+    }
+    .caption {
+      margin-top: 14px;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    const entities = [
+      {
+        name: "用户",
+        figure: "图3-5",
+        title: "用户实体属性描述",
+        attrs: ["用户编号", "openid", "姓名", "手机号", "积分", "创建时间"]
+      },
+      {
+        name: "商品",
+        figure: "图3-6",
+        title: "商品实体属性描述",
+        attrs: ["商品编号", "标题", "分类", "基础价格", "包装费", "配送费", "状态"]
+      },
+      {
+        name: "订单",
+        figure: "图3-7",
+        title: "订单实体属性描述",
+        attrs: ["订单编号", "用户编号", "订单状态", "总金额", "支付金额", "收货信息"]
+      },
+      {
+        name: "库存批次",
+        figure: "图3-8",
+        title: "库存批次实体属性描述",
+        attrs: ["批次编号", "花材编号", "到货时间", "枯萎时间", "当前库存", "锁定库存"]
+      },
+      {
+        name: "售后记录",
+        figure: "图3-9",
+        title: "售后记录实体属性描述",
+        attrs: ["售后编号", "订单编号", "退款金额", "申请时间", "审核时间", "处理状态"]
+      },
+      {
+        name: "订单明细",
+        figure: "图3-10",
+        title: "订单明细实体属性描述",
+        attrs: ["明细编号", "订单编号", "商品编号", "商品名称", "单价", "数量", "小计金额", "创建时间"]
+      },
+      {
+        name: "库存锁流水",
+        figure: "图3-11",
+        title: "库存锁流水实体属性描述",
+        attrs: ["流水编号", "订单编号", "订单号", "花材编号", "批次编号", "锁定数量", "锁定状态", "过期时间"]
+      },
+      {
+        name: "支付流水",
+        figure: "图3-12",
+        title: "支付流水实体属性描述",
+        attrs: ["流水编号", "订单编号", "订单号", "支付交易号", "支付渠道", "支付金额", "回调时间", "处理结果"]
+      },
+      {
+        name: "推荐结果",
+        figure: "图3-13",
+        title: "推荐结果实体属性描述",
+        attrs: ["结果编号", "用户编号", "商品编号", "推荐分值", "推荐理由", "生成时间"]
+      },
+      {
+        name: "评价",
+        figure: "图3-14",
+        title: "评价实体属性描述",
+        attrs: ["评价编号", "订单编号", "用户编号", "评分", "评价内容", "评价标签", "评价时间"]
+      },
+      {
+        name: "预测结果",
+        figure: "图3-15",
+        title: "预测结果实体属性描述",
+        attrs: ["结果编号", "花材编号", "预测日期", "预测销量", "置信下限", "置信上限", "模型名称", "生成时间"]
+      },
+      {
+        name: "补货建议",
+        figure: "图3-16",
+        title: "补货建议实体属性描述",
+        attrs: ["建议编号", "花材编号", "建议日期", "预测需求", "安全库存", "再订货点", "现有库存", "在途数量", "建议补货量", "建议状态"]
+      },
+      {
+        name: "商家",
+        figure: "图3-17",
+        title: "商家实体属性描述",
+        attrs: ["商家编号", "商家名称", "联系电话", "邮箱", "地址", "状态", "创建时间", "更新时间"]
+      },
+      {
+        name: "分类",
+        figure: "图3-18",
+        title: "分类实体属性描述",
+        attrs: ["分类编号", "分类编码", "分类名称", "排序", "图标", "启用状态", "创建时间", "更新时间"]
+      },
+      {
+        name: "购物车项",
+        figure: "图3-19",
+        title: "购物车项实体属性描述",
+        attrs: ["购物车项编号", "用户编号", "商品编号", "数量", "创建时间", "更新时间"]
+      },
+      {
+        name: "系统配置",
+        figure: "图3-20",
+        title: "系统配置实体属性描述",
+        attrs: ["配置编号", "配置键", "配置值", "描述", "更新时间"]
+      },
+      {
+        name: "轮播图",
+        figure: "图3-21",
+        title: "轮播图实体属性描述",
+        attrs: ["轮播图编号", "标题", "副标题", "起始颜色", "结束颜色", "跳转链接", "排序", "启用状态", "创建时间", "更新时间"]
+      }
+    ];
+
+    function createPage(entity) {
+      const page = document.createElement("section");
+      page.className = "page";
+
+      const wrap = document.createElement("div");
+      wrap.className = "entity-wrap";
+
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", "entity-svg");
+      svg.setAttribute("viewBox", "0 0 920 660");
+      wrap.appendChild(svg);
+
+      const cx = 460;
+      const cy = 478;
+
+      const center = document.createElement("div");
+      center.className = "entity-center";
+      center.style.left = cx + "px";
+      center.style.top = cy + "px";
+      center.textContent = entity.name;
+      wrap.appendChild(center);
+
+      const count = entity.attrs.length;
+      const attrWidths = entity.attrs.map((name) => Math.max(150, Math.min(210, 92 + name.length * 20)));
+      const attrHeight = 84;
+      const wrapWidth = 920;
+      const wrapHeight = 660;
+      const lineAnchorX = cx;
+      const lineAnchorY = cy - 48;
+
+      function hasAttrOverlap(nodes) {
+        for (let i = 0; i < nodes.length; i += 1) {
+          for (let j = i + 1; j < nodes.length; j += 1) {
+            const a = nodes[i];
+            const b = nodes[j];
+            const dx = Math.abs(a.x - b.x);
+            const dy = Math.abs(a.y - b.y);
+            const minDx = (a.width + b.width) / 2 + 16;
+            const minDy = attrHeight + 10;
+            if (dx < minDx && dy < minDy) return true;
+          }
+        }
+        return false;
+      }
+
+      function isInsideWrap(nodes) {
+        return nodes.every((node) => (
+          node.x - node.width / 2 >= 14 &&
+          node.x + node.width / 2 <= wrapWidth - 14 &&
+          node.y - attrHeight / 2 >= 14 &&
+          node.y + attrHeight / 2 <= wrapHeight - 14
+        ));
+      }
+
+      function buildAttrNodes() {
+        let start = ((count >= 9 ? 216 : count >= 7 ? 222 : 205) * Math.PI) / 180;
+        let end = ((count >= 9 ? -58 : count >= 7 ? -42 : -25) * Math.PI) / 180;
+        let rx = count >= 10 ? 350 : count >= 8 ? 332 : 302;
+        let ry = count >= 10 ? 282 : count >= 8 ? 266 : 242;
+        let lastNodes = [];
+
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+          const step = count === 1 ? 0 : (end - start) / (count - 1);
+          const nodes = entity.attrs.map((name, i) => {
+            const baseAngle = count === 1 ? -Math.PI / 2 : start + step * i;
+            const nudgeScale = count >= 9 ? 0.12 : count >= 7 ? 0.06 : 0;
+            const nudge = step === 0 ? 0 : (i % 2 === 0 ? -1 : 1) * Math.abs(step) * nudgeScale;
+            const angle = baseAngle + nudge;
+            const radial = count >= 9
+              ? (i % 2 === 0 ? 1.04 : 0.96)
+              : count >= 7
+                ? (i % 2 === 0 ? 1.02 : 0.98)
+                : 1;
+            return {
+              name,
+              width: attrWidths[i],
+              x: cx + Math.cos(angle) * rx * radial,
+              y: cy + Math.sin(angle) * ry * radial,
+            };
+          });
+
+          lastNodes = nodes;
+          if (!hasAttrOverlap(nodes) && isInsideWrap(nodes)) {
+            return nodes;
+          }
+
+          rx = Math.min(rx + 10, 390);
+          ry = Math.min(ry + 8, 302);
+          start += (2 * Math.PI) / 180;
+          end -= (2 * Math.PI) / 180;
+        }
+
+        return lastNodes;
+      }
+
+      const attrNodes = buildAttrNodes();
+      attrNodes.forEach((node) => {
+        const x = node.x;
+        const y = node.y;
+
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", lineAnchorX);
+        line.setAttribute("y1", lineAnchorY);
+        line.setAttribute("x2", x);
+        line.setAttribute("y2", y);
+        line.setAttribute("stroke", "#444a52");
+        line.setAttribute("stroke-width", "3");
+        svg.appendChild(line);
+
+        const attr = document.createElement("div");
+        attr.className = "attr";
+        attr.style.width = node.width + "px";
+        attr.style.left = x + "px";
+        attr.style.top = y + "px";
+        attr.textContent = node.name;
+        wrap.appendChild(attr);
+      });
+
+      const caption = document.createElement("div");
+      caption.className = "caption";
+      caption.textContent = `${entity.figure} ${entity.title}`;
+
+      page.appendChild(wrap);
+      page.appendChild(caption);
+      document.body.appendChild(page);
+    }
+
+    entities.forEach(createPage);
+  </script>
+</body>
+</html>

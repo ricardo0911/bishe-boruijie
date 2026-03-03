@@ -68,8 +68,6 @@ $stats = [ordered]@{
   orderFailures = 0
 }
 
-$tagPool = @("fresh", "festival", "simple", "gift", "business", "daily")
-
 for ($u = 1; $u -le $UserCount; $u++) {
   $openid = "batch_debug_{0}_{1}" -f ([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()), $u
   $name = "DebugUser{0}" -f $u
@@ -85,12 +83,9 @@ for ($u = 1; $u -le $UserCount; $u++) {
     $stats.usersCreated++
 
     $phone = "139{0}" -f (Get-Random -Minimum 10000000 -Maximum 99999999)
-    $tagA = $tagPool | Get-Random
-    $tagB = $tagPool | Get-Random
     $null = Invoke-Api -Method Put -Url "$BaseUrl/users/$uid" -Body @{
       name = "Debug User $u"
       phone = $phone
-      preferenceTags = "$tagA,$tagB"
     }
 
     $cartProducts = $products | Get-Random -Count ([Math]::Min(2, $products.Count))

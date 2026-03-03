@@ -19,12 +19,31 @@
             <thead><tr><th>花材</th><th>可用库存</th><th>预警阈值</th><th>状态</th><th>操作</th></tr></thead>
             <tbody>
               <tr v-if="alertsLoading"><td colspan="5" class="loading">加载中...</td></tr>
-              <tr v-else-if="alerts.length === 0"><td colspan="5" class="empty">库存充足</td></tr>
+              <tr v-else-if="alerts.length === 0"><td colspan="5" class="empty">暂无花材数据</td></tr>
               <tr v-for="a in alerts" :key="a.flowerId" v-else>
                 <td>{{ a.flowerName }}</td>
                 <td>{{ a.availableQty }}</td>
                 <td>{{ a.warnThreshold }}</td>
-                <td><span class="badge" :class="a.warningLevel === 'OUT_OF_STOCK' ? 'badge-danger' : 'badge-warning'">{{ a.warningLevel === 'OUT_OF_STOCK' ? '缺货' : '低库存' }}</span></td>
+                <td>
+                  <span
+                    class="badge"
+                    :class="
+                      a.warningLevel === 'OUT_OF_STOCK'
+                        ? 'badge-danger'
+                        : a.warningLevel === 'LOW_STOCK'
+                          ? 'badge-warning'
+                          : 'badge-success'
+                    "
+                  >
+                    {{
+                      a.warningLevel === 'OUT_OF_STOCK'
+                        ? '缺货'
+                        : a.warningLevel === 'LOW_STOCK'
+                          ? '低库存'
+                          : '正常'
+                    }}
+                  </span>
+                </td>
                 <td><button class="btn btn-sm btn-outline" @click="viewBatches(a.flowerId)">查看批次</button></td>
               </tr>
             </tbody>
@@ -124,8 +143,44 @@ const outOfStockAlerts = computed(() => alerts.value.filter(a => a.warningLevel 
 async function loadAlerts() {
   alertsLoading.value = true
   try {
-    const res = await api.get('/inventory/alerts')
-    if (res.success) alerts.value = res.data
+    const flowersRes = await api.get('/flowers')
+    const flowers = Array.isArray(flowersRes?.data) ? flowersRes.data : []
+    const rows = await Promise.all(
+      flowers.map(async (flower) => {
+        try {
+          const fefoRes = await api.get('/inventory/fefo/' + flower.id)
+          const batches = Array.isArray(fefoRes?.data) ? fefoRes.data : []
+          const availableQty = batches.reduce((sum, batch) => {
+            const available = Number(
+              batch.availableQty ?? (Number(batch.currentQty || 0) - Number(batch.lockedQty || 0))
+            )
+            return sum + (Number.isFinite(available) ? available : 0)
+          }, 0)
+          const warnThreshold = Number(flower.warn_threshold ?? flower.warnThreshold ?? 0)
+          const warningLevel = availableQty <= 0
+            ? 'OUT_OF_STOCK'
+            : availableQty <= warnThreshold
+              ? 'LOW_STOCK'
+              : 'NORMAL'
+          return {
+            flowerId: flower.id,
+            flowerName: flower.name,
+            availableQty,
+            warnThreshold,
+            warningLevel
+          }
+        } catch (e) {
+          return {
+            flowerId: flower.id,
+            flowerName: flower.name,
+            availableQty: 0,
+            warnThreshold: Number(flower.warn_threshold ?? flower.warnThreshold ?? 0),
+            warningLevel: 'OUT_OF_STOCK'
+          }
+        }
+      })
+    )
+    alerts.value = rows.sort((a, b) => a.availableQty - b.availableQty)
   } catch (e) { console.error(e) }
   alertsLoading.value = false
 }
@@ -133,7 +188,13 @@ async function loadAlerts() {
 async function loadFlowerOptions() {
   try {
     const res = await api.get('/flowers')
-    if (res.success) flowerOptions.value = res.data
+    if (res.success) {
+      flowerOptions.value = res.data
+      if (!selectedFlowerId.value && flowerOptions.value.length > 0) {
+        selectedFlowerId.value = flowerOptions.value[0].id
+        loadBatches()
+      }
+    }
   } catch (e) { /* ignore */ }
 }
 

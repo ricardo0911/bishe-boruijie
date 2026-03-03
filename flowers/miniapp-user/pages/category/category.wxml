@@ -1,45 +1,91 @@
-<view class="container safe-bottom">
-  <view class="search-wrap card">
-    <input
-      class="search-input"
-      value="{{keyword}}"
-      placeholder="搜索鲜花、花束..."
-      bindinput="onInputKeyword"
-      confirm-type="search"
-    />
-  </view>
-
-  <scroll-view class="tab-scroll" scroll-x="true" enable-flex="true" show-scrollbar="false">
-    <view class="tab-wrap">
-      <view
-        wx:for="{{categories}}"
-        wx:key="key"
-        class="tab-pill {{currentCategory===item.key?'tab-pill-active':''}}"
-        data-key="{{item.key}}"
-        bindtap="onTapTab"
-      >
-        {{item.label}}
-      </view>
+<view class="container">
+  <!-- 左侧分类导航 -->
+  <scroll-view class="category-sidebar" scroll-y="true" show-scrollbar="false">
+    <view
+      class="category-item {{currentCategoryId === item.id ? 'category-item-active' : ''}}"
+      wx:for="{{categories}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="onTapCategory"
+    >
+      <text class="category-name">{{item.name}}</text>
+    </view>
+    <view wx:if="{{categories.length === 0 && !initialLoading}}" class="category-empty">
+      <text>暂无分类</text>
     </view>
   </scroll-view>
 
-  <view wx:if="{{products.length>0}}" class="product-grid">
-    <view class="product-card card" wx:for="{{products}}" wx:key="id" data-id="{{item.id}}" bindtap="onTapProduct">
-      <view class="product-cover">
-        <image wx:if="{{item.coverImage}}" class="product-image" src="{{item.coverImage}}" mode="aspectFill" />
-        <view wx:else class="product-badge">{{item.categoryShort}}</view>
-      </view>
-      <view class="product-content">
-        <text class="product-title">{{item.title}}</text>
-        <view class="price-row">
-          <text class="price-symbol">¥</text>
-          <text class="price-value">{{item.unitPrice}}</text>
+  <!-- 右侧商品区域 -->
+  <view class="product-area">
+    <view class="category-brand">
+      <text class="category-brand-title">花之都 · 鲜花馆</text>
+      <text class="category-brand-sub">按场景挑选心意，今天也让花朵替你说话。</text>
+    </view>
+
+    <!-- 分类标题 -->
+    <view class="category-header">
+      <text class="category-title">{{currentCategoryName}}</text>
+    </view>
+
+    <!-- 商品列表 -->
+    <scroll-view class="product-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+      <!-- 商品网格 -->
+      <view wx:if="{{products.length > 0}}" class="product-grid">
+        <view
+          class="product-card"
+          wx:for="{{products}}"
+          wx:key="id"
+          data-id="{{item.id}}"
+          bindtap="onTapProduct"
+        >
+          <view class="product-image-wrap">
+            <image
+              wx:if="{{item.coverImage}}"
+              class="product-image"
+              src="{{item.coverImage}}"
+              mode="aspectFill"
+              lazy-load="true"
+            />
+            <view wx:else class="product-placeholder">
+              <text class="placeholder-text">花</text>
+            </view>
+          </view>
+          <view class="product-info">
+            <text class="product-name">{{item.title}}</text>
+            <view class="product-meta">
+              <view class="price-wrap">
+                <text class="price-symbol">¥</text>
+                <text class="price-value">{{item.unitPrice}}</text>
+              </view>
+              <text wx:if="{{item.sales > 0}}" class="sales-text">已售 {{item.sales}}</text>
+            </view>
+          </view>
         </view>
       </view>
-    </view>
+
+      <!-- 空状态 -->
+      <view wx:if="{{!initialLoading && products.length === 0}}" class="empty-wrap">
+        <view class="empty-icon">
+          <text class="empty-icon-text">花</text>
+        </view>
+        <text class="empty-title">暂无商品</text>
+        <text class="empty-subtitle">该分类下暂时没有商品</text>
+      </view>
+
+      <!-- 加载更多 -->
+      <view wx:if="{{products.length > 0}}" class="load-more">
+        <text wx:if="{{loading && !initialLoading}}" class="load-text">加载中...</text>
+        <text wx:elif="{{!hasMore}}" class="load-text load-finish">没有更多了</text>
+        <text wx:else class="load-text">上拉加载更多</text>
+      </view>
+    </scroll-view>
   </view>
 
-  <view wx:if="{{!loading && products.length===0}}" class="empty-wrap">
-    <text class="empty-title">暂无该分类商品</text>
+  <!-- 初始加载状态 -->
+  <view wx:if="{{initialLoading}}" class="loading-mask">
+    <view class="loading-content">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
   </view>
 </view>

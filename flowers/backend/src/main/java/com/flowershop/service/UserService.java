@@ -1,6 +1,7 @@
 package com.flowershop.service;
 
 import com.flowershop.exception.BusinessException;
+import jakarta.annotation.PostConstruct;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -8,8 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -22,9 +21,26 @@ public class UserService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @PostConstruct
+    public void removeDeprecatedPreferenceTagsColumn() {
+        Integer count = jdbcTemplate.queryForObject(
+            """
+            SELECT COUNT(1)
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'user_customer'
+              AND COLUMN_NAME = 'preference_tags'
+            """,
+            Integer.class
+        );
+        if (count != null && count > 0) {
+            jdbcTemplate.execute("ALTER TABLE user_customer DROP COLUMN preference_tags");
+        }
+    }
+
     public Map<String, Object> loginOrRegister(String openid, String name) {
         List<Map<String, Object>> existing = jdbcTemplate.queryForList(
-            "SELECT id, openid, name, phone, points, preference_tags, created_at FROM user_customer WHERE openid = ?",
+            "SELECT id, openid, name, phone, points, created_at FROM user_customer WHERE openid = ?",
             openid
         );
         if (!existing.isEmpty()) {
@@ -43,14 +59,14 @@ public class UserService {
 
         Long userId = keyHolder.getKey().longValue();
         return jdbcTemplate.queryForMap(
-            "SELECT id, openid, name, phone, points, preference_tags, created_at FROM user_customer WHERE id = ?",
+            "SELECT id, openid, name, phone, points, created_at FROM user_customer WHERE id = ?",
             userId
         );
     }
 
     public Map<String, Object> getUserById(Long userId) {
         List<Map<String, Object>> users = jdbcTemplate.queryForList(
-            "SELECT id, openid, name, phone, points, preference_tags, created_at FROM user_customer WHERE id = ?",
+            "SELECT id, openid, name, phone, points, created_at FROM user_customer WHERE id = ?",
             userId
         );
         if (users.isEmpty()) {
@@ -59,10 +75,10 @@ public class UserService {
         return users.get(0);
     }
 
-    public void updateProfile(Long userId, String name, String phone, String preferenceTags) {
+    public void updateProfile(Long userId, String name, String phone) {
         int updated = jdbcTemplate.update(
-            "UPDATE user_customer SET name = ?, phone = ?, preference_tags = ?, updated_at = NOW() WHERE id = ?",
-            name, phone, preferenceTags, userId
+            "UPDATE user_customer SET name = ?, phone = ?, updated_at = NOW() WHERE id = ?",
+            name, phone, userId
         );
         if (updated == 0) {
             throw new BusinessException("USER_NOT_FOUND", "用户不存在: " + userId);
@@ -71,7 +87,7 @@ public class UserService {
 
     public List<Map<String, Object>> listAllUsers() {
         return jdbcTemplate.queryForList(
-            "SELECT id, openid, name, phone, points, preference_tags, created_at FROM user_customer ORDER BY id DESC"
+            "SELECT id, openid, name, phone, points, created_at FROM user_customer ORDER BY id DESC"
         );
     }
 }

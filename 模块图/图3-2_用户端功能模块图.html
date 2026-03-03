@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>图3-2 用户端功能模块图</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "SimSun", "宋体", serif;
+      background: #fff;
+      color: #111;
+      padding: 8px 4px 10px;
+      display: flex;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+    .page { width: min(920px, 100%); }
+    .diagram {
+      width: 900px;
+      height: 430px;
+      position: relative;
+      margin: 0 auto;
+      background: #fff;
+      overflow: hidden;
+    }
+    .node {
+      position: absolute;
+      border: 2px solid #5e5e5e;
+      background: #fff;
+      color: #111;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .root {
+      left: 300px;
+      top: 16px;
+      width: 300px;
+      height: 64px;
+      font-size: 34px;
+      line-height: 1;
+    }
+    .child {
+      top: 144px;
+      width: 108px;
+      height: 236px;
+      padding: 10px 0;
+      font-size: 22px;
+      line-height: 1;
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      letter-spacing: 1px;
+      font-weight: 500;
+      overflow: hidden;
+    }
+    .svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      shape-rendering: geometricPrecision;
+    }
+    .caption {
+      margin-top: 6px;
+      text-align: center;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="diagram">
+      <svg class="svg" viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg">
+        <line x1="450" y1="80" x2="450" y2="116" stroke="#5e5e5e" stroke-width="2.5" />
+        <line x1="116" y1="116" x2="776" y2="116" stroke="#5e5e5e" stroke-width="2.5" />
+        <line x1="116" y1="116" x2="116" y2="144" stroke="#5e5e5e" stroke-width="2.5" />
+        <line x1="248" y1="116" x2="248" y2="144" stroke="#5e5e5e" stroke-width="2.5" />
+        <line x1="380" y1="116" x2="380" y2="144" stroke="#5e5e5e" stroke-width="2.5" />
+        <line x1="512" y1="116" x2="512" y2="144" stroke="#5e5e5e" stroke-width="2.5" />
+        <line x1="644" y1="116" x2="644" y2="144" stroke="#5e5e5e" stroke-width="2.5" />
+        <line x1="776" y1="116" x2="776" y2="144" stroke="#5e5e5e" stroke-width="2.5" />
+      </svg>
+
+      <div class="node root">用户端功能模块</div>
+
+      <div class="node child" style="left:62px;">商品浏览</div>
+      <div class="node child" style="left:194px;">购物车结算</div>
+      <div class="node child" style="left:326px;">下单支付</div>
+      <div class="node child" style="left:458px;">订单管理</div>
+      <div class="node child" style="left:590px;">地址管理</div>
+      <div class="node child" style="left:722px;">评价互动</div>
+    </div>
+    <div class="caption">图3-2 用户端功能模块图</div>
+  </main>
+</body>
+</html>

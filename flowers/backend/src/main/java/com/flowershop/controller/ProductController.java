@@ -34,7 +34,23 @@ public class ProductController {
         return ApiResponse.success(productService.listRecentRecommendedBouquets(days, limit));
     }
 
-    @GetMapping("/{productId}")
+    @GetMapping("/recommended")
+    public ApiResponse<List<ProductRecommendView>> listRecommendedProducts(
+        @RequestParam(defaultValue = "30") Integer days,
+        @RequestParam(defaultValue = "8") Integer limit
+    ) {
+        return ApiResponse.success(productService.listRecentRecommendedBouquets(days, limit));
+    }
+
+    @GetMapping("/hot")
+    public ApiResponse<List<ProductRecommendView>> listHotProducts(
+        @RequestParam(defaultValue = "30") Integer days,
+        @RequestParam(defaultValue = "10") Integer limit
+    ) {
+        return ApiResponse.success(productService.listRecentRecommendedBouquets(days, limit));
+    }
+
+    @GetMapping("/{productId:[0-9]+}")
     public ApiResponse<ProductDetailView> getProductDetail(@PathVariable Long productId) {
         return ApiResponse.success(productService.getProductDetail(productId));
     }

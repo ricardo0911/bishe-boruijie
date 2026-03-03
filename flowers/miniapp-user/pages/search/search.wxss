@@ -1,0 +1,101 @@
+.search-panel {
+  padding: 18rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.search-input {
+  flex: 1;
+  min-height: 78rpx;
+  border-radius: 999rpx;
+  background: #fff3f7;
+  border: 2rpx solid #eed8e1;
+  padding: 0 26rpx;
+  box-sizing: border-box;
+  font-size: 28rpx;
+  color: #392e35;
+}
+
+.search-btn {
+  min-width: 124rpx;
+  height: 78rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #d56f8d 0%, #bb5476 100%);
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-tools {
+  margin-top: 16rpx;
+  text-align: right;
+}
+
+.tool-link {
+  font-size: 24rpx;
+  color: #bb5476;
+}
+
+.search-state {
+  margin-top: 12rpx;
+  margin-bottom: 14rpx;
+}
+
+.state-text {
+  font-size: 24rpx;
+  color: #8c7883;
+}
+
+.product-grid {
+  display: grid;
+  gap: 16rpx;
+}
+
+.product-card {
+  display: flex;
+  gap: 16rpx;
+  padding: 14rpx;
+}
+
+.image-wrap {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 18rpx;
+  overflow: hidden;
+  background: #fdeff4;
+  flex-shrink: 0;
+}
+
+.cover-image {
+  width: 100%;
+  height: 100%;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c17593;
+  font-size: 52rpx;
+  font-weight: 700;
+}
+
+.product-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.product-title {
+  font-size: 30rpx;
+  color: #342831;
+  font-weight: 600;
+  line-height: 1.4;
+}

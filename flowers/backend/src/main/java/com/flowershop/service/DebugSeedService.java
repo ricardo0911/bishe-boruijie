@@ -201,15 +201,15 @@ public class DebugSeedService {
 
     private int normalizeLegacyProductImagePaths() {
         int updated = 0;
-        updated += jdbcTemplate.update("UPDATE product SET cover_image = 'https://images.unsplash.com/photo-1563436798111-3763e8457811?auto=format&fit=crop&w=1200&q=80' WHERE cover_image LIKE '%Rose+11%'");
-        updated += jdbcTemplate.update("UPDATE product SET cover_image = 'https://images.unsplash.com/photo-1765614767021-623ed748ab9d?auto=format&fit=crop&w=1200&q=80' WHERE cover_image LIKE '%Lily+Fresh%'");
-        updated += jdbcTemplate.update("UPDATE product SET cover_image = 'https://images.unsplash.com/photo-1741637723809-64f54d36bcc6?auto=format&fit=crop&w=1200&q=80' WHERE cover_image LIKE '%Carnation+Care%'");
-        updated += jdbcTemplate.update("UPDATE product SET cover_image = 'https://images.unsplash.com/photo-1533793241176-a270e75ef2ad?auto=format&fit=crop&w=1200&q=80' WHERE cover_image LIKE '%French+Rose%'");
-        updated += jdbcTemplate.update("UPDATE product SET cover_image = 'https://images.unsplash.com/photo-1594797075747-1e99f592b285?auto=format&fit=crop&w=1200&q=80' WHERE cover_image LIKE '%Sunflower+Joy%'");
-        updated += jdbcTemplate.update("UPDATE product SET cover_image = 'https://images.unsplash.com/photo-1765614767021-623ed748ab9d?auto=format&fit=crop&w=1200&q=80' WHERE cover_image LIKE '%Business+Green%'");
-        updated += jdbcTemplate.update("UPDATE product SET cover_image = 'https://images.unsplash.com/photo-1609840533612-0cdfb9418281?auto=format&fit=crop&w=1200&q=80' WHERE cover_image LIKE '%Pink+Love%'");
-        updated += jdbcTemplate.update("UPDATE product SET cover_image = 'https://images.unsplash.com/photo-1583086804996-424d089537cb?auto=format&fit=crop&w=1200&q=80' WHERE cover_image LIKE '%Warm+Carnation%'");
-        updated += jdbcTemplate.update("UPDATE product SET cover_image = 'https://images.unsplash.com/photo-1563436798111-3763e8457811?auto=format&fit=crop&w=1200&q=80' WHERE cover_image = '/images/products/test.svg'");
+        updated += jdbcTemplate.update("UPDATE product SET cover_image = '/images/products/custom/rose-black-baccara.jpg' WHERE cover_image LIKE '%Rose+11%'");
+        updated += jdbcTemplate.update("UPDATE product SET cover_image = '/images/products/custom/rose-amour.jpg' WHERE cover_image LIKE '%Lily+Fresh%'");
+        updated += jdbcTemplate.update("UPDATE product SET cover_image = '/images/products/custom/rose-zhenai.jpg' WHERE cover_image LIKE '%Carnation+Care%'");
+        updated += jdbcTemplate.update("UPDATE product SET cover_image = '/images/products/custom/rose-explorer.jpg' WHERE cover_image LIKE '%French+Rose%'");
+        updated += jdbcTemplate.update("UPDATE product SET cover_image = '/images/products/custom/rose-freedom.jpg' WHERE cover_image LIKE '%Sunflower+Joy%'");
+        updated += jdbcTemplate.update("UPDATE product SET cover_image = '/images/products/custom/rose-lisi.jpg' WHERE cover_image LIKE '%Business+Green%'");
+        updated += jdbcTemplate.update("UPDATE product SET cover_image = '/images/products/custom/rose-baoliandeng.jpg' WHERE cover_image LIKE '%Pink+Love%'");
+        updated += jdbcTemplate.update("UPDATE product SET cover_image = '/images/products/custom/rose-carola.jpg' WHERE cover_image LIKE '%Warm+Carnation%'");
+        updated += jdbcTemplate.update("UPDATE product SET cover_image = '/images/products/custom/bouquet-bud-box.jpg' WHERE cover_image = '/images/products/test.svg'");
         return updated;
     }
 
@@ -410,7 +410,7 @@ public class DebugSeedService {
             new BigDecimal("6.00"),
             new BigDecimal("8.00"),
             "经典告白款，适用于纪念日和节日。",
-            "https://images.unsplash.com/photo-1563436798111-3763e8457811?auto=format&fit=crop&w=1200&q=80",
+            "/images/products/custom/rose-black-baccara.jpg",
             List.of(
                 new BomSeed(1L, new BigDecimal("11.00"), new BigDecimal("0.0300")),
                 new BomSeed(2L, new BigDecimal("3.00"), new BigDecimal("0.0500")),
@@ -424,7 +424,7 @@ public class DebugSeedService {
             new BigDecimal("5.00"),
             new BigDecimal("8.00"),
             "适合日常送礼，风格简约。",
-            "https://images.unsplash.com/photo-1765614767021-623ed748ab9d?auto=format&fit=crop&w=1200&q=80",
+            "/images/products/custom/rose-amour.jpg",
             List.of(
                 new BomSeed(3L, new BigDecimal("6.00"), new BigDecimal("0.0300")),
                 new BomSeed(2L, new BigDecimal("2.00"), new BigDecimal("0.0500")),
@@ -438,7 +438,7 @@ public class DebugSeedService {
             new BigDecimal("4.00"),
             new BigDecimal("8.00"),
             "母亲节与探访场景热销。",
-            "https://images.unsplash.com/photo-1741637723809-64f54d36bcc6?auto=format&fit=crop&w=1200&q=80",
+            "/images/products/custom/rose-zhenai.jpg",
             List.of(
                 new BomSeed(4L, new BigDecimal("12.00"), new BigDecimal("0.0300")),
                 new BomSeed(2L, new BigDecimal("2.00"), new BigDecimal("0.0500")),
@@ -452,7 +452,7 @@ public class DebugSeedService {
             new BigDecimal("6.00"),
             new BigDecimal("8.00"),
             "法式配色，适合约会与纪念日场景。",
-            "https://images.unsplash.com/photo-1533793241176-a270e75ef2ad?auto=format&fit=crop&w=1200&q=80",
+            "/images/products/custom/rose-explorer.jpg",
             List.of(
                 new BomSeed(1L, new BigDecimal("9.00"), new BigDecimal("0.0300")),
                 new BomSeed(2L, new BigDecimal("4.00"), new BigDecimal("0.0500")),
@@ -466,7 +466,7 @@ public class DebugSeedService {
             new BigDecimal("5.00"),
             new BigDecimal("8.00"),
             "明亮活力，适合生日祝福与开业庆贺。",
-            "https://images.unsplash.com/photo-1594797075747-1e99f592b285?auto=format&fit=crop&w=1200&q=80",
+            "/images/products/custom/rose-freedom.jpg",
             List.of(
                 new BomSeed(3L, new BigDecimal("5.00"), new BigDecimal("0.0300")),
                 new BomSeed(4L, new BigDecimal("4.00"), new BigDecimal("0.0300")),
@@ -481,7 +481,7 @@ public class DebugSeedService {
             new BigDecimal("7.00"),
             new BigDecimal("8.00"),
             "商务拜访与会议场景优选。",
-            "https://images.unsplash.com/photo-1765614767021-623ed748ab9d?auto=format&fit=crop&w=1200&q=80",
+            "/images/products/custom/rose-lisi.jpg",
             List.of(
                 new BomSeed(3L, new BigDecimal("4.00"), new BigDecimal("0.0300")),
                 new BomSeed(1L, new BigDecimal("6.00"), new BigDecimal("0.0300")),
@@ -495,7 +495,7 @@ public class DebugSeedService {
             new BigDecimal("6.00"),
             new BigDecimal("8.00"),
             "粉系浪漫组合，适合告白与周年纪念。",
-            "https://images.unsplash.com/photo-1609840533612-0cdfb9418281?auto=format&fit=crop&w=1200&q=80",
+            "/images/products/custom/rose-baoliandeng.jpg",
             List.of(
                 new BomSeed(1L, new BigDecimal("7.00"), new BigDecimal("0.0300")),
                 new BomSeed(2L, new BigDecimal("5.00"), new BigDecimal("0.0500")),
@@ -509,12 +509,139 @@ public class DebugSeedService {
             new BigDecimal("4.00"),
             new BigDecimal("8.00"),
             "关怀主题，适合探望与节日赠礼。",
-            "https://images.unsplash.com/photo-1583086804996-424d089537cb?auto=format&fit=crop&w=1200&q=80",
+            "/images/products/custom/rose-carola.jpg",
             List.of(
                 new BomSeed(4L, new BigDecimal("15.00"), new BigDecimal("0.0300")),
                 new BomSeed(2L, new BigDecimal("4.00"), new BigDecimal("0.0500")),
                 new BomSeed(5L, new BigDecimal("3.00"), new BigDecimal("0.0000")),
                 new BomSeed(6L, new BigDecimal("2.00"), new BigDecimal("0.0000"))
+            )
+        ));
+        // Additional bouquet photos provided later are also seeded as products.
+        seeds.add(new ProductSeed(
+            "奶油腮红花束",
+            "DAILY",
+            new BigDecimal("6.00"),
+            new BigDecimal("8.00"),
+            "Soft cream tone bouquet for daily gifting.",
+            "/images/products/custom/bouquet-blush-cream.jpg",
+            List.of(
+                new BomSeed(3L, new BigDecimal("5.00"), new BigDecimal("0.0300")),
+                new BomSeed(2L, new BigDecimal("3.00"), new BigDecimal("0.0500")),
+                new BomSeed(5L, new BigDecimal("2.00"), new BigDecimal("0.0000")),
+                new BomSeed(6L, new BigDecimal("1.00"), new BigDecimal("0.0000"))
+            )
+        ));
+        seeds.add(new ProductSeed(
+            "白缎蝴蝶结花束",
+            "BUSINESS",
+            new BigDecimal("7.00"),
+            new BigDecimal("8.00"),
+            "Clean white bow style suitable for formal visits.",
+            "/images/products/custom/bouquet-bow-white.jpg",
+            List.of(
+                new BomSeed(3L, new BigDecimal("6.00"), new BigDecimal("0.0300")),
+                new BomSeed(1L, new BigDecimal("4.00"), new BigDecimal("0.0300")),
+                new BomSeed(5L, new BigDecimal("2.00"), new BigDecimal("0.0000")),
+                new BomSeed(6L, new BigDecimal("1.00"), new BigDecimal("0.0000"))
+            )
+        ));
+        seeds.add(new ProductSeed(
+            "花苞礼盒花束",
+            "BIRTHDAY",
+            new BigDecimal("6.00"),
+            new BigDecimal("8.00"),
+            "Gift-box bouquet for birthday surprises.",
+            "/images/products/custom/bouquet-bud-box.jpg",
+            List.of(
+                new BomSeed(1L, new BigDecimal("8.00"), new BigDecimal("0.0300")),
+                new BomSeed(4L, new BigDecimal("3.00"), new BigDecimal("0.0300")),
+                new BomSeed(2L, new BigDecimal("3.00"), new BigDecimal("0.0500")),
+                new BomSeed(5L, new BigDecimal("2.00"), new BigDecimal("0.0000"))
+            )
+        ));
+        seeds.add(new ProductSeed(
+            "丝带花苞花束",
+            "VALENTINE",
+            new BigDecimal("6.00"),
+            new BigDecimal("8.00"),
+            "Ribbon bouquet for confession and anniversary moments.",
+            "/images/products/custom/bouquet-bud-ribbon.jpg",
+            List.of(
+                new BomSeed(1L, new BigDecimal("9.00"), new BigDecimal("0.0300")),
+                new BomSeed(2L, new BigDecimal("4.00"), new BigDecimal("0.0500")),
+                new BomSeed(5L, new BigDecimal("2.00"), new BigDecimal("0.0000")),
+                new BomSeed(6L, new BigDecimal("2.00"), new BigDecimal("0.0000"))
+            )
+        ));
+        seeds.add(new ProductSeed(
+            "白蕾丝花苞花束",
+            "MOTHER_DAY",
+            new BigDecimal("5.00"),
+            new BigDecimal("8.00"),
+            "White-lace bouquet for warm family gifting.",
+            "/images/products/custom/bouquet-bud-whitelace.jpg",
+            List.of(
+                new BomSeed(4L, new BigDecimal("10.00"), new BigDecimal("0.0300")),
+                new BomSeed(2L, new BigDecimal("4.00"), new BigDecimal("0.0500")),
+                new BomSeed(5L, new BigDecimal("2.00"), new BigDecimal("0.0000")),
+                new BomSeed(6L, new BigDecimal("1.00"), new BigDecimal("0.0000"))
+            )
+        ));
+        seeds.add(new ProductSeed(
+            "粉色花篮花束",
+            "BIRTHDAY",
+            new BigDecimal("7.00"),
+            new BigDecimal("8.00"),
+            "Pink basket arrangement with stronger ceremony feel.",
+            "/images/products/custom/bouquet-pink-basket.jpg",
+            List.of(
+                new BomSeed(1L, new BigDecimal("7.00"), new BigDecimal("0.0300")),
+                new BomSeed(3L, new BigDecimal("4.00"), new BigDecimal("0.0300")),
+                new BomSeed(2L, new BigDecimal("4.00"), new BigDecimal("0.0500")),
+                new BomSeed(5L, new BigDecimal("3.00"), new BigDecimal("0.0000"))
+            )
+        ));
+        seeds.add(new ProductSeed(
+            "粉色花园花束",
+            "DAILY",
+            new BigDecimal("6.00"),
+            new BigDecimal("8.00"),
+            "Garden style bouquet for casual celebrations.",
+            "/images/products/custom/bouquet-pink-garden.jpg",
+            List.of(
+                new BomSeed(1L, new BigDecimal("6.00"), new BigDecimal("0.0300")),
+                new BomSeed(3L, new BigDecimal("5.00"), new BigDecimal("0.0300")),
+                new BomSeed(2L, new BigDecimal("3.00"), new BigDecimal("0.0500")),
+                new BomSeed(5L, new BigDecimal("2.00"), new BigDecimal("0.0000"))
+            )
+        ));
+        seeds.add(new ProductSeed(
+            "自然粉调花束",
+            "DAILY",
+            new BigDecimal("6.00"),
+            new BigDecimal("8.00"),
+            "Natural pink tone for lightweight gifting scenes.",
+            "/images/products/custom/bouquet-pink-natural.jpg",
+            List.of(
+                new BomSeed(1L, new BigDecimal("6.00"), new BigDecimal("0.0300")),
+                new BomSeed(4L, new BigDecimal("4.00"), new BigDecimal("0.0300")),
+                new BomSeed(2L, new BigDecimal("3.00"), new BigDecimal("0.0500")),
+                new BomSeed(5L, new BigDecimal("2.00"), new BigDecimal("0.0000"))
+            )
+        ));
+        seeds.add(new ProductSeed(
+            "粉玫瑰花束",
+            "VALENTINE",
+            new BigDecimal("6.00"),
+            new BigDecimal("8.00"),
+            "Pink rose mix for romantic gifting.",
+            "/images/products/custom/bouquet-pink-rose.jpg",
+            List.of(
+                new BomSeed(1L, new BigDecimal("8.00"), new BigDecimal("0.0300")),
+                new BomSeed(2L, new BigDecimal("4.00"), new BigDecimal("0.0500")),
+                new BomSeed(5L, new BigDecimal("2.00"), new BigDecimal("0.0000")),
+                new BomSeed(6L, new BigDecimal("1.00"), new BigDecimal("0.0000"))
             )
         ));
         return seeds;

@@ -1,0 +1,137 @@
+.address-list-page {
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
+}
+
+.mode-tip {
+  margin: 20rpx 20rpx 0;
+  padding: 14rpx 18rpx;
+  border-radius: 12rpx;
+  background: #fff6e8;
+  color: #8a5a17;
+  font-size: 24rpx;
+}
+
+.loading-wrap {
+  padding: 80rpx 0;
+  text-align: center;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #8f7d88;
+}
+
+.empty-wrap {
+  padding: 120rpx 40rpx;
+  text-align: center;
+}
+
+.empty-title {
+  font-size: 32rpx;
+  color: #2f2830;
+  font-weight: 600;
+}
+
+.empty-desc {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #8f7d88;
+}
+
+.add-btn {
+  margin-top: 40rpx;
+  min-width: 280rpx;
+}
+
+.address-list {
+  padding: 20rpx;
+}
+
+.address-card {
+  margin-bottom: 20rpx;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  background: #ffffff;
+  border: 2rpx solid #f0e6ea;
+}
+
+.address-default {
+  border-color: #df6f8b;
+  background: linear-gradient(160deg, #fffefe 0%, #fff7f9 62%, #fffdf8 100%);
+}
+
+.address-header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.address-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2f2830;
+}
+
+.address-phone {
+  font-size: 26rpx;
+  color: #675761;
+}
+
+.default-tag {
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
+  background: #bf4d68;
+  color: #ffffff;
+  font-size: 20rpx;
+}
+
+.address-detail {
+  margin-top: 12rpx;
+  font-size: 27rpx;
+  color: #352b33;
+  line-height: 1.5;
+}
+
+.address-actions {
+  margin-top: 16rpx;
+  padding-top: 16rpx;
+  border-top: 2rpx solid #f5f0f2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 24rpx;
+}
+
+.action-btn {
+  padding: 8rpx 20rpx;
+  border-radius: 8rpx;
+  background: #f5f0f2;
+}
+
+.action-btn.delete {
+  background: #fff1f1;
+}
+
+.action-text {
+  font-size: 24rpx;
+  color: #675761;
+}
+
+.action-btn.delete .action-text {
+  color: #bf4d68;
+}
+
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20rpx 40rpx calc(20rpx + env(safe-area-inset-bottom));
+  background: #ffffff;
+  border-top: 2rpx solid #f0e6ea;
+}
+
+.bottom-bar .add-btn {
+  width: 100%;
+  margin: 0;
+}

@@ -1,0 +1,26 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.8)
+
+2026-02-27T15:22:56.377+08:00  INFO 321284 --- [flower-shop-backend] [           main] com.flowershop.FlowerShopApplication     : Starting FlowerShopApplication v1.0.0 using Java 17.0.12 with PID 321284 (C:\Users\root\Desktop\±¡î£½à\flowers\backend\target\flower-shop-backend-1.0.0.jar started by root in C:\Users\root\Desktop\±¡î£½à\flowers\backend)
+2026-02-27T15:22:56.379+08:00  INFO 321284 --- [flower-shop-backend] [           main] com.flowershop.FlowerShopApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-02-27T15:23:08.414+08:00  INFO 321284 --- [flower-shop-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 18081 (http)
+2026-02-27T15:23:08.436+08:00  INFO 321284 --- [flower-shop-backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-02-27T15:23:08.437+08:00  INFO 321284 --- [flower-shop-backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
+2026-02-27T15:23:08.515+08:00  INFO 321284 --- [flower-shop-backend] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-02-27T15:23:08.517+08:00  INFO 321284 --- [flower-shop-backend] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 12068 ms
+2026-02-27T15:23:12.119+08:00  INFO 321284 --- [flower-shop-backend] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-02-27T15:23:12.430+08:00  INFO 321284 --- [flower-shop-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 18081 (http) with context path '/'
+2026-02-27T15:23:12.481+08:00  INFO 321284 --- [flower-shop-backend] [           main] com.flowershop.FlowerShopApplication     : Started FlowerShopApplication in 16.894 seconds (process running for 17.87)
+2026-02-27T15:23:13.515+08:00  INFO 321284 --- [flower-shop-backend] [io-18081-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-02-27T15:23:13.521+08:00  INFO 321284 --- [flower-shop-backend] [io-18081-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-02-27T15:23:13.523+08:00  INFO 321284 --- [flower-shop-backend] [io-18081-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-02-27T15:23:13.612+08:00  INFO 321284 --- [flower-shop-backend] [io-18081-exec-2] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-02-27T15:23:13.933+08:00  INFO 321284 --- [flower-shop-backend] [io-18081-exec-2] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@6f560609
+2026-02-27T15:23:13.945+08:00  INFO 321284 --- [flower-shop-backend] [io-18081-exec-2] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.

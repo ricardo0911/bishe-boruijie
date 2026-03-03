@@ -1,39 +1,134 @@
-<view class="container safe-bottom">
-  <view class="profile-head card">
-    <view class="avatar">花</view>
-    <text class="name">{{user.name}}</text>
-    <text class="meta">积分：{{user.points}}</text>
-    <text wx:if="{{user.phone}}" class="meta">手机号：{{user.phone}}</text>
+<view class="container safe-bottom profile-page">
+  <view wx:if="{{loading}}" class="card loading-card">
+    <view class="loading-dot"></view>
+    <text class="loading-text">正在同步你的花礼档案...</text>
   </view>
 
-  <view class="card quick-card">
-    <view class="quick-item" bindtap="onGoOrders">
-      <view class="quick-icon">单</view>
-      <text class="quick-label">我的订单</text>
+  <view class="card hero-card">
+    <view class="hero-glow hero-glow-a"></view>
+    <view class="hero-glow hero-glow-b"></view>
+
+    <view class="hero-top">
+      <view class="avatar-wrap">
+        <view class="avatar">{{userInitial}}</view>
+        <text class="member-pill">{{member.levelName}}</text>
+      </view>
+
+      <view class="hero-info">
+        <view class="name-row">
+          <text class="user-name">{{user.name}}</text>
+          <text class="copy-name" bindtap="onCopyUserName">复制昵称</text>
+        </view>
+        <text class="user-phone">{{user.phone ? user.phone : "未绑定手机号，建议完善资料"}}</text>
+        <text class="sync-text">最近同步：{{syncText}}</text>
+      </view>
+
+      <view class="edit-btn" bindtap="onEditProfile">编辑</view>
     </view>
-    <view class="quick-item" bindtap="onGoCart">
-      <view class="quick-icon">购</view>
-      <text class="quick-label">购物车</text>
+
+    <view class="hero-metrics">
+      <view class="metric-item" data-action="orders_all" bindtap="onTapAction">
+        <text class="metric-value">{{stats.orderTotal}}</text>
+        <text class="metric-label">全部订单</text>
+      </view>
+      <view class="metric-item" data-action="orders_pending" bindtap="onTapAction">
+        <text class="metric-value">{{stats.pendingPay}}</text>
+        <text class="metric-label">待支付</text>
+      </view>
+      <view class="metric-item" data-action="orders_shipped" bindtap="onTapAction">
+        <text class="metric-value">{{stats.shipped}}</text>
+        <text class="metric-label">待收货</text>
+      </view>
+      <view class="metric-item" data-action="cart" bindtap="onTapAction">
+        <text class="metric-value">{{stats.cartItems}}</text>
+        <text class="metric-label">购物车件数</text>
+      </view>
     </view>
-    <view class="quick-item" bindtap="onGoCategory">
-      <view class="quick-icon">花</view>
-      <text class="quick-label">商品分类</text>
+  </view>
+
+  <view class="card growth-card">
+    <view class="growth-head">
+      <text class="growth-title">会员成长</text>
+      <text class="growth-points">积分 {{user.points}}</text>
+    </view>
+    <view class="growth-track">
+      <view class="growth-fill" style="width: {{member.progress}}%;"></view>
+    </view>
+    <text class="growth-tip">{{member.toNextText}}</text>
+
+    <view class="completion-row">
+      <text class="completion-label">资料完善度 {{profileCompletion}}%</text>
+      <text class="completion-action" bindtap="onEditProfile">{{completionActionText}}</text>
+    </view>
+  </view>
+
+  <view class="card action-card">
+    <view class="block-head">
+      <text class="block-title">常用入口</text>
+      <text class="block-sub">一键直达高频操作</text>
+    </view>
+    <view class="action-grid">
+      <view class="action-item" data-action="orders_all" bindtap="onTapAction">
+        <text class="action-icon">单</text>
+        <text class="action-label">全部订单</text>
+        <text class="action-meta">{{stats.orderTotal}} 笔</text>
+      </view>
+      <view class="action-item" data-action="orders_pending" bindtap="onTapAction">
+        <text class="action-icon">付</text>
+        <text class="action-label">待支付</text>
+        <text class="action-meta">{{stats.pendingPay}} 笔</text>
+      </view>
+      <view class="action-item" data-action="orders_shipped" bindtap="onTapAction">
+        <text class="action-icon">收</text>
+        <text class="action-label">待收货</text>
+        <text class="action-meta">{{stats.shipped}} 笔</text>
+      </view>
+      <view class="action-item" data-action="cart" bindtap="onTapAction">
+        <text class="action-icon">车</text>
+        <text class="action-label">购物车</text>
+        <text class="action-meta">{{stats.cartItems}} 件</text>
+      </view>
+      <view class="action-item" data-action="address" bindtap="onTapAction">
+        <text class="action-icon">址</text>
+        <text class="action-label">收货地址</text>
+        <text class="action-meta">{{stats.addressCount}} 条</text>
+      </view>
+      <view class="action-item" data-action="favorite" bindtap="onTapAction">
+        <text class="action-icon">藏</text>
+        <text class="action-label">收藏记录</text>
+        <text class="action-meta">{{stats.favoriteCount}} 个</text>
+      </view>
     </view>
   </view>
 
   <view class="card menu-card">
-    <view class="menu-item" bindtap="onEditProfile">
-      <text class="menu-text">编辑个人资料</text>
-      <text class="menu-arrow">></text>
+    <view class="menu-item" data-action="edit" bindtap="onTapAction">
+      <view class="menu-main">
+        <text class="menu-title">编辑个人资料</text>
+        <text class="menu-desc">更新昵称、手机与账号资料</text>
+      </view>
+      <text class="menu-arrow">›</text>
     </view>
-    <view class="menu-item no-border" bindtap="onGoOrders">
-      <text class="menu-text">查看全部订单</text>
-      <text class="menu-arrow">></text>
+    <view class="menu-item" data-action="address" bindtap="onTapAction">
+      <view class="menu-main">
+        <text class="menu-title">地址管理</text>
+        <text class="menu-desc">维护收货地址与默认地址</text>
+      </view>
+      <text class="menu-arrow">›</text>
     </view>
-  </view>
-
-  <view class="card tags-card" wx:if="{{user.preferenceTags}}">
-    <text class="tags-title">偏好标签</text>
-    <text class="tags-text">{{user.preferenceTags}}</text>
+    <view class="menu-item" data-action="category" bindtap="onTapAction">
+      <view class="menu-main">
+        <text class="menu-title">去选花</text>
+        <text class="menu-desc">按场景快速筛选花束</text>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item no-border" data-action="service" bindtap="onTapAction">
+      <view class="menu-main">
+        <text class="menu-title">客服与帮助</text>
+        <text class="menu-desc">常见问题与售后支持</text>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
   </view>
 </view>

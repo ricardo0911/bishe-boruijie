@@ -51,9 +51,9 @@ mvn spring-boot:run
 
 如需使用 jar 启动，请先执行 `mvn clean package`，再运行 `java -jar target/flower-shop-backend-1.0.0.jar`，避免误用旧构建产物。
 
-默认端口 `8080`，Swagger 地址：
+默认端口 `18080`，Swagger 地址：
 
-- `http://localhost:8080/swagger-ui/index.html`
+- `http://localhost:18080/swagger-ui/index.html`
 
 ### 3.2.1 可选：订单链路 API 冒烟测试
 
@@ -81,11 +81,22 @@ uvicorn service:app --reload --port 8001
 
 ### 3.4 前端访问
 
-直接在浏览器打开以下页面：
+先构建前端：
 
-- `flower-web/user/index.html`
-- `flower-web/merchant/index.html`
-- `flower-web/admin/index.html`
+```bash
+cd flower-web
+npm install
+npm run build
+```
+
+启动后端后，直接访问：
+
+- `http://localhost:18080/merchant`
+- `http://localhost:18080/admin`
+
+说明：
+- 后端对管理类接口启用了 `X-Admin-Token` 校验，默认值为 `please-change-admin-token`。
+- 生产环境请通过 `ADMIN_TOKEN`（后端）和 `VITE_ADMIN_TOKEN`（前端构建时）替换默认值。
 
 ### 3.5 微信小程序用户端
 
@@ -93,7 +104,7 @@ uvicorn service:app --reload --port 8001
 
 2) 本地开发请关闭域名校验（开发工具设置）。
 
-3) 默认后端地址：`http://127.0.0.1:8080/api/v1`（可在 `miniapp-user/app.js` 修改）。
+3) 默认后端地址：`http://127.0.0.1:18080/api/v1`（可在 `miniapp-user/app.js` 修改）。
 
 4) 小程序为调试友好模式：
 
@@ -106,7 +117,7 @@ uvicorn service:app --reload --port 8001
 powershell -ExecutionPolicy Bypass -File scripts/db-smoke-check.ps1
 ```
 
-如果后端不在 `8080`，可指定：`-BaseUrl http://localhost:18080/api/v1 -HealthUrl http://localhost:18080/actuator/health`。
+如果后端不在 `18080`，可指定：`-BaseUrl http://localhost:19080/api/v1 -HealthUrl http://localhost:19080/actuator/health`。
 
 6) 批量造数脚本（用于调试）：
 

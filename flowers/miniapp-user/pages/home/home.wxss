@@ -1,28 +1,110 @@
 .search-wrap {
-  min-height: 84rpx;
-  padding: 0 24rpx;
+  min-height: 92rpx;
+  padding: 0 26rpx;
   display: flex;
   align-items: center;
-  margin-bottom: 18rpx;
+  margin-bottom: 14rpx;
+  border: 2rpx solid #edd3dd;
+  background: linear-gradient(135deg, #fffefe 0%, #fff7fa 58%, #fffef8 100%);
 }
 
 .search-placeholder {
   font-size: 28rpx;
-  color: #927f8a;
+  color: #8a7581;
+}
+
+.brand-hero {
+  margin-bottom: 16rpx;
+  padding: 22rpx 22rpx 20rpx;
+  border: 2rpx solid #ecd6de;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(245, 186, 207, 0.35) 0%, rgba(245, 186, 207, 0) 42%),
+    linear-gradient(140deg, #fffdfd 0%, #fff6fa 62%, #f8fff8 100%);
+}
+
+.brand-hero-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14rpx;
+}
+
+.brand-cn {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #352b33;
+  letter-spacing: 4rpx;
+}
+
+.brand-en {
+  font-size: 18rpx;
+  color: #9d7386;
+  letter-spacing: 1.2rpx;
+}
+
+.brand-slogan {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: #7d6874;
+}
+
+.brand-tags {
+  margin-top: 14rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.brand-tag {
+  min-height: 44rpx;
+  padding: 0 16rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid #ebd0da;
+  background: rgba(255, 255, 255, 0.8);
+  color: #ba4f6f;
+  font-size: 22rpx;
+  display: flex;
+  align-items: center;
+}
+
+.container {
+  height: 100vh;
 }
 
 .hero-swiper {
   height: 300rpx;
   border-radius: 28rpx;
   overflow: hidden;
-  box-shadow: 0 18rpx 36rpx rgba(154, 75, 102, 0.16);
+  box-shadow: 0 20rpx 40rpx rgba(154, 75, 102, 0.2);
 }
 
 .hero-item {
   height: 100%;
+  position: relative;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
   padding: 56rpx 36rpx;
   box-sizing: border-box;
-  color: #ffffff;
+  background: linear-gradient(to right, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 70%);
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -41,7 +123,7 @@
 }
 
 .category-grid {
-  margin-top: 18rpx;
+  margin-top: 16rpx;
   padding: 18rpx 10rpx;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -158,7 +240,7 @@
 .creative-card {
   margin-top: 22rpx;
   padding: 20rpx;
-  border: 2rpx solid #efdde5;
+  border: 2rpx solid #ebd4dd;
   background: linear-gradient(160deg, #fffefe 0%, #fff7f9 64%, #fffdf8 100%);
 }
 
@@ -279,6 +361,17 @@
   display: flex;
   flex-direction: column;
   gap: 12rpx;
+}
+
+.inspiration-empty {
+  margin-top: 14rpx;
+  padding: 18rpx 16rpx;
+  border-radius: 16rpx;
+  border: 2rpx dashed #e9d2dc;
+  background: #fffdfd;
+  color: #8f7a86;
+  font-size: 23rpx;
+  line-height: 1.5;
 }
 
 .inspiration-item {

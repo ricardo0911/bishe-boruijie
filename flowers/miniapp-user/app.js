@@ -1,25 +1,29 @@
-App({
+﻿App({
   globalData: {
-    apiBase: "http://127.0.0.1:9090/api/v1",
-    userId: 1,
-    loginMode: "mock",
+    apiBase: "http://127.0.0.1:18080/api/v1",
+    enableRemoteAddressApi: true,
+    enableRemoteFavoritesApi: true,
+    enableRemoteCouponApi: true,
+    enableRemoteOrderApi: true,
+    userId: 0,
+    loginMode: "backend",
   },
 
   onLaunch() {
-    const userId = wx.getStorageSync("userId");
-    if (userId) {
-      this.globalData.userId = Number(userId);
-      return;
+    const userId = Number(wx.getStorageSync("userId") || 0);
+    if (userId > 0) {
+      this.globalData.userId = userId;
     }
 
-    this.mockLogin();
+    // Always sync with backend so stale local userId does not cause 400 on profile/address APIs.
+    this.ensureBackendUser();
   },
 
-  mockLogin() {
-    let openid = wx.getStorageSync("mockOpenid");
+  ensureBackendUser() {
+    let openid = wx.getStorageSync("openid");
     if (!openid) {
-      openid = `mock_openid_${Date.now()}`;
-      wx.setStorageSync("mockOpenid", openid);
+      openid = `wx_u_${Date.now()}`;
+      wx.setStorageSync("openid", openid);
     }
 
     wx.request({
@@ -37,13 +41,13 @@ App({
           this.globalData.userId = uid;
           wx.setStorageSync("userId", uid);
         } else {
-          this.globalData.userId = 1;
-          wx.setStorageSync("userId", 1);
+          this.globalData.userId = 0;
+          wx.removeStorageSync("userId");
         }
       },
       fail: () => {
-        this.globalData.userId = 1;
-        wx.setStorageSync("userId", 1);
+        this.globalData.userId = 0;
+        wx.removeStorageSync("userId");
       },
     });
   },

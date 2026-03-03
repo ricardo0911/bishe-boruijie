@@ -1,0 +1,39 @@
+<view class="container address-edit-page">
+  <view wx:if="{{source === 'local'}}" class="mode-tip">当前为本地地址簿模式</view>
+
+  <view class="card form-card">
+    <view class="form-item">
+      <text class="label required">收货人</text>
+      <input class="input" value="{{form.receiverName}}" placeholder="请输入收货人姓名" bindinput="onInputName" />
+    </view>
+    <view class="form-item">
+      <text class="label required">联系电话</text>
+      <input class="input" value="{{form.receiverPhone}}" type="number" maxlength="11" placeholder="请输入手机号码" bindinput="onInputPhone" />
+    </view>
+    <view class="form-item">
+      <text class="label required">所在地区</text>
+      <picker mode="region" value="{{regionValue}}" bindchange="onRegionChange" class="region-picker">
+        <view class="region-picker-inner">
+          <text wx:if="{{form.province}}" class="region-text">{{form.province}} {{form.city}} {{form.district}}</text>
+          <text wx:else class="region-placeholder">请选择省市区</text>
+          <text class="region-arrow">›</text>
+        </view>
+      </picker>
+    </view>
+    <view class="form-item no-border">
+      <text class="label required">详细地址</text>
+      <textarea class="textarea" value="{{form.detail}}" placeholder="请输入街道、门牌号等详细地址" bindinput="onInputDetail" />
+    </view>
+  </view>
+
+  <view class="card option-card">
+    <view class="option-item">
+      <text class="option-label">设为默认地址</text>
+      <switch class="option-switch" checked="{{form.isDefault}}" bindchange="onToggleDefault" color="#bf4d68" />
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <button class="btn-primary save-btn" loading="{{saving}}" bindtap="onSave">保存</button>
+  </view>
+</view>

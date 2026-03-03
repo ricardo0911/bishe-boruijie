@@ -290,6 +290,10 @@ Page({
     });
   },
 
+  goSearchPage() {
+    wx.navigateTo({ url: "/pages/search/search?from=home" });
+  },
+
   goCategoryPage() {
     wx.switchTab({ url: "/pages/category/category" });
   },

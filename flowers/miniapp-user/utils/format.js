@@ -39,7 +39,7 @@ function resolveImageUrl(url) {
   if (/^https?:\/\//i.test(text)) return text;
   if (text.indexOf("//") === 0) return `https:${text}`;
 
-  let base = "http://127.0.0.1:9090/api/v1";
+  let base = "http://127.0.0.1:8080/api/v1";
   try {
     const app = getApp();
     if (app && app.globalData && app.globalData.apiBase) {
@@ -61,7 +61,10 @@ function getStatusLabel(status) {
   const map = {
     CREATED: "待支付",
     LOCKED: "待支付",
+    PENDING_PAY: "待支付",
     PAID: "已支付",
+    CONFIRMED: "待发货",
+    SHIPPED: "已发货",
     COMPLETED: "已完成",
     CANCELLED: "已取消",
     REFUNDED: "已退款",
@@ -72,13 +75,24 @@ function getStatusLabel(status) {
 function getStatusClass(status) {
   if (status === "PAID" || status === "COMPLETED") return "status-success";
   if (status === "CANCELLED" || status === "REFUNDED") return "status-danger";
+  if (status === "PENDING_PAY") return "status-warning";
+  if (status === "SHIPPED" || status === "CONFIRMED") return "status-info";
   return "status-default";
 }
 
 function getUserId() {
   const stored = wx.getStorageSync("userId");
-  if (stored) return Number(stored);
-  return 1;
+  const uid = Number(stored);
+  if (Number.isFinite(uid) && uid > 0) {
+    return uid;
+  }
+  try {
+    const app = getApp();
+    const current = Number(app && app.globalData ? app.globalData.userId : 0);
+    return Number.isFinite(current) && current > 0 ? current : 0;
+  } catch (err) {
+    return 0;
+  }
 }
 
 module.exports = {

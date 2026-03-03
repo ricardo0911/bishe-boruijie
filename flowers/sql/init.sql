@@ -4,6 +4,7 @@
 
 CREATE DATABASE IF NOT EXISTS flower_shop DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE flower_shop;
+SET NAMES utf8mb4;
 
 -- ----------------------------
 -- 1. 用户表
@@ -19,7 +20,6 @@ CREATE TABLE `users` (
     `avatar` VARCHAR(500) DEFAULT NULL COMMENT '头像URL',
     `gender` TINYINT DEFAULT 0 COMMENT '性别 0未知 1男 2女',
     `points` INT DEFAULT 0 COMMENT '积分',
-    `preference_tags` VARCHAR(500) DEFAULT NULL COMMENT '偏好标签(JSON)',
     `role` VARCHAR(20) DEFAULT 'USER' COMMENT '角色: USER/MERCHANT/ADMIN',
     `status` TINYINT DEFAULT 1 COMMENT '状态 0禁用 1正常',
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -373,14 +373,14 @@ INSERT INTO `flowers` (`name`, `category`, `unit`, `cost_price`, `sell_price`, `
 
 -- 商品
 INSERT INTO `products` (`title`, `subtitle`, `category_id`, `merchant_id`, `price`, `original_price`, `cost_price`, `cover_image`, `description`, `product_type`, `sales_count`, `stock`, `packaging_fee`, `delivery_fee`, `is_recommend`) VALUES
-('热恋红玫瑰花束', '11枝红玫瑰+满天星 | 经典浪漫', 1, 1, 128.00, 168.00, 52.00, 'https://images.unsplash.com/photo-1563436798111-3763e8457811?auto=format&fit=crop&w=1200&q=80', '精选11枝A级红玫瑰，搭配满天星和尤加利叶，雾面纸精美包装，传递最炽热的爱意', 'BUNDLE', 356, 99, 15.00, 10.00, 1),
-('粉色恋曲花束', '19枝粉玫瑰 | 甜蜜告白', 1, 1, 199.00, 258.00, 86.50, 'https://images.unsplash.com/photo-1533793241176-a270e75ef2ad?auto=format&fit=crop&w=1200&q=80', '19枝精选粉玫瑰，搭配桔梗和满天星，牛皮纸复古包装，诉说粉色少女心', 'BUNDLE', 218, 99, 15.00, 10.00, 1),
-('纯白誓言花束', '33枝白玫瑰 | 纯洁永恒', 1, 1, 299.00, 399.00, 128.00, 'https://images.unsplash.com/photo-1609840533612-0cdfb9418281?auto=format&fit=crop&w=1200&q=80', '33枝白玫瑰象征三生三世，搭配尤加利叶，简约大气', 'BUNDLE', 145, 99, 20.00, 10.00, 1),
-('温馨康乃馨花束', '19枝康乃馨+百合 | 感恩之花', 4, 1, 158.00, 198.00, 63.00, 'https://images.unsplash.com/photo-1741637723809-64f54d36bcc6?auto=format&fit=crop&w=1200&q=80', '19枝粉色康乃馨搭配2枝白百合，表达对母亲最深的感恩', 'BUNDLE', 189, 99, 15.00, 10.00, 1),
-('阳光向日葵花束', '6枝向日葵 | 活力满满', 3, 1, 138.00, 178.00, 42.00, 'https://images.unsplash.com/photo-1594797075747-1e99f592b285?auto=format&fit=crop&w=1200&q=80', '6枝向日葵搭配雏菊和尤加利叶，如同一束阳光照进生活', 'BUNDLE', 267, 99, 15.00, 10.00, 1),
-('浪漫满天星花束', '一大扎满天星 | 如繁星点点', 5, 1, 89.00, 128.00, 25.00, 'https://images.unsplash.com/photo-1741637723809-64f54d36bcc6?auto=format&fit=crop&w=1200&q=80', '纯白满天星，如夜空中闪烁的繁星，纯净而浪漫', 'BUNDLE', 412, 99, 10.00, 10.00, 1),
-('香槟之恋花束', '11枝香槟玫瑰 | 优雅迷人', 1, 1, 158.00, 208.00, 65.00, 'https://images.unsplash.com/photo-1583086804996-424d089537cb?auto=format&fit=crop&w=1200&q=80', '11枝香槟玫瑰搭配桔梗和勿忘我，展现成熟优雅的魅力', 'BUNDLE', 156, 99, 15.00, 10.00, 1),
-('红玫瑰 (单枝)', '高品质A级红玫瑰', 8, 1, 8.00, NULL, 3.00, 'https://images.unsplash.com/photo-1684826120615-09297bfa5495?auto=format&fit=crop&w=1200&q=80', '单枝A级红玫瑰，花头饱满，色泽鲜艳', 'SINGLE', 89, 200, 0.00, 5.00, 0);
+('热恋红玫瑰花束', '11枝红玫瑰+满天星 | 经典浪漫', 1, 1, 128.00, 168.00, 52.00, '/images/products/custom/bouquet-pink-rose.jpg', '精选11枝A级红玫瑰，搭配满天星和尤加利叶，雾面纸精美包装，传递最炽热的爱意', 'BUNDLE', 356, 99, 15.00, 10.00, 1),
+('粉色恋曲花束', '19枝粉玫瑰 | 甜蜜告白', 1, 1, 199.00, 258.00, 86.50, '/images/products/custom/bouquet-pink-natural.jpg', '19枝精选粉玫瑰，搭配桔梗和满天星，牛皮纸复古包装，诉说粉色少女心', 'BUNDLE', 218, 99, 15.00, 10.00, 1),
+('纯白誓言花束', '33枝白玫瑰 | 纯洁永恒', 1, 1, 299.00, 399.00, 128.00, '/images/products/custom/bouquet-bow-white.jpg', '33枝白玫瑰象征三生三世，搭配尤加利叶，简约大气', 'BUNDLE', 145, 99, 20.00, 10.00, 1),
+('温馨康乃馨花束', '19枝康乃馨+百合 | 感恩之花', 4, 1, 158.00, 198.00, 63.00, '/images/products/custom/bouquet-blush-cream.jpg', '19枝粉色康乃馨搭配2枝白百合，表达对母亲最深的感恩', 'BUNDLE', 189, 99, 15.00, 10.00, 1),
+('阳光向日葵花束', '6枝向日葵 | 活力满满', 3, 1, 138.00, 178.00, 42.00, '/images/products/custom/bouquet-pink-garden.jpg', '6枝向日葵搭配雏菊和尤加利叶，如同一束阳光照进生活', 'BUNDLE', 267, 99, 15.00, 10.00, 1),
+('浪漫满天星花束', '一大扎满天星 | 如繁星点点', 5, 1, 89.00, 128.00, 25.00, '/images/products/custom/bouquet-bud-whitelace.jpg', '纯白满天星，如夜空中闪烁的繁星，纯净而浪漫', 'BUNDLE', 412, 99, 10.00, 10.00, 1),
+('香槟之恋花束', '11枝香槟玫瑰 | 优雅迷人', 1, 1, 158.00, 208.00, 65.00, '/images/products/custom/bouquet-bud-ribbon.jpg', '11枝香槟玫瑰搭配桔梗和勿忘我，展现成熟优雅的魅力', 'BUNDLE', 156, 99, 15.00, 10.00, 1),
+('红玫瑰 (单枝)', '高品质A级红玫瑰', 8, 1, 8.00, NULL, 3.00, '/images/products/custom/bouquet-pink-basket.jpg', '单枝A级红玫瑰，花头饱满，色泽鲜艳', 'SINGLE', 89, 200, 0.00, 5.00, 0);
 
 -- BOM (物料清单)
 -- 热恋红玫瑰花束 = 11枝红玫瑰 + 1扎满天星 + 3枝尤加利叶 + 1张雾面纸 + 1米丝带

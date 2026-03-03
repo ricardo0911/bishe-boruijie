@@ -1,5 +1,5 @@
 param(
-  [string]$BaseUrl = "http://localhost:8080/api/v1",
+  [string]$BaseUrl = "http://localhost:18080/api/v1",
   [string]$HealthUrl = ""
 )
 
@@ -88,7 +88,7 @@ Write-Host "[OK] order status(after pay)=$($detail2.data.status)"
 $orders = Invoke-Api -Method Get -Url "$BaseUrl/orders/user/$uid/details?limit=20"
 Write-Host "[OK] user order detail count=$($orders.data.Count)"
 
-$null = Invoke-Api -Method Put -Url "$BaseUrl/users/$uid" -Body @{ name = "Debug User Updated"; phone = "139" + (Get-Random -Minimum 10000000 -Maximum 99999999); preferenceTags = "fresh,festival" }
+$null = Invoke-Api -Method Put -Url "$BaseUrl/users/$uid" -Body @{ name = "Debug User Updated"; phone = "139" + (Get-Random -Minimum 10000000 -Maximum 99999999) }
 $u2 = Invoke-Api -Method Get -Url "$BaseUrl/users/$uid"
 Write-Host "[OK] user update -> name=$($u2.data.name)"
 

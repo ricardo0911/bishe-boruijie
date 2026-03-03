@@ -20,8 +20,8 @@
                   <span v-else style="display:inline-block;width:48px;height:48px;background:#f5eef2;border-radius:6px"></span>
                 </td>
                 <td>{{ p.title }}</td>
-                <td><span class="badge badge-info">{{ p.type }}</span></td>
-                <td>{{ p.category }}</td>
+                <td><span class="badge badge-info">{{ formatProductType(p.type) }}</span></td>
+                <td>{{ formatProductCategory(p.category) }}</td>
                 <td style="font-weight:600;color:var(--primary)">&yen;{{ formatPrice(p.unitPrice) }}</td>
                 <td><span class="badge" :class="p.status === 'ON_SALE' ? 'badge-success' : 'badge-default'">{{ p.status === 'ON_SALE' ? '在售' : '下架' }}</span></td>
                 <td><button class="btn btn-sm btn-outline" @click="editProduct(p.id)">编辑</button></td>
@@ -80,6 +80,28 @@ const editId = ref(null)
 const pendingImageFile = ref(null)
 const imagePreview = ref('')
 const form = ref({ title: '', type: 'BOUQUET', category: '', basePrice: 0, packagingFee: 0, deliveryFee: 0, coverImage: '', description: '', status: 'ON_SALE' })
+
+const PRODUCT_TYPE_LABEL_MAP = {
+  BOUQUET: '花束',
+  PLANT: '盆栽',
+  ACCESSORY: '配件'
+}
+
+const PRODUCT_CATEGORY_LABEL_MAP = {
+  VALENTINE: '情人节',
+  DAILY: '日常',
+  BIRTHDAY: '生日',
+  MOTHER_DAY: '母亲节',
+  BUSINESS: '商务'
+}
+
+function formatProductType(type) {
+  return PRODUCT_TYPE_LABEL_MAP[type] || type || '-'
+}
+
+function formatProductCategory(category) {
+  return PRODUCT_CATEGORY_LABEL_MAP[category] || category || '-'
+}
 
 async function load() {
   loading.value = true

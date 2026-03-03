@@ -1,0 +1,52 @@
+<view class="container">
+  <view class="search-panel card">
+    <input
+      class="search-input"
+      value="{{keyword}}"
+      placeholder="搜索鲜花、花束、节日主题"
+      confirm-type="search"
+      bindinput="onInputKeyword"
+      bindconfirm="onConfirmSearch"
+      focus="{{autoFocus}}"
+    />
+    <view class="search-btn" bindtap="onConfirmSearch">搜索</view>
+  </view>
+
+  <view class="search-tools" wx:if="{{keyword}}">
+    <text class="tool-link" bindtap="onClearKeyword">清空</text>
+  </view>
+
+  <view class="search-state" wx:if="{{!loading}}">
+    <text class="state-text">共 {{filteredProducts.length}} 件商品</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty-wrap">
+    <text class="empty-title">加载中...</text>
+  </view>
+
+  <view wx:elif="{{filteredProducts.length === 0}}" class="empty-wrap">
+    <text class="empty-title">没有找到相关商品</text>
+  </view>
+
+  <view wx:else class="product-grid">
+    <view
+      class="product-card card"
+      wx:for="{{filteredProducts}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="onTapProduct"
+    >
+      <view class="image-wrap">
+        <image wx:if="{{item.coverImage}}" class="cover-image" src="{{item.coverImage}}" mode="aspectFill" />
+        <view wx:else class="image-placeholder">花</view>
+      </view>
+      <view class="product-body">
+        <text class="product-title">{{item.title}}</text>
+        <view class="price-row">
+          <text class="price-symbol">￥</text>
+          <text class="price-value">{{item.unitPrice}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -4,13 +4,9 @@
       <text class="label">昵称</text>
       <input class="input" value="{{name}}" placeholder="请输入昵称" bindinput="onInputName" />
     </view>
-    <view class="form-item">
+    <view class="form-item no-border">
       <text class="label">手机号</text>
       <input class="input" value="{{phone}}" type="number" maxlength="11" placeholder="请输入手机号" bindinput="onInputPhone" />
-    </view>
-    <view class="form-item no-border">
-      <text class="label">偏好标签</text>
-      <input class="input" value="{{preferenceTags}}" placeholder="如：清新,简约,节日" bindinput="onInputTags" />
     </view>
   </view>
 

@@ -1,10 +1,13 @@
 CREATE DATABASE IF NOT EXISTS flower_shop DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 USE flower_shop;
+SET NAMES utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS banner;
 DROP TABLE IF EXISTS system_config;
+DROP TABLE IF EXISTS user_favorite;
+DROP TABLE IF EXISTS user_address;
 DROP TABLE IF EXISTS cart_item;
 DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS merchant;
@@ -29,9 +32,25 @@ CREATE TABLE user_customer (
   name VARCHAR(64) NOT NULL,
   phone VARCHAR(20) NULL UNIQUE,
   points INT NOT NULL DEFAULT 0,
-  preference_tags VARCHAR(255) NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_address (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  receiver_name VARCHAR(64) NOT NULL,
+  receiver_phone VARCHAR(20) NOT NULL,
+  province VARCHAR(64) NOT NULL DEFAULT '',
+  city VARCHAR(64) NOT NULL DEFAULT '',
+  district VARCHAR(64) NOT NULL DEFAULT '',
+  detail VARCHAR(255) NOT NULL,
+  is_default TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_user_address_user FOREIGN KEY (user_id) REFERENCES user_customer(id),
+  INDEX idx_user_address_user (user_id),
+  INDEX idx_user_address_default (user_id, is_default)
 );
 
 CREATE TABLE flower_material (
@@ -66,6 +85,19 @@ CREATE TABLE product (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_product_status (status),
   INDEX idx_product_category (category)
+);
+
+CREATE TABLE user_favorite (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  product_id BIGINT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_user_favorite (user_id, product_id),
+  CONSTRAINT fk_user_favorite_user FOREIGN KEY (user_id) REFERENCES user_customer(id),
+  CONSTRAINT fk_user_favorite_product FOREIGN KEY (product_id) REFERENCES product(id),
+  INDEX idx_user_favorite_user (user_id),
+  INDEX idx_user_favorite_product (product_id)
 );
 
 CREATE TABLE product_bom (
@@ -269,4 +301,21 @@ CREATE TABLE banner (
   enabled TINYINT NOT NULL DEFAULT 1,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE payment_log (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  order_id BIGINT NOT NULL,
+  order_no VARCHAR(40) NOT NULL,
+  transaction_id VARCHAR(64) NOT NULL COMMENT '微信支付订单号',
+  payment_channel VARCHAR(32) NOT NULL DEFAULT 'WECHAT_PAY' COMMENT '支付渠道',
+  pay_amount DECIMAL(12,2) NOT NULL,
+  result_code VARCHAR(32) NOT NULL,
+  notify_time DATETIME NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_payment_order FOREIGN KEY (order_id) REFERENCES customer_order(id),
+  INDEX idx_payment_order (order_id),
+  INDEX idx_payment_order_no (order_no),
+  INDEX idx_payment_transaction (transaction_id),
+  INDEX idx_payment_created (created_at)
 );

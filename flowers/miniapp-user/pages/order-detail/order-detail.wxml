@@ -1,0 +1,212 @@
+<view class="container order-detail-page">
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-wrap">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 订单内容 -->
+  <block wx:elif="{{order}}">
+    <!-- 状态头部 -->
+    <view class="status-header status-{{order.statusClass}}">
+      <view class="status-icon-wrap">
+        <text class="status-icon" wx:if="{{order.status === 'PENDING_PAY'}}">⏰</text>
+        <text class="status-icon" wx:elif="{{order.status === 'PAID' || order.status === 'CONFIRMED'}}">📦</text>
+        <text class="status-icon" wx:elif="{{order.status === 'SHIPPED'}}">🚚</text>
+        <text class="status-icon" wx:elif="{{order.status === 'COMPLETED'}}">✅</text>
+        <text class="status-icon" wx:elif="{{order.status === 'CANCELLED' || order.status === 'REFUNDED'}}">❌</text>
+        <text class="status-icon" wx:else>📋</text>
+      </view>
+      <view class="status-info">
+        <text class="status-label">{{order.statusLabel}}</text>
+        <text class="status-desc">{{order.statusDesc}}</text>
+        <!-- 待支付倒计时 -->
+        <view class="countdown-wrap" wx:if="{{order.status === 'PENDING_PAY' && countdown}}">
+          <text class="countdown-label">剩余支付时间：</text>
+          <text class="countdown-value">{{countdown}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 物流信息（已发货状态显示） -->
+    <view class="section logistics-section" wx:if="{{order.status === 'SHIPPED' || order.status === 'COMPLETED'}}">
+      <view class="section-title">
+        <text class="title-icon">🚚</text>
+        <text class="title-text">物流信息</text>
+      </view>
+      <view class="logistics-content">
+        <view class="logistics-item">
+          <text class="logistics-label">物流公司</text>
+          <text class="logistics-value">{{order.trackingCompany || '同城配送'}}</text>
+        </view>
+        <view class="logistics-item" wx:if="{{order.trackingNo}}">
+          <text class="logistics-label">物流单号</text>
+          <view class="logistics-value-wrap">
+            <text class="logistics-value">{{order.trackingNo}}</text>
+            <text class="copy-btn" bindtap="onCopyTrackingNo">复制</text>
+          </view>
+        </view>
+        <view class="logistics-item">
+          <text class="logistics-label">发货时间</text>
+          <text class="logistics-value">{{order.shippedAt || '-'}}</text>
+        </view>
+      </view>
+      <button wx:if="{{order.status === 'SHIPPED'}}" class="btn-secondary logistics-btn" bindtap="onViewLogistics">
+        查看物流详情
+      </button>
+    </view>
+
+    <!-- 收货地址 -->
+    <view class="section address-section">
+      <view class="section-title">
+        <text class="title-icon">📍</text>
+        <text class="title-text">收货信息</text>
+      </view>
+      <view class="address-content">
+        <view class="address-row">
+          <text class="address-name">{{order.receiverName}}</text>
+          <text class="address-phone">{{order.receiverPhone}}</text>
+          <text class="call-btn" bindtap="onCallPhone">拨打</text>
+        </view>
+        <text class="address-detail">{{order.receiverAddress}}</text>
+      </view>
+    </view>
+
+    <!-- 商品列表 -->
+    <view class="section goods-section">
+      <view class="section-title">
+        <text class="title-icon">🌸</text>
+        <text class="title-text">商品信息</text>
+      </view>
+      <view class="goods-list">
+        <view
+          class="goods-item"
+          wx:for="{{order.items}}"
+          wx:key="productId"
+          data-id="{{item.productId}}"
+          bindtap="onTapProduct"
+        >
+          <image
+            class="goods-image"
+            src="{{item.coverImage || '/assets/placeholder.png'}}"
+            mode="aspectFill"
+          />
+          <view class="goods-info">
+            <text class="goods-title">{{item.productTitle}}</text>
+            <view class="goods-meta">
+              <text class="goods-price">¥{{item.unitPrice}}</text>
+              <text class="goods-qty">x{{item.quantity}}</text>
+            </view>
+            <text class="goods-subtotal">小计：¥{{item.lineAmount}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="goods-summary">
+        <text class="summary-text">共 {{order.itemCount}} 件商品</text>
+      </view>
+    </view>
+
+    <!-- 订单信息 -->
+    <view class="section order-info-section">
+      <view class="section-title">
+        <text class="title-icon">📝</text>
+        <text class="title-text">订单信息</text>
+      </view>
+      <view class="info-list">
+        <view class="info-item">
+          <text class="info-label">订单编号</text>
+          <view class="info-value-wrap">
+            <text class="info-value">{{order.orderNo}}</text>
+            <text class="copy-btn" bindtap="onCopyOrderNo">复制</text>
+          </view>
+        </view>
+        <view class="info-item">
+          <text class="info-label">下单时间</text>
+          <text class="info-value">{{order.createdAt}}</text>
+        </view>
+        <view class="info-item" wx:if="{{order.paidAt}}">
+          <text class="info-label">支付时间</text>
+          <text class="info-value">{{order.paidAt}}</text>
+        </view>
+        <view class="info-item" wx:if="{{order.remark}}">
+          <text class="info-label">订单备注</text>
+          <text class="info-value remark">{{order.remark}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 金额明细 -->
+    <view class="section amount-section">
+      <view class="section-title">
+        <text class="title-icon">💰</text>
+        <text class="title-text">金额明细</text>
+      </view>
+      <view class="amount-list">
+        <view class="amount-item">
+          <text class="amount-label">商品总额</text>
+          <text class="amount-value">¥{{order.goodsAmount}}</text>
+        </view>
+        <view class="amount-item">
+          <text class="amount-label">配送费用</text>
+          <text class="amount-value" wx:if="{{order.deliveryFee !== '0.00'}}">¥{{order.deliveryFee}}</text>
+          <text class="amount-value free" wx:else>免运费</text>
+        </view>
+        <view class="amount-divider"></view>
+        <view class="amount-item total">
+          <text class="amount-label">实付金额</text>
+          <text class="amount-value total-value">¥{{order.totalAmount}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部占位 -->
+    <view class="bottom-placeholder"></view>
+  </block>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-actions" wx:if="{{order}}">
+    <!-- 待支付状态 -->
+    <block wx:if="{{order.status === 'PENDING_PAY'}}">
+      <button class="btn-secondary action-btn" bindtap="onCancel" loading="{{actionLoading}}">
+        取消订单
+      </button>
+      <button class="btn-primary action-btn" bindtap="onPay" loading="{{actionLoading}}">
+        立即支付 ¥{{order.totalAmount}}
+      </button>
+    </block>
+
+    <!-- 已支付/待发货状态 -->
+    <block wx:if="{{order.status === 'PAID' || order.status === 'CONFIRMED'}}">
+      <button class="btn-secondary action-btn" bindtap="onRefund" loading="{{actionLoading}}">
+        申请退款
+      </button>
+    </block>
+
+    <!-- 已发货状态 -->
+    <block wx:if="{{order.status === 'SHIPPED'}}">
+      <button class="btn-secondary action-btn" bindtap="onViewLogistics">
+        查看物流
+      </button>
+      <button class="btn-primary action-btn" bindtap="onConfirmReceive" loading="{{actionLoading}}">
+        确认收货
+      </button>
+    </block>
+
+    <!-- 已完成状态 -->
+    <block wx:if="{{order.status === 'COMPLETED'}}">
+      <button class="btn-secondary action-btn" bindtap="onViewLogistics">
+        查看物流
+      </button>
+      <button class="btn-primary action-btn" bindtap="onBuyAgain">
+        再次购买
+      </button>
+    </block>
+
+    <!-- 已取消/已退款状态 -->
+    <block wx:if="{{order.status === 'CANCELLED' || order.status === 'REFUNDED'}}">
+      <button class="btn-primary action-btn" bindtap="onBuyAgain">
+        再次购买
+      </button>
+    </block>
+  </view>
+</view>

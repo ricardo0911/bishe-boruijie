@@ -1,9 +1,22 @@
 server:
-  port: 8080
+  port: 18080
 
 app:
-  web-root: ../flower-web/
+  admin-web-root: ../flower-admin-web/
+  merchant-web-root: ../flower-web/
   upload-dir: uploads/
+  debug-seed:
+    enabled: false
+  auth:
+    enabled: true
+    admin-token: ${ADMIN_TOKEN:please-change-admin-token}
+  wechat:
+    pay:
+      api-key: ${WECHAT_PAY_API_KEY:}
+      mch-id: ${WECHAT_PAY_MCH_ID:}
+      app-id: ${WECHAT_PAY_APP_ID:}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:18080,http://127.0.0.1:18080,http://localhost:8080,http://127.0.0.1:8080}
 
 spring:
   application:
@@ -17,9 +30,13 @@ spring:
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-init-sql: SET NAMES utf8mb4
   jackson:
     time-zone: Asia/Shanghai
   mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
     format:
       date-time: yyyy-MM-dd HH:mm:ss
 

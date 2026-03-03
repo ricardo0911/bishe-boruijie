@@ -22,8 +22,8 @@
                   <span v-else style="display:inline-block;width:40px;height:40px;background:#f5eef2;border-radius:6px"></span>
                 </td>
                 <td>{{ f.name }}</td>
-                <td><span class="badge badge-info">{{ f.category }}</span></td>
-                <td>{{ f.unit }}</td>
+                <td><span class="badge badge-info">{{ formatFlowerCategory(f.category) }}</span></td>
+                <td>{{ formatFlowerUnit(f.unit) }}</td>
                 <td style="color:var(--primary)">&yen;{{ formatPrice(f.sale_price) }}</td>
                 <td>&yen;{{ formatPrice(f.cost_price) }}</td>
                 <td>{{ f.shelf_life_days }}</td>
@@ -86,6 +86,35 @@ const editId = ref(null)
 const pendingFlowerImage = ref(null)
 const imagePreview = ref('')
 const form = ref({ name: '', category: '', unit: '枝', salePrice: 0, costPrice: 0, shelfLifeDays: 7, warnThreshold: 10, image: '' })
+
+const FLOWER_CATEGORY_LABEL_MAP = {
+  ROSE: '玫瑰',
+  LILY: '百合',
+  CARNATION: '康乃馨',
+  TULIP: '郁金香',
+  PACKAGING: '包装耗材',
+  ACCESSORY: '配材'
+}
+
+const FLOWER_UNIT_LABEL_MAP = {
+  stem: '枝',
+  sheet: '张',
+  meter: '米',
+  piece: '个',
+  bunch: '束',
+  box: '盒',
+  kg: '千克'
+}
+
+function formatFlowerCategory(category) {
+  const key = (category || '').toString().toUpperCase()
+  return FLOWER_CATEGORY_LABEL_MAP[key] || category || '-'
+}
+
+function formatFlowerUnit(unit) {
+  const key = (unit || '').toString().toLowerCase()
+  return FLOWER_UNIT_LABEL_MAP[key] || unit || '-'
+}
 
 async function load() {
   loading.value = true

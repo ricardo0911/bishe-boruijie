@@ -1,5 +1,5 @@
 const { get, put } = require("../../utils/request");
-const { pickText, getUserId } = require("../../utils/format");
+const { getUserId } = require("../../utils/format");
 
 Page({
   data: {
@@ -7,7 +7,6 @@ Page({
     saving: false,
     name: "",
     phone: "",
-    preferenceTags: "",
   },
 
   onLoad() {
@@ -28,7 +27,6 @@ Page({
         loading: false,
         name: res.data.name || "",
         phone: res.data.phone || "",
-        preferenceTags: pickText(res.data, ["preferenceTags", "preference_tags"]) || "",
       });
     } catch (err) {
       this.setData({ loading: false });
@@ -42,10 +40,6 @@ Page({
 
   onInputPhone(e) {
     this.setData({ phone: e.detail.value || "" });
-  },
-
-  onInputTags(e) {
-    this.setData({ preferenceTags: e.detail.value || "" });
   },
 
   validateForm() {
@@ -71,7 +65,6 @@ Page({
       const res = await put(`/users/${getUserId()}`, {
         name: (this.data.name || "").trim(),
         phone: (this.data.phone || "").trim(),
-        preferenceTags: (this.data.preferenceTags || "").trim(),
       });
       if (!res.success) {
         wx.showToast({ title: res.message || "保存失败", icon: "none" });

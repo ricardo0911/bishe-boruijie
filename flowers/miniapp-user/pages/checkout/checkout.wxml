@@ -1,19 +1,23 @@
 <view class="container safe-bottom checkout-page">
-  <view class="card form-card">
-    <view class="form-item">
-      <text class="label">收货人</text>
-      <input class="input" value="{{receiverName}}" placeholder="请输入收货人姓名" bindinput="onInputReceiverName" />
+  <view wx:if="{{addressSource === 'local'}}" class="mode-tip">地址服务不可用，已切换本地地址簿</view>
+
+  <!-- 收货地址卡片 -->
+  <view class="card address-card" bindtap="onSelectAddress">
+    <view wx:if="{{address}}" class="address-content">
+      <view class="address-header">
+        <text class="address-name">{{receiverName}}</text>
+        <text class="address-phone">{{receiverPhone}}</text>
+        <view wx:if="{{hasDefaultAddress}}" class="default-tag">默认</view>
+      </view>
+      <view class="address-detail">{{receiverAddress}}</view>
     </view>
-    <view class="form-item">
-      <text class="label">联系电话</text>
-      <input class="input" value="{{receiverPhone}}" type="number" maxlength="11" placeholder="请输入手机号码" bindinput="onInputReceiverPhone" />
+    <view wx:else class="address-empty">
+      <text class="address-empty-text">请选择收货地址</text>
     </view>
-    <view class="form-item">
-      <text class="label">收货地址</text>
-      <input class="input" value="{{receiverAddress}}" placeholder="请输入详细地址" bindinput="onInputReceiverAddress" />
-    </view>
+    <view class="address-arrow">›</view>
   </view>
 
+  <!-- 配送方式卡片 -->
   <view class="card delivery-card">
     <view class="delivery-head">
       <text class="delivery-title">同城配送</text>
@@ -49,6 +53,7 @@
     <view class="delivery-benefit">{{deliveryBenefit}}</view>
   </view>
 
+  <!-- 备注 -->
   <view class="card form-card">
     <view class="form-item no-border">
       <text class="label">备注</text>
@@ -83,6 +88,18 @@
     <text class="empty-title">暂无可结算商品</text>
   </view>
 
+  <!-- 优惠券 -->
+  <view class="card coupon-card" bindtap="onSelectCoupon">
+    <view class="coupon-label">优惠券</view>
+    <view class="coupon-value {{selectedCoupon ? 'coupon-selected' : ''}}">
+      <text wx:if="{{selectedCoupon}}">{{selectedCoupon.type==='PERCENT' ? selectedCoupon.value+'折' : '-¥'+couponDiscount}}</text>
+      <text wx:elif="{{coupons.length > 0}}">{{coupons.length}}张可用</text>
+      <text wx:else>暂无可用</text>
+    </view>
+    <view class="coupon-arrow">›</view>
+  </view>
+
+  <!-- 金额明细 -->
   <view class="card fee-card">
     <view class="fee-row">
       <text>商品金额</text>
@@ -91,6 +108,10 @@
     <view class="fee-row">
       <text>同城配送费</text>
       <text>¥{{deliveryFee}}</text>
+    </view>
+    <view wx:if="{{selectedCoupon}}" class="fee-row discount-row">
+      <text>优惠券</text>
+      <text class="discount-price">-¥{{couponDiscount}}</text>
     </view>
     <view class="fee-row total-row">
       <text>应付金额</text>
@@ -106,6 +127,6 @@
         <text class="price-value">{{payableAmount}}</text>
       </view>
     </view>
-    <button class="btn-primary submit-btn" loading="{{submitting}}" bindtap="onSubmitOrder">提交订单</button>
+    <button class="btn-primary submit-btn" loading="{{submitting || paying}}" bindtap="onSubmitOrder">{{paying ? '支付中...' : '提交订单'}}</button>
   </view>
 </view>

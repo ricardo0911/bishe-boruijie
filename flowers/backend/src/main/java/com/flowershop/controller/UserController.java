@@ -31,7 +31,7 @@ public class UserController {
 
     @PutMapping("/{userId}")
     public ApiResponse<String> updateProfile(@PathVariable Long userId, @RequestBody Map<String, String> body) {
-        userService.updateProfile(userId, body.get("name"), body.get("phone"), body.get("preferenceTags"));
+        userService.updateProfile(userId, body.get("name"), body.get("phone"));
         return ApiResponse.success("更新成功", null);
     }
 

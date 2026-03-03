@@ -9,23 +9,17 @@
         <div class="table-wrapper">
           <table>
             <thead>
-              <tr><th>ID</th><th>OpenID</th><th>姓名</th><th>手机</th><th>积分</th><th>偏好标签</th><th>注册时间</th><th>操作</th></tr>
+              <tr><th>ID</th><th>OpenID</th><th>姓名</th><th>手机</th><th>积分</th><th>注册时间</th><th>操作</th></tr>
             </thead>
             <tbody>
-              <tr v-if="loading"><td colspan="8" class="loading">加载中...</td></tr>
-              <tr v-else-if="users.length === 0"><td colspan="8" class="empty">暂无用户</td></tr>
+              <tr v-if="loading"><td colspan="7" class="loading">加载中...</td></tr>
+              <tr v-else-if="users.length === 0"><td colspan="7" class="empty">暂无用户</td></tr>
               <tr v-for="u in users" :key="u.id" v-else>
                 <td>{{ u.id }}</td>
                 <td style="font-size:12px;color:var(--text-muted)">{{ u.openid }}</td>
                 <td style="font-weight:500">{{ u.name }}</td>
                 <td>{{ u.phone || '-' }}</td>
                 <td><span class="badge badge-warning">{{ u.points }}</span></td>
-                <td>
-                  <template v-if="u.preference_tags">
-                    <span v-for="tag in u.preference_tags.split(',')" :key="tag" class="badge badge-info" style="margin-right:4px">{{ tag }}</span>
-                  </template>
-                  <template v-else>-</template>
-                </td>
                 <td style="font-size:12px;color:var(--text-muted)">{{ u.created_at || '-' }}</td>
                 <td><button class="btn btn-sm btn-outline" @click="viewUser(u.id)">详情</button></td>
               </tr>
@@ -49,7 +43,7 @@
             <tbody>
               <tr v-for="o in userOrders" :key="o.orderNo">
                 <td style="font-family:monospace;font-size:12px">{{ o.orderNo }}</td>
-                <td>{{ o.items.map(i => i.productTitle + '×' + i.quantity).join(', ') }}</td>
+                <td>{{ o.items.map(i => resolveOrderItemName(i) + '×' + i.quantity).join(', ') }}</td>
                 <td style="font-weight:600;color:var(--primary)">&yen;{{ formatPrice(o.totalAmount) }}</td>
                 <td><span class="badge badge-info">{{ statusMap[o.status] || o.status }}</span></td>
                 <td style="font-size:12px">{{ o.createdAt ? o.createdAt.replace('T', ' ').substring(0, 16) : '-' }}</td>
@@ -74,6 +68,11 @@ const users = ref([])
 const loading = ref(true)
 const detailVisible = ref(false)
 const userOrders = ref([])
+
+function resolveOrderItemName(item) {
+  if (!item) return '未命名商品'
+  return item.productTitle || item.productName || item.title || (item.productId ? `商品#${item.productId}` : '未命名商品')
+}
 
 async function load() {
   loading.value = true
