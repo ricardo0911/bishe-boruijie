@@ -1,0 +1,87 @@
+[INFO] Scanning for projects...
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/org/flywaydb/maven-metadata.xml
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/io/github/git-commit-id/maven-metadata.xml
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/org/springframework/boot/maven-metadata.xml
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/org/cyclonedx/maven-metadata.xml
+Progress (1): 250 BProgress (2): 250 B | 256 B                           Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/org/springframework/boot/maven-metadata.xml (250 B at 426 B/s)
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/org/jooq/maven-metadata.xml
+Progress (2): 256 B | 399 BProgress (3): 256 B | 399 B | 244 B                                   Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/org/jooq/maven-metadata.xml (399 B at 3.3 kB/s)
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/org/jetbrains/kotlin/maven-metadata.xml
+Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/org/cyclonedx/maven-metadata.xml (244 B at 337 B/s)
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/org/liquibase/maven-metadata.xml
+Progress (2): 256 B | 376 BProgress (3): 256 B | 376 B | 395 B                                   Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/org/jetbrains/kotlin/maven-metadata.xml (376 B at 4.2 kB/s)
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/org/graalvm/buildtools/maven-metadata.xml
+Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/org/liquibase/maven-metadata.xml (395 B at 3.2 kB/s)
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/org/apache/maven/plugins/maven-metadata.xml
+Progress (2): 256 B | 243 BProgress (3): 256 B | 243 B | 7.3/10 kBProgress (3): 256 B | 243 B | 9.2/10 kBProgress (3): 256 B | 243 B | 10 kB                                       Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/org/graalvm/buildtools/maven-metadata.xml (243 B at 1.9 kB/s)
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/org/codehaus/mojo/maven-metadata.xml
+Progress (3): 256 B | 10 kB | 235 BProgress (4): 256 B | 10 kB | 235 B | 7.3/21 kBProgress (4): 256 B | 10 kB | 235 B | 16/21 kB Progress (4): 256 B | 10 kB | 235 B | 21 kB                                              Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/org/apache/maven/plugins/maven-metadata.xml (10 kB at 67 kB/s)
+Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/org/flywaydb/maven-metadata.xml (235 B at 228 B/s)
+[WARNING] Could not validate integrity of download from https://maven.aliyun.com/repository/public/io/github/git-commit-id/maven-metadata.xml
+org.eclipse.aether.transfer.ChecksumFailureException: Checksum validation failed, no checksums available
+    at org.eclipse.aether.internal.impl.AbstractChecksumPolicy.onNoMoreChecksums (AbstractChecksumPolicy.java:63)
+    at org.eclipse.aether.connector.basic.ChecksumValidator.validate (ChecksumValidator.java:112)
+    at org.eclipse.aether.connector.basic.BasicRepositoryConnector$GetTaskRunner.runTask (BasicRepositoryConnector.java:462)
+    at org.eclipse.aether.connector.basic.BasicRepositoryConnector$TaskRunner.run (BasicRepositoryConnector.java:392)
+    at org.eclipse.aether.util.concurrency.RunnableErrorForwarder.lambda$wrap$0 (RunnableErrorForwarder.java:66)
+    at org.eclipse.aether.connector.basic.BasicRepositoryConnector.get (BasicRepositoryConnector.java:212)
+    at org.eclipse.aether.internal.impl.DefaultMetadataResolver$ResolveTask.run (DefaultMetadataResolver.java:556)
+    at org.eclipse.aether.util.concurrency.RunnableErrorForwarder.lambda$wrap$0 (RunnableErrorForwarder.java:66)
+    at java.util.concurrent.ThreadPoolExecutor.runWorker (ThreadPoolExecutor.java:1136)
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run (ThreadPoolExecutor.java:635)
+    at java.lang.Thread.run (Thread.java:842)
+[WARNING] Checksum validation failed, no checksums available from aliyunmaven for https://maven.aliyun.com/repository/public/io/github/git-commit-id/maven-metadata.xml
+Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/io/github/git-commit-id/maven-metadata.xml (256 B at 239 B/s)
+Downloaded from aliyunmaven: https://maven.aliyun.com/repository/public/org/codehaus/mojo/maven-metadata.xml (21 kB at 130 kB/s)
+[INFO] 
+[INFO] -----------------< com.flowershop:flower-shop-backend >-----------------
+[INFO] Building flower-shop-backend 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.3.8:run (default-cli) > test-compile @ flower-shop-backend >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ flower-shop-backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 33 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ flower-shop-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ flower-shop-backend ---
+[INFO] skip non existing resourceDirectory C:\Users\root\Desktop\±¡î£½à\flowers\backend\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ flower-shop-backend ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] <<< spring-boot:3.3.8:run (default-cli) < test-compile @ flower-shop-backend <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.3.8:run (default-cli) @ flower-shop-backend ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.8)
+
+2026-03-06T18:27:06.474+08:00  INFO 26992 --- [flower-shop-backend] [           main] com.flowershop.FlowerShopApplication     : Starting FlowerShopApplication using Java 17.0.12 with PID 26992 (C:\Users\root\Desktop\±¡î£½à\flowers\backend\target\classes started by root in C:\Users\root\Desktop\±¡î£½à\flowers\backend)
+2026-03-06T18:27:06.476+08:00  INFO 26992 --- [flower-shop-backend] [           main] com.flowershop.FlowerShopApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-03-06T18:27:07.721+08:00  INFO 26992 --- [flower-shop-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 18080 (http)
+2026-03-06T18:27:07.734+08:00  INFO 26992 --- [flower-shop-backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-03-06T18:27:07.735+08:00  INFO 26992 --- [flower-shop-backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
+2026-03-06T18:27:07.796+08:00  INFO 26992 --- [flower-shop-backend] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-03-06T18:27:07.797+08:00  INFO 26992 --- [flower-shop-backend] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1283 ms
+2026-03-06T18:27:08.029+08:00  INFO 26992 --- [flower-shop-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-03-06T18:27:08.170+08:00  INFO 26992 --- [flower-shop-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@1ecf0ac6
+2026-03-06T18:27:08.172+08:00  INFO 26992 --- [flower-shop-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-03-06T18:27:08.820+08:00  INFO 26992 --- [flower-shop-backend] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-03-06T18:27:08.876+08:00  INFO 26992 --- [flower-shop-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 18080 (http) with context path '/'
+2026-03-06T18:27:08.890+08:00  INFO 26992 --- [flower-shop-backend] [           main] com.flowershop.FlowerShopApplication     : Started FlowerShopApplication in 2.78 seconds (process running for 3.059)
+2026-03-06T18:27:15.225+08:00  INFO 26992 --- [flower-shop-backend] [io-18080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-06T18:27:15.225+08:00  INFO 26992 --- [flower-shop-backend] [io-18080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-03-06T18:27:15.226+08:00  INFO 26992 --- [flower-shop-backend] [io-18080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
