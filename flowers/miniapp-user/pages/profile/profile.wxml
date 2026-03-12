@@ -1,7 +1,7 @@
 <view class="container safe-bottom profile-page">
   <view wx:if="{{loading}}" class="card loading-card">
     <view class="loading-dot"></view>
-    <text class="loading-text">正在同步你的花礼档案...</text>
+    <text class="loading-text">{{i18n.loading}}</text>
   </view>
 
   <view class="card hero-card">
@@ -11,124 +11,129 @@
     <view class="hero-top">
       <view class="avatar-wrap">
         <view class="avatar">{{userInitial}}</view>
-        <text class="member-pill">{{member.levelName}}</text>
+        <text class="member-pill" data-action="member" bindtap="onTapAction">{{member.levelName}}</text>
       </view>
 
       <view class="hero-info">
         <view class="name-row">
           <text class="user-name">{{user.name}}</text>
-          <text class="copy-name" bindtap="onCopyUserName">复制昵称</text>
+          <text class="copy-name" bindtap="onCopyUserName">{{i18n.copyName}}</text>
         </view>
-        <text class="user-phone">{{user.phone ? user.phone : "未绑定手机号，建议完善资料"}}</text>
-        <text class="sync-text">最近同步：{{syncText}}</text>
-      </view>
 
-      <view class="edit-btn" bindtap="onEditProfile">编辑</view>
+        <block wx:if="{{user.account}}">
+          <text class="user-phone">{{i18n.accountPrefix}} {{user.account}}</text>
+        </block>
+        <block wx:else>
+          <text class="user-phone">{{i18n.noAccount}}</text>
+        </block>
+
+        <text class="sync-text">{{i18n.syncedPrefix}} {{syncText}}</text>
+      </view>
     </view>
 
     <view class="hero-metrics">
       <view class="metric-item" data-action="orders_all" bindtap="onTapAction">
         <text class="metric-value">{{stats.orderTotal}}</text>
-        <text class="metric-label">全部订单</text>
+        <text class="metric-label">{{i18n.ordersAll}}</text>
       </view>
       <view class="metric-item" data-action="orders_pending" bindtap="onTapAction">
         <text class="metric-value">{{stats.pendingPay}}</text>
-        <text class="metric-label">待支付</text>
+        <text class="metric-label">{{i18n.ordersPending}}</text>
       </view>
       <view class="metric-item" data-action="orders_shipped" bindtap="onTapAction">
         <text class="metric-value">{{stats.shipped}}</text>
-        <text class="metric-label">待收货</text>
+        <text class="metric-label">{{i18n.ordersShipped}}</text>
       </view>
       <view class="metric-item" data-action="cart" bindtap="onTapAction">
         <text class="metric-value">{{stats.cartItems}}</text>
-        <text class="metric-label">购物车件数</text>
+        <text class="metric-label">{{i18n.cartItems}}</text>
       </view>
     </view>
   </view>
 
-  <view class="card growth-card">
+  <view class="card growth-card" data-action="member" bindtap="onTapAction">
     <view class="growth-head">
-      <text class="growth-title">会员成长</text>
-      <text class="growth-points">积分 {{user.points}}</text>
+      <text class="growth-title">{{i18n.growthTitle}}</text>
+      <view class="growth-head-side">
+        <text class="growth-points">{{i18n.pointsPrefix}} {{user.points}}</text>
+        <text class="growth-arrow">></text>
+      </view>
     </view>
     <view class="growth-track">
       <view class="growth-fill" style="width: {{member.progress}}%;"></view>
     </view>
     <text class="growth-tip">{{member.toNextText}}</text>
-
-    <view class="completion-row">
-      <text class="completion-label">资料完善度 {{profileCompletion}}%</text>
-      <text class="completion-action" bindtap="onEditProfile">{{completionActionText}}</text>
-    </view>
-  </view>
-
-  <view class="card action-card">
-    <view class="block-head">
-      <text class="block-title">常用入口</text>
-      <text class="block-sub">一键直达高频操作</text>
-    </view>
-    <view class="action-grid">
-      <view class="action-item" data-action="orders_all" bindtap="onTapAction">
-        <text class="action-icon">单</text>
-        <text class="action-label">全部订单</text>
-        <text class="action-meta">{{stats.orderTotal}} 笔</text>
-      </view>
-      <view class="action-item" data-action="orders_pending" bindtap="onTapAction">
-        <text class="action-icon">付</text>
-        <text class="action-label">待支付</text>
-        <text class="action-meta">{{stats.pendingPay}} 笔</text>
-      </view>
-      <view class="action-item" data-action="orders_shipped" bindtap="onTapAction">
-        <text class="action-icon">收</text>
-        <text class="action-label">待收货</text>
-        <text class="action-meta">{{stats.shipped}} 笔</text>
-      </view>
-      <view class="action-item" data-action="cart" bindtap="onTapAction">
-        <text class="action-icon">车</text>
-        <text class="action-label">购物车</text>
-        <text class="action-meta">{{stats.cartItems}} 件</text>
-      </view>
-      <view class="action-item" data-action="address" bindtap="onTapAction">
-        <text class="action-icon">址</text>
-        <text class="action-label">收货地址</text>
-        <text class="action-meta">{{stats.addressCount}} 条</text>
-      </view>
-      <view class="action-item" data-action="favorite" bindtap="onTapAction">
-        <text class="action-icon">藏</text>
-        <text class="action-label">收藏记录</text>
-        <text class="action-meta">{{stats.favoriteCount}} 个</text>
-      </view>
-    </view>
   </view>
 
   <view class="card menu-card">
-    <view class="menu-item" data-action="edit" bindtap="onTapAction">
+    <view class="menu-item" data-action="favorite" bindtap="onTapAction">
       <view class="menu-main">
-        <text class="menu-title">编辑个人资料</text>
-        <text class="menu-desc">更新昵称、手机与账号资料</text>
+        <text class="menu-title">{{i18n.favoriteTitle}}</text>
+        <text class="menu-desc">{{i18n.favoriteDesc}}</text>
       </view>
-      <text class="menu-arrow">›</text>
+      <view class="menu-side">
+        <text class="menu-badge">{{stats.favoriteCount}} {{i18n.favoriteUnit}}</text>
+        <text class="menu-arrow">></text>
+      </view>
     </view>
+
+    <view class="menu-item" data-action="reviews" bindtap="onTapAction">
+      <view class="menu-main">
+        <text class="menu-title">{{i18n.reviewTitle}}</text>
+        <text class="menu-desc">{{i18n.reviewDesc}}</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" data-action="feedback" bindtap="onTapAction">
+      <view class="menu-main">
+        <text class="menu-title">{{i18n.feedbackTitle}}</text>
+        <text class="menu-desc">{{i18n.feedbackDesc}}</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" data-action="refund" bindtap="onTapAction">
+      <view class="menu-main">
+        <text class="menu-title">{{i18n.refundTitle}}</text>
+        <text class="menu-desc">{{i18n.refundDesc}}</text>
+      </view>
+      <view class="menu-side">
+        <text class="menu-badge">{{stats.refundCount}} 单</text>
+        <text class="menu-arrow">></text>
+      </view>
+    </view>
+
     <view class="menu-item" data-action="address" bindtap="onTapAction">
       <view class="menu-main">
-        <text class="menu-title">地址管理</text>
-        <text class="menu-desc">维护收货地址与默认地址</text>
+        <text class="menu-title">{{i18n.addressTitle}}</text>
+        <text class="menu-desc">{{i18n.addressDesc}}</text>
       </view>
-      <text class="menu-arrow">›</text>
+      <text class="menu-arrow">></text>
     </view>
-    <view class="menu-item" data-action="category" bindtap="onTapAction">
+
+    <view class="menu-item" data-action="change_password" bindtap="onTapAction">
       <view class="menu-main">
-        <text class="menu-title">去选花</text>
-        <text class="menu-desc">按场景快速筛选花束</text>
+        <text class="menu-title">{{i18n.passwordTitle}}</text>
+        <text class="menu-desc">{{i18n.passwordDesc}}</text>
       </view>
-      <text class="menu-arrow">›</text>
+      <text class="menu-arrow">></text>
     </view>
-    <view class="menu-item no-border" data-action="service" bindtap="onTapAction">
+
+    <view class="menu-item" data-action="service" bindtap="onTapAction">
       <view class="menu-main">
-        <text class="menu-title">客服与帮助</text>
-        <text class="menu-desc">常见问题与售后支持</text>
+        <text class="menu-title">{{i18n.serviceTitle}}</text>
+        <text class="menu-desc">{{i18n.serviceDesc}}</text>
       </view>
-      <text class="menu-arrow">›</text>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item logout-item no-border" data-action="logout" bindtap="onTapAction">
+      <view class="menu-main">
+        <text class="menu-title">{{i18n.logoutTitle}}</text>
+        <text class="menu-desc">{{i18n.logoutDesc}}</text>
+      </view>
+      <text class="menu-arrow">></text>
     </view>
   </view>
 </view>

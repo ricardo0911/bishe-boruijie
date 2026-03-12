@@ -6,7 +6,7 @@ function toNumberId(value) {
 }
 
 function buildStoreKey(userId) {
-  return `${ADDRESS_STORE_PREFIX}${userId || "guest"}`;
+  return `${ADDRESS_STORE_PREFIX}${Number(userId) || 0}`;
 }
 
 function buildFullAddress(address) {

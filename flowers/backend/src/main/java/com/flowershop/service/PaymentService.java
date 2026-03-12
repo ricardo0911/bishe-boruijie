@@ -32,13 +32,17 @@ public class PaymentService {
 
     private final JdbcTemplate jdbcTemplate;
     private final InventoryService inventoryService;
+    private final UserPointsService userPointsService;
 
     @Value("${wechat.pay.api-key:}")
     private String wechatApiKey;
 
-    public PaymentService(JdbcTemplate jdbcTemplate, InventoryService inventoryService) {
+    public PaymentService(JdbcTemplate jdbcTemplate,
+                          InventoryService inventoryService,
+                          UserPointsService userPointsService) {
         this.jdbcTemplate = jdbcTemplate;
         this.inventoryService = inventoryService;
+        this.userPointsService = userPointsService;
     }
 
     /**
@@ -125,6 +129,7 @@ public class PaymentService {
         );
 
         // 10. 记录支付流水
+        userPointsService.awardPointsForAmount(order.userId(), order.paymentAmount());
         insertPaymentLog(order.id(), orderNo, request, payAmount);
 
         logger.info("支付回调处理成功, orderNo: {}, transactionId: {}", orderNo, request.getTransactionId());

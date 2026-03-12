@@ -32,6 +32,11 @@ function pickText(data, keys) {
   return "";
 }
 
+function resolveMerchantName(data, fallback = "官方花店") {
+  const text = pickText(data, ["merchantName", "merchant_name", "shopName", "shop_name"]);
+  return text && text.trim() ? text.trim() : fallback;
+}
+
 function resolveImageUrl(url) {
   if (!url) return "";
   const text = String(url).trim();
@@ -62,9 +67,12 @@ function getStatusLabel(status) {
     CREATED: "待支付",
     LOCKED: "待支付",
     PENDING_PAY: "待支付",
-    PAID: "已支付",
-    CONFIRMED: "待发货",
-    SHIPPED: "已发货",
+    PAID: "待发货",
+    CONFIRMED: "待收货",
+    REFUND_REQUESTED: "退款审核中",
+    REFUNDING: "退款处理中",
+    REFUND_FAILED: "退款失败",
+    SHIPPED: "待收货",
     COMPLETED: "已完成",
     CANCELLED: "已取消",
     REFUNDED: "已退款",
@@ -76,6 +84,7 @@ function getStatusClass(status) {
   if (status === "PAID" || status === "COMPLETED") return "status-success";
   if (status === "CANCELLED" || status === "REFUNDED") return "status-danger";
   if (status === "PENDING_PAY") return "status-warning";
+  if (status === "REFUND_REQUESTED" || status === "REFUNDING" || status === "REFUND_FAILED") return "status-warning";
   if (status === "SHIPPED" || status === "CONFIRMED") return "status-info";
   return "status-default";
 }
@@ -100,6 +109,7 @@ module.exports = {
   formatPrice,
   resolvePrice,
   pickText,
+  resolveMerchantName,
   resolveImageUrl,
   getStatusLabel,
   getStatusClass,

@@ -1,17 +1,7 @@
-﻿const { get, post, del } = require("../../utils/request");
-const { formatPrice, resolvePrice, resolveImageUrl, getUserId } = require("../../utils/format");
-
-function normalizeCoupon(coupon) {
-  const item = coupon || {};
-  return {
-    id: Number(item.id || 0),
-    name: item.name || "",
-    type: item.type === "PERCENT" ? "PERCENT" : "CASH",
-    value: Number(item.value || 0),
-    minOrderAmount: Number(item.minOrderAmount || item.min_order_amount || 0),
-    description: item.description || "",
-  };
-}
+const { get, post, del } = require("../../utils/request");
+const { formatPrice, resolvePrice, resolveImageUrl, resolveMerchantName, getUserId } = require("../../utils/format");
+const { requireLogin } = require("../../utils/auth");
+const { resolveMemberDiscount } = require("../../utils/member");
 
 const CATEGORY_META = {
   VALENTINE: { short: "爱" },
@@ -43,12 +33,18 @@ Page({
     fromCart: false,
     orderLines: [],
     orderProducts: [],
+    memberPoints: 0,
+    memberLevelName: "",
+    memberDiscountText: "",
+    hasMemberDiscount: false,
+    memberDiscountAmount: "0.00",
     totalAmount: "0.00",
     deliveryModes: DELIVERY_MODES,
     deliverySlots: DELIVERY_SLOTS,
     selectedDeliveryMode: "STANDARD",
     selectedDeliverySlot: "ASAP",
     deliveryFee: "0.00",
+    discountedGoodsAmount: "0.00",
     payableAmount: "0.00",
     deliveryEta: "预计 4 小时内送达",
     deliveryBenefit: "满199元免标准同城配送费",
@@ -59,13 +55,10 @@ Page({
     receiverPhone: "",
     receiverAddress: "",
     remark: "",
-    coupons: [],
-    selectedCoupon: null,
-    couponDiscount: "0.00",
-    couponSource: "remote",
   },
 
   async onLoad(options) {
+    if (!requireLogin()) return;
     const lines = this.parseOrderLines(options || {});
     if (!lines.length) {
       wx.showToast({ title: "参数错误", icon: "none" });
@@ -78,11 +71,13 @@ Page({
       fromCart: Boolean(options && options.items),
     });
 
-    await Promise.all([this.loadDefaultAddress(), this.loadOrderProducts(), this.loadCoupons()]);
+    await Promise.all([this.loadDefaultAddress(), this.loadMemberProfile()]);
+    await this.loadOrderProducts();
     this.setData({ loading: false });
   },
 
   onShow() {
+    if (!requireLogin()) return;
     const selectedAddress = wx.getStorageSync("checkout_selected_address");
     if (selectedAddress) {
       this.setAddress(selectedAddress);
@@ -194,54 +189,12 @@ Page({
     wx.navigateTo({ url: "/pages/address-list/address-list?from=checkout" });
   },
 
-  async loadCoupons() {
-    const userId = getUserId();
-    if (!userId) {
-      this.setData({ coupons: [], couponSource: "remote" });
-      return;
-    }
-
-    try {
-      const res = await get(`/users/${userId}/coupons/available`);
-      if (res.success && Array.isArray(res.data)) {
-        this.setData({ coupons: res.data.map(normalizeCoupon), couponSource: "remote" });
-        return;
-      }
-
-      this.setData({ coupons: [], selectedCoupon: null, couponSource: "remote" });
-      wx.showToast({ title: res.message || "优惠券加载失败", icon: "none" });
-    } catch (err) {
-      this.setData({ coupons: [], selectedCoupon: null, couponSource: "remote" });
-      wx.showToast({ title: "优惠券服务异常", icon: "none" });
-    }
-  },
-
-  onSelectCoupon() {
-    if (!this.data.coupons.length) {
-      wx.showToast({ title: "暂无可用优惠券", icon: "none" });
-      return;
-    }
-
-    const items = ["不使用优惠券", ...this.data.coupons.map((c) => c.name || `优惠券#${c.id}`)];
-    wx.showActionSheet({
-      itemList: items,
-      success: (res) => {
-        if (res.tapIndex === 0) {
-          this.setData({ selectedCoupon: null }, () => this.refreshDeliverySummary());
-          return;
-        }
-        const coupon = this.data.coupons[res.tapIndex - 1] || null;
-        this.setData({ selectedCoupon: coupon }, () => this.refreshDeliverySummary());
-      },
-    });
-  },
-
   async loadOrderProducts() {
     try {
       const res = await get("/products");
       if (!res.success || !Array.isArray(res.data)) {
         wx.showToast({ title: res.message || "商品加载失败", icon: "none" });
-        this.setData({ orderProducts: [], totalAmount: "0.00" });
+        this.setData({ orderProducts: [], totalAmount: "0.00", discountedGoodsAmount: "0.00" });
         this.refreshDeliverySummary(0);
         return;
       }
@@ -264,6 +217,7 @@ Page({
           id: item.id,
           title: item.title || "未命名商品",
           quantity: line.quantity,
+          merchantName: resolveMerchantName(item),
           categoryShort: meta.short,
           unitPrice: formatPrice(unitPrice),
           lineAmount: formatPrice(lineAmount),
@@ -276,9 +230,29 @@ Page({
       this.refreshDeliverySummary(total);
     } catch (err) {
       wx.showToast({ title: "网络错误", icon: "none" });
-      this.setData({ orderProducts: [], totalAmount: "0.00" });
+      this.setData({ orderProducts: [], totalAmount: "0.00", discountedGoodsAmount: "0.00" });
       this.refreshDeliverySummary(0);
     }
+  },
+
+  async loadMemberProfile() {
+    const userId = getUserId();
+    if (!userId) {
+      this.setData({ memberPoints: 0 });
+      return;
+    }
+
+    try {
+      const res = await get(`/users/${userId}`);
+      if (res.success && res.data) {
+        this.setData({ memberPoints: Number(res.data.points || 0) });
+        return;
+      }
+    } catch (err) {
+      // ignore member preview errors
+    }
+
+    this.setData({ memberPoints: 0 });
   },
 
   getSelectedDeliveryMode() {
@@ -295,22 +269,6 @@ Page({
     return Number(mode.fee || 0);
   },
 
-  calculateCouponDiscount(goodsAmount) {
-    const coupon = this.data.selectedCoupon;
-    if (!coupon) return 0;
-
-    const minAmount = Number(coupon.minOrderAmount || 0);
-    if (minAmount > 0 && goodsAmount < minAmount) return 0;
-
-    if (String(coupon.type || "CASH").toUpperCase() === "PERCENT") {
-      const percent = Number(coupon.value || 0);
-      const discount = goodsAmount * (1 - percent / 100);
-      return Math.max(0, Math.min(discount, goodsAmount));
-    }
-
-    return Math.max(0, Math.min(Number(coupon.value || 0), goodsAmount));
-  },
-
   buildDeliveryBenefit(mode, goodsAmount) {
     if (!mode) return "";
     if (mode.key === "STANDARD") {
@@ -324,13 +282,17 @@ Page({
   refreshDeliverySummary(goodsAmountInput) {
     const goodsAmount = Number.isFinite(goodsAmountInput) ? goodsAmountInput : Number(this.data.totalAmount || 0);
     const mode = this.getSelectedDeliveryMode();
+    const memberDiscount = resolveMemberDiscount(this.data.memberPoints, goodsAmount);
     const fee = this.calculateDeliveryFee(goodsAmount, mode);
-    const discount = this.calculateCouponDiscount(goodsAmount);
-    const payable = Math.max(0, goodsAmount + fee - discount);
+    const payable = Math.max(0, memberDiscount.discountedGoodsAmountValue + fee);
 
     this.setData({
+      memberLevelName: memberDiscount.levelName,
+      memberDiscountText: memberDiscount.discountText,
+      hasMemberDiscount: memberDiscount.hasDiscount,
+      memberDiscountAmount: memberDiscount.discountAmount,
+      discountedGoodsAmount: memberDiscount.discountedGoodsAmount,
       deliveryFee: formatPrice(fee),
-      couponDiscount: formatPrice(discount),
       payableAmount: formatPrice(payable),
       deliveryEta: mode.eta,
       deliveryBenefit: this.buildDeliveryBenefit(mode, goodsAmount),
@@ -366,11 +328,7 @@ Page({
   },
 
   buildOrderRemark() {
-    const userRemark = (this.data.remark || "").trim();
-    const mode = this.getSelectedDeliveryMode();
-    const slot = this.getSelectedDeliverySlot();
-    const deliveryRemark = `配送:${mode.label}|时段:${slot.label}|配送费:${this.data.deliveryFee}`;
-    return userRemark ? `${userRemark} | ${deliveryRemark}` : deliveryRemark;
+    return (this.data.remark || "").trim();
   },
 
   validateForm() {
@@ -392,6 +350,7 @@ Page({
   },
 
   async onSubmitOrder() {
+    if (!requireLogin()) return;
     if (this.data.submitting || this.data.paying) return;
     if (!this.validateForm()) return;
     if (!this.data.orderProducts.length) {
@@ -411,6 +370,8 @@ Page({
         items: orderItems,
         packagingFee: 0,
         deliveryFee: Number(this.data.deliveryFee || 0),
+        deliveryMode: this.data.selectedDeliveryMode,
+        deliverySlot: this.data.selectedDeliverySlot,
         remark: this.buildOrderRemark(),
         receiverName: (this.data.receiverName || "").trim(),
         receiverPhone: (this.data.receiverPhone || "").trim(),
@@ -424,7 +385,8 @@ Page({
         return;
       }
 
-      const orderNo = res.data.orderNo || res.data.id;
+      const createdOrders = Array.isArray(res.data.orders) ? res.data.orders : [];
+      const orderNo = createdOrders.length ? createdOrders[0].orderNo : (res.data.orderNo || res.data.id);
 
       if (this.data.fromCart) {
         try {
@@ -434,16 +396,28 @@ Page({
         }
       }
 
-      this.setData({ submitting: false, paying: false });
-      this.goToPayPage(orderNo);
+      const payableAmount = res.data.totalAmount == null ? this.data.payableAmount : formatPrice(res.data.totalAmount);
+
+      if (createdOrders.length > 1) {
+        wx.setStorageSync("orders_status_filter", "PENDING_PAY");
+        this.setData({ submitting: false, paying: false, payableAmount });
+        wx.showToast({ title: `已拆分${createdOrders.length}笔订单`, icon: "success" });
+        setTimeout(() => {
+          wx.switchTab({ url: "/pages/orders/orders" });
+        }, 600);
+        return;
+      }
+
+      this.setData({ submitting: false, paying: false, payableAmount });
+      this.goToPayPage(orderNo, payableAmount);
     } catch (err) {
       wx.showToast({ title: "网络错误", icon: "none" });
       this.setData({ submitting: false });
     }
   },
 
-  goToPayPage(orderNo) {
-    const query = `orderNo=${encodeURIComponent(orderNo)}&amount=${encodeURIComponent(this.data.payableAmount || "0.00")}`;
+  goToPayPage(orderNo, amount = this.data.payableAmount) {
+    const query = `orderNo=${encodeURIComponent(orderNo)}&amount=${encodeURIComponent(amount || "0.00")}`;
     wx.redirectTo({
       url: `/pages/pay/pay?${query}`,
     });

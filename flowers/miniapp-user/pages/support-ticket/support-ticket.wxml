@@ -1,0 +1,54 @@
+<view class="container safe-bottom">
+  <view class="card hero-card">
+    <text class="hero-title">提交客服工单</text>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">问题类型</text>
+      <text class="section-sub">请选择最接近的一项</text>
+    </view>
+    <view class="type-list">
+      <view
+        wx:for="{{issueTypes}}"
+        wx:key="value"
+        class="type-item {{issueType === item.value ? 'type-item-active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="onSelectIssueType"
+      >
+        {{item.label}}
+      </view>
+    </view>
+  </view>
+
+  <view class="card form-card">
+    <view class="form-item">
+      <text class="form-label">问题标题</text>
+      <input class="form-input" placeholder="例如：订单延迟配送" value="{{title}}" bindinput="onInputTitle" maxlength="120" />
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">关联订单号（选填）</text>
+      <input class="form-input" placeholder="填写订单号可更快处理" value="{{orderNo}}" bindinput="onInputOrderNo" maxlength="64" />
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">联系人</text>
+      <input class="form-input" placeholder="请填写联系人姓名" value="{{contactName}}" bindinput="onInputContactName" maxlength="64" />
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">联系电话</text>
+      <input class="form-input" type="number" placeholder="请填写手机号" value="{{contactPhone}}" bindinput="onInputContactPhone" maxlength="32" />
+    </view>
+
+    <view class="form-item no-border">
+      <text class="form-label">问题描述</text>
+      <textarea class="form-textarea" placeholder="请详细描述问题现象、期望处理方式等" value="{{content}}" bindinput="onInputContent" maxlength="2000" />
+    </view>
+  </view>
+
+  <button class="primary-btn submit-btn" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">
+    {{submitting ? '提交中...' : '提交工单'}}
+  </button>
+</view>

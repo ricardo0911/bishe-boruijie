@@ -10,6 +10,8 @@ public record ProductRecommendView(
     BigDecimal unitPrice,
     String coverImage,
     String status,
-    Integer recentSales
+    Integer recentSales,
+    String merchantAccount,
+    String merchantName
 ) {
 }

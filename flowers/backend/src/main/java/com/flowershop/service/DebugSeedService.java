@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,6 +35,7 @@ public class DebugSeedService {
     @Transactional
     public Map<String, Object> seedVisualData(Integer orderCount) {
         int safeOrderCount = orderCount == null ? 24 : Math.max(6, Math.min(orderCount, 200));
+        List<String> seedMerchantAccounts = buildSeedMerchantAccounts();
 
         ensureFlowerImageColumn();
 
@@ -50,8 +52,10 @@ public class DebugSeedService {
         int productUpserts = 0;
         int bomUpserts = 0;
         List<Long> seededProductIds = new ArrayList<>();
-        for (ProductSeed seed : productSeeds) {
-            Long productId = upsertProduct(seed);
+        for (int index = 0; index < productSeeds.size(); index++) {
+            ProductSeed seed = productSeeds.get(index);
+            String merchantAccount = seedMerchantAccounts.get(index % seedMerchantAccounts.size());
+            Long productId = upsertProduct(seed, merchantAccount);
             productUpserts++;
             seededProductIds.add(productId);
             for (BomSeed bom : seed.bom()) {
@@ -59,6 +63,7 @@ public class DebugSeedService {
             }
         }
         productUpserts += normalizeLegacyProductImagePaths();
+        int inventoryBatchUpserts = seedInventoryBatches();
 
         List<Long> userIds = loadUserIds();
         if (userIds.isEmpty()) {
@@ -178,6 +183,8 @@ public class DebugSeedService {
         result.put("flowerImageUpdates", flowerImageUpdates);
         result.put("productUpserts", productUpserts);
         result.put("bomUpserts", bomUpserts);
+        result.put("inventoryBatchUpserts", inventoryBatchUpserts);
+        result.put("seededMerchantAccounts", seedMerchantAccounts);
         result.put("ordersCreated", ordersCreated);
         result.put("paidOrders", paidOrders);
         result.put("completedOrders", completedOrders);
@@ -186,6 +193,68 @@ public class DebugSeedService {
         result.put("lockedOrders", lockedOrders);
         result.put("seededUsers", userIds.size());
         return result;
+    }
+
+    int seedInventoryBatches() {
+        Map<Long, Integer> targetQuantities = buildInventoryTargetQuantities();
+        jdbcTemplate.update("DELETE FROM inventory_batch WHERE supplier_name LIKE 'DEBUG_STOCK_%'");
+
+        LocalDateTime now = LocalDateTime.now();
+        for (Map.Entry<Long, Integer> entry : targetQuantities.entrySet()) {
+            Long flowerId = entry.getKey();
+            int quantity = entry.getValue();
+            jdbcTemplate.update(
+                """
+                INSERT INTO inventory_batch(
+                    flower_id, supplier_name, quality_status, receipt_time, wilt_time,
+                    original_qty, current_qty, locked_qty, unit_cost, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0,
+                          COALESCE((SELECT cost_price FROM flower_material WHERE id = ?), 0),
+                          NOW(), NOW())
+                """,
+                flowerId,
+                "DEBUG_STOCK_" + flowerId,
+                "A",
+                Timestamp.valueOf(now),
+                Timestamp.valueOf(now.plusDays(resolveShelfLifeDays(flowerId))),
+                quantity,
+                quantity,
+                flowerId
+            );
+        }
+        return targetQuantities.size();
+    }
+
+    private Map<Long, Integer> buildInventoryTargetQuantities() {
+        Map<Long, BigDecimal> totalDosageByFlower = new LinkedHashMap<>();
+        for (ProductSeed seed : buildProductSeeds()) {
+            for (BomSeed bom : seed.bom()) {
+                totalDosageByFlower.merge(bom.flowerId(), bom.dosage(), BigDecimal::add);
+            }
+        }
+
+        Map<Long, Integer> targets = new LinkedHashMap<>();
+        for (Map.Entry<Long, BigDecimal> entry : totalDosageByFlower.entrySet()) {
+            Long flowerId = entry.getKey();
+            int scaledQuantity = entry.getValue()
+                .multiply(BigDecimal.valueOf(4))
+                .setScale(0, RoundingMode.CEILING)
+                .intValue();
+            targets.put(flowerId, Math.max(scaledQuantity, minimumSeedQuantity(flowerId)));
+        }
+        return targets;
+    }
+
+    private int minimumSeedQuantity(Long flowerId) {
+        return isPackagingMaterial(flowerId) ? 120 : 180;
+    }
+
+    private int resolveShelfLifeDays(Long flowerId) {
+        return isPackagingMaterial(flowerId) ? 30 : 9;
+    }
+
+    private boolean isPackagingMaterial(Long flowerId) {
+        return flowerId != null && flowerId >= 5L;
     }
 
     private int normalizeLegacyFlowerImagePaths() {
@@ -237,12 +306,25 @@ public class DebugSeedService {
         );
     }
 
-    private Long upsertProduct(ProductSeed seed) {
+    private List<String> buildSeedMerchantAccounts() {
+        return List.of("merchant", "merchant-a", "merchant-b");
+    }
+
+    private Long upsertProduct(ProductSeed seed, String merchantAccount) {
         List<Long> ids = jdbcTemplate.query(
-            "SELECT id FROM product WHERE title = ? LIMIT 1",
+            "SELECT id FROM product WHERE title = ? AND merchant_account = ? LIMIT 1",
             (rs, rowNum) -> rs.getLong("id"),
-            seed.title()
+            seed.title(),
+            merchantAccount
         );
+
+        if (ids.isEmpty()) {
+            ids = jdbcTemplate.query(
+                "SELECT id FROM product WHERE title = ? AND (merchant_account IS NULL OR TRIM(merchant_account) = '') LIMIT 1",
+                (rs, rowNum) -> rs.getLong("id"),
+                seed.title()
+            );
+        }
 
         if (!ids.isEmpty()) {
             Long id = ids.get(0);
@@ -254,6 +336,7 @@ public class DebugSeedService {
                     delivery_fee = ?,
                     description = ?,
                     cover_image = ?,
+                    merchant_account = ?,
                     status = 'ON_SALE',
                     updated_at = NOW()
                 WHERE id = ?
@@ -263,6 +346,7 @@ public class DebugSeedService {
                 seed.deliveryFee(),
                 seed.description(),
                 seed.coverImage(),
+                merchantAccount,
                 id
             );
             return id;
@@ -272,8 +356,8 @@ public class DebugSeedService {
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(
                 """
-                INSERT INTO product(title, type, category, base_price, packaging_fee, delivery_fee, description, cover_image, status, created_at, updated_at)
-                VALUES (?, 'BOUQUET', ?, 0, ?, ?, ?, ?, 'ON_SALE', NOW(), NOW())
+                INSERT INTO product(title, type, category, base_price, packaging_fee, delivery_fee, description, cover_image, merchant_account, status, created_at, updated_at)
+                VALUES (?, 'BOUQUET', ?, 0, ?, ?, ?, ?, ?, 'ON_SALE', NOW(), NOW())
                 """,
                 Statement.RETURN_GENERATED_KEYS
             );
@@ -283,6 +367,7 @@ public class DebugSeedService {
             ps.setBigDecimal(4, seed.deliveryFee());
             ps.setString(5, seed.description());
             ps.setString(6, seed.coverImage());
+            ps.setString(7, merchantAccount);
             return ps;
         }, keyHolder);
         return keyHolder.getKey().longValue();

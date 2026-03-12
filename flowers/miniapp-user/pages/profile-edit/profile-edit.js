@@ -1,5 +1,6 @@
 const { get, put } = require("../../utils/request");
 const { getUserId } = require("../../utils/format");
+const { requireLogin, syncUserSession } = require("../../utils/auth");
 
 Page({
   data: {
@@ -10,6 +11,7 @@ Page({
   },
 
   onLoad() {
+    if (!requireLogin()) return;
     this.loadProfile();
   },
 

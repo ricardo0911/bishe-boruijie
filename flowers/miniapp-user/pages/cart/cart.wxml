@@ -24,6 +24,7 @@
       <!-- 商品信息 -->
       <view class="item-main">
         <text class="item-title">{{item.productTitle}}</text>
+        <text class="item-merchant">{{item.merchantName}}</text>
         <text wx:if="{{item.spec}}" class="item-spec">{{item.spec}}</text>
         <view class="item-bottom">
           <view class="price-row">
@@ -69,6 +70,7 @@
           <text wx:else class="recommend-image-text">花</text>
         </view>
         <text class="recommend-item-title">{{item.title}}</text>
+        <text class="recommend-item-merchant">{{item.merchantName}}</text>
         <view class="recommend-price">
           <text class="price-symbol">¥</text>
           <text class="price-value">{{item.unitPrice}}</text>

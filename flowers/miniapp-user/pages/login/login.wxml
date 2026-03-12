@@ -1,0 +1,30 @@
+<view class="page-shell">
+  <view class="bg-scene">
+    <view class="bg-orb orb-left"></view>
+    <view class="bg-orb orb-right"></view>
+    <view class="bg-orb orb-bottom"></view>
+    <view class="bg-petal petal-a"></view>
+    <view class="bg-petal petal-b"></view>
+    <view class="bg-petal petal-c"></view>
+  </view>
+
+  <view class="hero-card">
+    <text class="hero-tag">FLOWER · LOVE · MOMENT</text>
+    <text class="hero-title">登录花礼小程序</text>
+    <text class="hero-desc">登录后才能浏览商品、下单、收藏与查看订单。</text>
+  </view>
+
+  <view class="form-card">
+    <view class="form-item">
+      <text class="label">账号</text>
+      <input class="input" placeholder="请输入 4-32 位账号" value="{{account}}" bindinput="onInputAccount" maxlength="32" />
+    </view>
+    <view class="form-item no-border">
+      <text class="label">密码</text>
+      <input class="input" password placeholder="请输入密码" value="{{password}}" bindinput="onInputPassword" maxlength="32" />
+    </view>
+  </view>
+
+  <button class="primary-btn" loading="{{submitting}}" bindtap="onSubmit">登录</button>
+  <button class="ghost-btn" bindtap="onGoRegister">没有账号？去注册</button>
+</view>

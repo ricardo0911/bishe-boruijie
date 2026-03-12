@@ -1,7 +1,6 @@
 <view class="container safe-bottom checkout-page">
-  <view wx:if="{{addressSource === 'local'}}" class="mode-tip">地址服务不可用，已切换本地地址簿</view>
+  <view wx:if="{{addressSource === 'local'}}" class="mode-tip">地址服务暂不可用，已切换为本地地址簿</view>
 
-  <!-- 收货地址卡片 -->
   <view class="card address-card" bindtap="onSelectAddress">
     <view wx:if="{{address}}" class="address-content">
       <view class="address-header">
@@ -17,13 +16,12 @@
     <view class="address-arrow">›</view>
   </view>
 
-  <!-- 配送方式卡片 -->
   <view class="card delivery-card">
     <view class="delivery-head">
       <text class="delivery-title">同城配送</text>
       <text class="delivery-eta">{{deliveryEta}}</text>
     </view>
-    <view class="delivery-open-tag">已开通：同城快递</view>
+    <view class="delivery-open-tag">已开通：同城配送</view>
 
     <view class="delivery-mode-row">
       <view
@@ -53,7 +51,6 @@
     <view class="delivery-benefit">{{deliveryBenefit}}</view>
   </view>
 
-  <!-- 备注 -->
   <view class="card form-card">
     <view class="form-item no-border">
       <text class="label">备注</text>
@@ -73,6 +70,7 @@
       </view>
       <view class="item-main">
         <text class="item-title">{{item.title}}</text>
+        <text class="item-merchant">{{item.merchantName}}</text>
         <view class="item-bottom">
           <view class="price-row">
             <text class="price-symbol">¥</text>
@@ -88,30 +86,18 @@
     <text class="empty-title">暂无可结算商品</text>
   </view>
 
-  <!-- 优惠券 -->
-  <view class="card coupon-card" bindtap="onSelectCoupon">
-    <view class="coupon-label">优惠券</view>
-    <view class="coupon-value {{selectedCoupon ? 'coupon-selected' : ''}}">
-      <text wx:if="{{selectedCoupon}}">{{selectedCoupon.type==='PERCENT' ? selectedCoupon.value+'折' : '-¥'+couponDiscount}}</text>
-      <text wx:elif="{{coupons.length > 0}}">{{coupons.length}}张可用</text>
-      <text wx:else>暂无可用</text>
-    </view>
-    <view class="coupon-arrow">›</view>
-  </view>
-
-  <!-- 金额明细 -->
   <view class="card fee-card">
     <view class="fee-row">
       <text>商品金额</text>
       <text>¥{{totalAmount}}</text>
     </view>
+    <view wx:if="{{hasMemberDiscount}}" class="fee-row">
+      <text>{{memberLevelName}}折扣（{{memberDiscountText}}）</text>
+      <text class="discount-price">-¥{{memberDiscountAmount}}</text>
+    </view>
     <view class="fee-row">
       <text>同城配送费</text>
       <text>¥{{deliveryFee}}</text>
-    </view>
-    <view wx:if="{{selectedCoupon}}" class="fee-row discount-row">
-      <text>优惠券</text>
-      <text class="discount-price">-¥{{couponDiscount}}</text>
     </view>
     <view class="fee-row total-row">
       <text>应付金额</text>

@@ -1,10 +1,102 @@
 -- ============================================
--- 花店管理系统 数据库初始化脚本
+-- ????????? ????????????
 -- ============================================
 
 CREATE DATABASE IF NOT EXISTS flower_shop DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE flower_shop;
 SET NAMES utf8mb4;
+
+-- ----------------------------
+-- 17. ?????
+-- ----------------------------
+DROP TABLE IF EXISTS `auth_account`;
+CREATE TABLE `auth_account` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+    `login_type` VARCHAR(16) NOT NULL,
+    `account` VARCHAR(64) NOT NULL,
+    `password_digest` VARCHAR(255) NOT NULL,
+    `display_name` VARCHAR(64) NOT NULL,
+    `role_code` VARCHAR(32) NOT NULL,
+    `enabled` TINYINT NOT NULL DEFAULT 1,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY `uk_auth_login_account` (`login_type`, `account`),
+    KEY `idx_auth_role` (`role_code`),
+    KEY `idx_auth_enabled` (`enabled`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='??????';
+
+-- ----------------------------
+-- 18. ?????
+-- ----------------------------
+DROP TABLE IF EXISTS `auth_session`;
+CREATE TABLE `auth_session` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+    `token` VARCHAR(128) NOT NULL,
+    `login_type` VARCHAR(16) NOT NULL,
+    `account` VARCHAR(64) NOT NULL,
+    `role_code` VARCHAR(32) NOT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY `uk_auth_session_token` (`token`),
+    KEY `idx_auth_session_account` (`login_type`, `account`),
+    KEY `idx_auth_session_role` (`role_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='??????';
+
+-- ----------------------------
+-- 19. ?????
+-- ----------------------------
+DROP TABLE IF EXISTS `after_sale_record`;
+CREATE TABLE `after_sale_record` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+    `refund_no` VARCHAR(32) NOT NULL,
+    `order_no` VARCHAR(32) NOT NULL,
+    `order_id` BIGINT NOT NULL,
+    `refund_amount` DECIMAL(12,2) NOT NULL,
+    `reason` VARCHAR(255) NOT NULL,
+    `description` TEXT DEFAULT NULL,
+    `evidence_images` VARCHAR(2000) DEFAULT NULL,
+    `status` VARCHAR(32) NOT NULL,
+    `reject_reason` VARCHAR(500) DEFAULT NULL,
+    `transaction_id` VARCHAR(64) DEFAULT NULL,
+    `apply_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `audit_time` DATETIME DEFAULT NULL,
+    `refund_time` DATETIME DEFAULT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY `uk_refund_no` (`refund_no`),
+    KEY `idx_after_sale_order_id` (`order_id`),
+    KEY `idx_after_sale_order_no` (`order_no`),
+    KEY `idx_after_sale_status` (`status`),
+    KEY `idx_after_sale_apply_time` (`apply_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='??????';
+
+-- ----------------------------
+-- 20. ?????
+-- ----------------------------
+DROP TABLE IF EXISTS `support_ticket`;
+CREATE TABLE `support_ticket` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+    `ticket_no` VARCHAR(32) NOT NULL,
+    `user_id` BIGINT NOT NULL,
+    `order_no` VARCHAR(64) DEFAULT NULL,
+    `issue_type` VARCHAR(32) NOT NULL,
+    `title` VARCHAR(120) NOT NULL,
+    `content` TEXT NOT NULL,
+    `contact_name` VARCHAR(64) NOT NULL,
+    `contact_phone` VARCHAR(32) NOT NULL,
+    `status` VARCHAR(32) NOT NULL,
+    `handle_note` TEXT DEFAULT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `processed_at` DATETIME DEFAULT NULL,
+    UNIQUE KEY `uk_support_ticket_no` (`ticket_no`),
+    KEY `idx_support_ticket_status` (`status`),
+    KEY `idx_support_ticket_user` (`user_id`),
+    KEY `idx_support_ticket_order_no` (`order_no`),
+    KEY `idx_support_ticket_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='??????';
+
+
 
 -- ----------------------------
 -- 1. 用户表
@@ -436,3 +528,19 @@ INSERT INTO `system_config` (`config_key`, `config_value`, `description`) VALUES
 ('inventory_scan_interval', '3600', '库存扫描间隔(秒)'),
 ('wilt_warning_days', '2', '枯萎预警天数'),
 ('site_name', '花语心愿', '站点名称');
+
+-- Miniapp customer accounts
+CREATE TABLE IF NOT EXISTS `user_customer` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `openid` VARCHAR(128) DEFAULT NULL COMMENT '微信OpenID',
+    `account` VARCHAR(64) DEFAULT NULL COMMENT '登录账号',
+    `password_digest` VARCHAR(255) DEFAULT NULL COMMENT '密码摘要',
+    `name` VARCHAR(64) NOT NULL COMMENT '昵称',
+    `phone` VARCHAR(20) DEFAULT NULL COMMENT '手机号',
+    `points` INT NOT NULL DEFAULT 0 COMMENT '积分',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_customer_account` (`account`),
+    KEY `idx_user_customer_openid` (`openid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='小程序用户';

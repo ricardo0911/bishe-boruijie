@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS support_ticket (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    ticket_no VARCHAR(32) NOT NULL,
+    user_id BIGINT NOT NULL,
+    order_no VARCHAR(64) DEFAULT NULL,
+    issue_type VARCHAR(32) NOT NULL,
+    title VARCHAR(120) NOT NULL,
+    content TEXT NOT NULL,
+    contact_name VARCHAR(64) NOT NULL,
+    contact_phone VARCHAR(32) NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    handle_note TEXT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    processed_at DATETIME DEFAULT NULL,
+    UNIQUE KEY uk_support_ticket_no (ticket_no),
+    KEY idx_support_ticket_status (status),
+    KEY idx_support_ticket_user (user_id),
+    KEY idx_support_ticket_order_no (order_no),
+    KEY idx_support_ticket_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='客服工单表';

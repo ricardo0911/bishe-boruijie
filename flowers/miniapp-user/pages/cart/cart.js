@@ -1,5 +1,6 @@
 const { get, post, del } = require("../../utils/request");
-const { formatPrice, resolvePrice, pickText, resolveImageUrl, getUserId } = require("../../utils/format");
+const { formatPrice, resolvePrice, pickText, resolveImageUrl, resolveMerchantName, getUserId } = require("../../utils/format");
+const { requireLogin } = require("../../utils/auth");
 
 const CART_CACHE_KEY = "cart_cache";
 const RECOMMEND_CACHE_KEY = "cart_recommend_cache";
@@ -17,11 +18,16 @@ Page({
   },
 
   onShow() {
+    if (!requireLogin("/pages/cart/cart")) return;
     this.loadCart();
     this.loadRecommendProducts();
   },
 
   onPullDownRefresh() {
+    if (!requireLogin("/pages/cart/cart")) {
+      wx.stopPullDownRefresh();
+      return;
+    }
     Promise.all([
       this.loadCart(),
       this.loadRecommendProducts(),
@@ -32,6 +38,10 @@ Page({
   async loadCart() {
     this.setData({ loading: true });
     const userId = getUserId();
+    if (!userId) {
+      this.setData({ loading: false, items: [] });
+      return;
+    }
 
     try {
       // 先读取本地缓存
@@ -106,6 +116,7 @@ Page({
       productId: Number(item.productId || item.product_id),
       productTitle: pickText(item, ["productTitle", "product_title", "title"]),
       spec: item.spec || item.specification || "",
+      merchantName: resolveMerchantName(item),
       quantity: Number(item.quantity || 0),
       unitPrice: formatPrice(resolvePrice(item)),
       unitPriceNum: resolvePrice(item),
@@ -119,6 +130,7 @@ Page({
     return {
       id: item.id,
       title: item.title,
+      merchantName: resolveMerchantName(item),
       unitPrice: formatPrice(resolvePrice(item)),
       unitPriceNum: resolvePrice(item),
       coverImage: resolveImageUrl(item.coverImage || item.cover_image || item.image || ""),

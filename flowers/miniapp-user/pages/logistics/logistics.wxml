@@ -1,0 +1,98 @@
+<view class="page">
+  <block wx:if="{{loading}}">
+    <view class="state-card">物流信息加载中...</view>
+  </block>
+
+  <block wx:elif="{{!order}}">
+    <view class="state-card">暂无物流信息</view>
+  </block>
+
+  <block wx:else>
+    <view class="hero-card">
+      <text class="hero-title">{{order.statusLabel}}</text>
+      <text class="hero-subtitle">{{order.trackingCompany}}</text>
+      <text class="hero-desc">{{order.trackingNo ? ('运单号：' + order.trackingNo) : '商家已发货，暂未录入运单号'}}</text>
+    </view>
+
+    <view class="card">
+      <view class="card-title">配送信息</view>
+      <view class="info-row">
+        <text class="info-label">物流公司</text>
+        <text class="info-value">{{order.trackingCompany}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">运单号</text>
+        <view class="tracking-wrap">
+          <text class="info-value">{{order.trackingNo || '暂未录入'}}</text>
+          <text wx:if="{{order.trackingNo}}" class="copy-link" bindtap="onCopyTrackingNo">复制</text>
+        </view>
+      </view>
+      <view class="info-row">
+        <text class="info-label">发货时间</text>
+        <text class="info-value">{{order.shippedAt || '待商家回填'}}</text>
+      </view>
+      <view class="info-row" wx:if="{{order.deliveryModeLabel}}">
+        <text class="info-label">配送方式</text>
+        <text class="info-value">{{order.deliveryModeLabel}}</text>
+      </view>
+      <view class="info-row" wx:if="{{order.deliverySlotLabel}}">
+        <text class="info-label">配送时段</text>
+        <text class="info-value">{{order.deliverySlotLabel}}</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">物流轨迹</view>
+      <block wx:for="{{timeline}}" wx:key="key">
+        <view class="timeline-item">
+          <view class="timeline-line"></view>
+          <view class="timeline-dot {{item.active ? 'timeline-dot-active' : ''}} {{item.current ? 'timeline-dot-current' : ''}}"></view>
+          <view class="timeline-content">
+            <view class="timeline-head">
+              <text class="timeline-title">{{item.title}}</text>
+              <text class="timeline-time">{{item.time}}</text>
+            </view>
+            <text class="timeline-desc {{item.active ? 'timeline-desc-active' : ''}}">{{item.desc}}</text>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <view class="card">
+      <view class="card-title">收货信息</view>
+      <text class="receiver-line">{{order.receiverName}} {{order.receiverPhone}}</text>
+      <text class="receiver-line receiver-address">{{order.receiverAddress}}</text>
+      <text wx:if="{{order.remark}}" class="receiver-remark">备注：{{order.remark}}</text>
+    </view>
+
+    <view wx:if="{{order.canRefund}}" class="bottom-placeholder"></view>
+  </block>
+
+  <view wx:if="{{order && order.canRefund}}" class="bottom-actions">
+    <button class="action-btn action-btn-primary" bindtap="onRefund" loading="{{actionLoading}}">
+      申请退款
+    </button>
+  </view>
+
+  <view wx:if="{{showRefundDialog}}" class="refund-dialog-mask" bindtap="onCloseRefundDialog">
+    <view class="refund-dialog" catchtap="noop" catchtouchmove="noop">
+      <view class="refund-dialog-header">
+        <text class="refund-dialog-title">申请退款</text>
+        <text class="refund-dialog-subtitle">请填写退款理由，提交后将进入商家审核。</text>
+      </view>
+      <textarea
+        class="refund-dialog-textarea"
+        value="{{refundReason}}"
+        placeholder="请填写退款理由"
+        maxlength="500"
+        auto-height
+        focus="{{showRefundDialog}}"
+        bindinput="onInputRefundReason"
+      />
+      <view class="refund-dialog-footer">
+        <button class="refund-dialog-btn refund-dialog-cancel" bindtap="onCloseRefundDialog" disabled="{{actionLoading}}">取消</button>
+        <button class="refund-dialog-btn refund-dialog-confirm" bindtap="onSubmitRefund" loading="{{actionLoading}}">提交申请</button>
+      </view>
+    </view>
+  </view>
+</view>

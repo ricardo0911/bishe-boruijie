@@ -9,6 +9,9 @@ public record ProductView(
     String category,
     BigDecimal unitPrice,
     String coverImage,
-    String status
+    String status,
+    String merchantAccount,
+    String merchantName,
+    String compositionSummary
 ) {
 }

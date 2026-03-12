@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "微信支付"
+  "navigationBarTitleText": "微信支付",
+  "navigationBarBackgroundColor": "#ededed",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#ededed"
 }

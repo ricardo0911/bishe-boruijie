@@ -1,6 +1,7 @@
 package com.flowershop.service;
 
 import com.flowershop.dto.CancelOrderRequest;
+import com.flowershop.dto.ConfirmOrderRequest;
 import com.flowershop.dto.CreateOrderRequest;
 import com.flowershop.dto.CreateOrderResponse;
 import com.flowershop.dto.OrderDetailResponse;
@@ -10,6 +11,7 @@ import com.flowershop.dto.OrderSummaryResponse;
 import com.flowershop.dto.PayOrderRequest;
 import com.flowershop.dto.SimpleActionResponse;
 import com.flowershop.exception.BusinessException;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -41,11 +43,54 @@ public class OrderService {
     private final JdbcTemplate jdbcTemplate;
     private final ProductService productService;
     private final InventoryService inventoryService;
+    private final UserPointsService userPointsService;
+    private final MemberBenefitsService memberBenefitsService;
 
-    public OrderService(JdbcTemplate jdbcTemplate, ProductService productService, InventoryService inventoryService) {
+    public OrderService(JdbcTemplate jdbcTemplate,
+                        ProductService productService,
+                        InventoryService inventoryService,
+                        UserPointsService userPointsService,
+                        MemberBenefitsService memberBenefitsService) {
         this.jdbcTemplate = jdbcTemplate;
         this.productService = productService;
         this.inventoryService = inventoryService;
+        this.userPointsService = userPointsService;
+        this.memberBenefitsService = memberBenefitsService;
+    }
+
+    @PostConstruct
+    public void initializeOrderSchema() {
+        if (!tableExists("customer_order")) {
+            return;
+        }
+        addColumnIfMissing(
+            "delivery_fee",
+            "ALTER TABLE customer_order ADD COLUMN delivery_fee DECIMAL(10,2) DEFAULT 0.00 COMMENT 'delivery fee' AFTER payment_amount"
+        );
+        addColumnIfMissing(
+            "delivery_mode",
+            "ALTER TABLE customer_order ADD COLUMN delivery_mode VARCHAR(32) DEFAULT NULL COMMENT 'delivery mode code' AFTER receiver_address"
+        );
+        addColumnIfMissing(
+            "delivery_slot",
+            "ALTER TABLE customer_order ADD COLUMN delivery_slot VARCHAR(32) DEFAULT NULL COMMENT 'delivery slot code' AFTER delivery_mode"
+        );
+        addColumnIfMissing(
+            "tracking_company",
+            "ALTER TABLE customer_order ADD COLUMN tracking_company VARCHAR(64) DEFAULT NULL COMMENT '物流公司' AFTER lock_expire_at"
+        );
+        addColumnIfMissing(
+            "tracking_no",
+            "ALTER TABLE customer_order ADD COLUMN tracking_no VARCHAR(64) DEFAULT NULL COMMENT '运单号' AFTER tracking_company"
+        );
+        addColumnIfMissing(
+            "shipped_at",
+            "ALTER TABLE customer_order ADD COLUMN shipped_at DATETIME DEFAULT NULL COMMENT '发货时间' AFTER tracking_no"
+        );
+        addColumnIfMissing(
+            "completed_at",
+            "ALTER TABLE customer_order ADD COLUMN completed_at DATETIME DEFAULT NULL COMMENT '完成时间' AFTER shipped_at"
+        );
     }
 
     private int getLockMinutes() {
@@ -64,23 +109,28 @@ public class OrderService {
     public CreateOrderResponse createOrder(CreateOrderRequest request) {
         ensureUserExists(request.getUserId());
 
-        String orderNo = generateOrderNo();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime lockExpireAt = now.plusMinutes(getLockMinutes());
-        String remark = request.getRemark();
-        Long orderId = insertOrder(orderNo, request.getUserId(), remark, lockExpireAt,
-                request.getReceiverName(), request.getReceiverPhone(), request.getReceiverAddress());
+        String remark = normalizeNullableText(request.getRemark());
+        String deliveryMode = normalizeNullableCode(request.getDeliveryMode());
+        String deliverySlot = normalizeNullableCode(request.getDeliverySlot());
 
-        BigDecimal itemAmount = BigDecimal.ZERO;
-        Map<Long, BigDecimal> flowerDemand = new LinkedHashMap<>();
+        Map<String, MerchantOrderDraft> orderDrafts = new LinkedHashMap<>();
+        BigDecimal totalItemAmount = BigDecimal.ZERO;
 
         for (CreateOrderRequest.OrderLine line : request.getItems()) {
             ProductService.ProductSnapshot product = productService.getProductSnapshot(line.getProductId());
+            String merchantKey = resolveMerchantKey(product.merchantAccount());
+            MerchantOrderDraft draft = orderDrafts.computeIfAbsent(
+                merchantKey,
+                key -> new MerchantOrderDraft(normalizeNullableText(product.merchantAccount()), normalizeNullableText(product.merchantName()))
+            );
+
             BigDecimal unitPrice = productService.calculateAutoUnitPrice(product.id());
             BigDecimal lineAmount = unitPrice.multiply(BigDecimal.valueOf(line.getQuantity()));
-
-            insertOrderItem(orderId, product.id(), product.title(), unitPrice, line.getQuantity(), lineAmount);
-            itemAmount = itemAmount.add(lineAmount);
+            draft.lines().add(new ResolvedOrderLine(product.id(), product.title(), unitPrice, line.getQuantity(), lineAmount));
+            draft.itemAmount(draft.itemAmount().add(lineAmount));
+            totalItemAmount = totalItemAmount.add(lineAmount);
 
             List<ProductService.BomDemand> demands = productService.getBomDemands(product.id());
             if (demands.isEmpty()) {
@@ -88,28 +138,87 @@ public class OrderService {
             }
             for (ProductService.BomDemand demand : demands) {
                 BigDecimal needQty = demand.dosage().multiply(BigDecimal.valueOf(line.getQuantity()));
-                flowerDemand.merge(demand.flowerId(), needQty, BigDecimal::add);
+                draft.flowerDemand().merge(demand.flowerId(), needQty, BigDecimal::add);
             }
         }
 
-        BigDecimal totalAmount = itemAmount
-            .add(safeAmount(request.getPackagingFee()))
-            .add(safeAmount(request.getDeliveryFee()))
+        if (orderDrafts.isEmpty()) {
+            throw new BusinessException("ORDER_ITEMS_EMPTY", "\u8ba2\u5355\u5546\u54c1\u4e0d\u80fd\u4e3a\u7a7a");
+        }
+
+        BigDecimal totalPackagingFee = normalizeFee(safeAmount(request.getPackagingFee()));
+        BigDecimal totalDeliveryFee = normalizeFee(safeAmount(request.getDeliveryFee()));
+
+        BigDecimal allocatedPackagingFee = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal allocatedDeliveryFee = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+
+        List<CreateOrderResponse.SubOrder> subOrders = new ArrayList<>();
+        int groupIndex = 0;
+        int groupCount = orderDrafts.size();
+
+        for (MerchantOrderDraft draft : orderDrafts.values()) {
+            groupIndex += 1;
+            String orderNo = generateOrderNo();
+            Long orderId = insertOrder(orderNo, request.getUserId(), remark, lockExpireAt,
+                request.getReceiverName(), request.getReceiverPhone(), request.getReceiverAddress());
+
+            for (ResolvedOrderLine line : draft.lines()) {
+                insertOrderItem(orderId, line.productId(), line.productTitle(), line.unitPrice(), line.quantity(), line.lineAmount());
+            }
+
+            boolean isLast = groupIndex == groupCount;
+            BigDecimal packagingFee = allocateFee(totalPackagingFee, draft.itemAmount(), totalItemAmount, allocatedPackagingFee, isLast);
+            BigDecimal deliveryFee = allocateFee(totalDeliveryFee, draft.itemAmount(), totalItemAmount, allocatedDeliveryFee, isLast);
+            allocatedPackagingFee = allocatedPackagingFee.add(packagingFee);
+            allocatedDeliveryFee = allocatedDeliveryFee.add(deliveryFee);
+
+            MemberBenefitsService.OrderBenefit memberBenefit = memberBenefitsService.resolveOrderBenefit(
+                request.getUserId(),
+                draft.itemAmount()
+            );
+
+            BigDecimal totalAmount = memberBenefit.discountedGoodsAmount()
+                .add(packagingFee)
+                .add(deliveryFee)
+                .setScale(2, RoundingMode.HALF_UP);
+
+            jdbcTemplate.update(
+                """
+                UPDATE customer_order
+                SET total_amount = ?,
+                    payment_amount = ?,
+                    delivery_fee = ?,
+                    delivery_mode = ?,
+                    delivery_slot = ?,
+                    status = 'LOCKED',
+                    updated_at = NOW()
+                WHERE id = ?
+                """,
+                totalAmount,
+                totalAmount,
+                deliveryFee,
+                deliveryMode,
+                deliverySlot,
+                orderId
+            );
+
+            inventoryService.lockMaterials(orderId, orderNo, draft.flowerDemand(), lockExpireAt);
+            subOrders.add(new CreateOrderResponse.SubOrder(
+                orderNo,
+                "LOCKED",
+                totalAmount,
+                lockExpireAt,
+                draft.merchantAccount(),
+                draft.merchantName()
+            ));
+        }
+
+        CreateOrderResponse.SubOrder first = subOrders.get(0);
+        BigDecimal totalAmount = subOrders.stream()
+            .map(CreateOrderResponse.SubOrder::totalAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
             .setScale(2, RoundingMode.HALF_UP);
-
-        jdbcTemplate.update(
-            """
-            UPDATE customer_order
-            SET total_amount = ?, payment_amount = ?, status = 'LOCKED', updated_at = NOW()
-            WHERE id = ?
-            """,
-            totalAmount,
-            totalAmount,
-            orderId
-        );
-
-        inventoryService.lockMaterials(orderId, orderNo, flowerDemand, lockExpireAt);
-        return new CreateOrderResponse(orderNo, "LOCKED", totalAmount, lockExpireAt);
+        return new CreateOrderResponse(first.orderNo(), first.status(), totalAmount, first.lockExpireAt(), subOrders);
     }
 
     public OrderDetailResponse getOrderDetail(String orderNo) {
@@ -154,18 +263,29 @@ public class OrderService {
         );
 
         return new OrderDetailResponse(
+            snapshot.id(),
             snapshot.orderNo(),
             snapshot.userId(),
             snapshot.status(),
             snapshot.totalAmount(),
             snapshot.paymentAmount(),
-            snapshot.receiverName(),
+            snapshot.deliveryFee(),
+            resolveReceiverDisplayName(
+                snapshot.receiverName(),
+                loadUserDisplayName(snapshot.userId()),
+                snapshot.receiverPhone()
+            ),
             snapshot.receiverPhone(),
             snapshot.receiverAddress(),
+            snapshot.deliveryMode(),
+            snapshot.deliverySlot(),
             snapshot.createdAt(),
             snapshot.payTime(),
             snapshot.cancelTime(),
             snapshot.lockExpireAt(),
+            snapshot.trackingCompany(),
+            snapshot.trackingNo(),
+            snapshot.shippedAt(),
             snapshot.remark(),
             items,
             locks
@@ -193,9 +313,10 @@ public class OrderService {
         int safeLimit = limit == null ? 20 : Math.max(1, Math.min(limit, 100));
         List<OrderSnapshot> orders = jdbcTemplate.query(
             """
-            SELECT id, order_no, user_id, status, total_amount, payment_amount,
-                   receiver_name, receiver_phone, receiver_address,
-                   created_at, pay_time, cancel_time, lock_expire_at, remark
+            SELECT id, order_no, user_id, status, total_amount, payment_amount, delivery_fee,
+                   receiver_name, receiver_phone, receiver_address, delivery_mode, delivery_slot,
+                   created_at, pay_time, cancel_time, lock_expire_at,
+                   tracking_company, tracking_no, shipped_at, remark
             FROM customer_order
             WHERE user_id = ?
             ORDER BY created_at DESC
@@ -220,9 +341,10 @@ public class OrderService {
         if (status != null && !status.isBlank()) {
             orders = jdbcTemplate.query(
                 """
-                SELECT id, order_no, user_id, status, total_amount, payment_amount,
-                       receiver_name, receiver_phone, receiver_address,
-                       created_at, pay_time, cancel_time, lock_expire_at, remark
+                SELECT id, order_no, user_id, status, total_amount, payment_amount, delivery_fee,
+                       receiver_name, receiver_phone, receiver_address, delivery_mode, delivery_slot,
+                       created_at, pay_time, cancel_time, lock_expire_at,
+                       tracking_company, tracking_no, shipped_at, remark
                 FROM customer_order
                 WHERE status = ?
                 ORDER BY created_at DESC
@@ -234,9 +356,10 @@ public class OrderService {
         } else {
             orders = jdbcTemplate.query(
                 """
-                SELECT id, order_no, user_id, status, total_amount, payment_amount,
-                       receiver_name, receiver_phone, receiver_address,
-                       created_at, pay_time, cancel_time, lock_expire_at, remark
+                SELECT id, order_no, user_id, status, total_amount, payment_amount, delivery_fee,
+                       receiver_name, receiver_phone, receiver_address, delivery_mode, delivery_slot,
+                       created_at, pay_time, cancel_time, lock_expire_at,
+                       tracking_company, tracking_no, shipped_at, remark
                 FROM customer_order
                 ORDER BY created_at DESC
                 LIMIT %d
@@ -297,12 +420,19 @@ public class OrderService {
             order.id()
         );
 
+        userPointsService.awardPointsForAmount(order.userId(), order.paymentAmount());
+
         insertPaymentLog(order.id(), orderNo, paymentNo, paymentChannel, order.paymentAmount());
         return new SimpleActionResponse(orderNo, "PAID", "\u652f\u4ed8\u6210\u529f\u5e76\u5b8c\u6210\u5e93\u5b58\u6263\u51cf");
     }
 
     @Transactional
     public SimpleActionResponse confirmOrder(String orderNo) {
+        return confirmOrder(orderNo, null);
+    }
+
+    @Transactional
+    public SimpleActionResponse confirmOrder(String orderNo, ConfirmOrderRequest request) {
         OrderSnapshot order = getOrderForUpdate(orderNo);
         if ("CONFIRMED".equals(order.status())) {
             return new SimpleActionResponse(orderNo, "CONFIRMED", "\u8ba2\u5355\u5df2\u786e\u8ba4");
@@ -310,12 +440,22 @@ public class OrderService {
         if (!"PAID".equals(order.status())) {
             throw new BusinessException("ORDER_STATUS_INVALID", "\u5f53\u524d\u72b6\u6001\u4e0d\u53ef\u786e\u8ba4: " + order.status());
         }
+
+        String trackingCompany = normalizeNullableText(request == null ? null : request.logisticsCompany());
+        String trackingNo = normalizeNullableText(request == null ? null : request.trackingNo());
+
         jdbcTemplate.update(
             """
             UPDATE customer_order
-            SET status = 'CONFIRMED', updated_at = NOW()
+            SET status = 'CONFIRMED',
+                tracking_company = COALESCE(?, tracking_company),
+                tracking_no = COALESCE(?, tracking_no),
+                shipped_at = COALESCE(shipped_at, NOW()),
+                updated_at = NOW()
             WHERE id = ?
             """,
+            trackingCompany,
+            trackingNo,
             order.id()
         );
         return new SimpleActionResponse(orderNo, "CONFIRMED", "\u8ba2\u5355\u5df2\u786e\u8ba4\u53d1\u8d27");
@@ -327,13 +467,13 @@ public class OrderService {
         if ("COMPLETED".equals(order.status())) {
             return new SimpleActionResponse(orderNo, "COMPLETED", "\u8ba2\u5355\u5df2\u5b8c\u6210");
         }
-        if (!"PAID".equals(order.status()) && !"CONFIRMED".equals(order.status())) {
+        if (!"CONFIRMED".equals(order.status())) {
             throw new BusinessException("ORDER_STATUS_INVALID", "\u5f53\u524d\u72b6\u6001\u4e0d\u53ef\u5b8c\u6210: " + order.status());
         }
         jdbcTemplate.update(
             """
             UPDATE customer_order
-            SET status = 'COMPLETED', updated_at = NOW()
+            SET status = 'COMPLETED', completed_at = COALESCE(completed_at, NOW()), updated_at = NOW()
             WHERE id = ?
             """,
             order.id()
@@ -377,45 +517,13 @@ public class OrderService {
                 appendRemark(order.remark(), reason),
                 order.id()
             );
+            userPointsService.rollbackPointsForAmount(order.userId(), order.paymentAmount());
             return new SimpleActionResponse(orderNo, "REFUNDED", "\u9000\u6b3e\u6210\u529f\uff0c\u5e93\u5b58\u5df2\u56de\u8865");
         }
 
         throw new BusinessException("ORDER_STATUS_INVALID", "\u5f53\u524d\u72b6\u6001\u4e0d\u53ef\u53d6\u6d88: " + order.status());
     }
-
-    @Transactional
-    public int releaseExpiredOrders() {
-        List<OrderSnapshot> expiredOrders = jdbcTemplate.query(
-            """
-            SELECT id, order_no, user_id, status, total_amount, payment_amount,
-                   receiver_name, receiver_phone, receiver_address,
-                   created_at, pay_time, cancel_time, lock_expire_at, remark
-            FROM customer_order
-            WHERE status = 'LOCKED' AND lock_expire_at < NOW()
-            FOR UPDATE
-            """,
-            this::mapOrderSnapshot
-        );
-
-        for (OrderSnapshot order : expiredOrders) {
-            inventoryService.releaseLockedMaterials(order.id());
-            jdbcTemplate.update(
-                """
-                UPDATE customer_order
-                SET status = 'CANCELLED',
-                    cancel_time = NOW(),
-                    remark = ?,
-                    updated_at = NOW()
-                WHERE id = ?
-                """,
-                appendRemark(order.remark(), "\u8d85\u65f6\u672a\u652f\u4ed8\u81ea\u52a8\u53d6\u6d88"),
-                order.id()
-            );
-        }
-        return expiredOrders.size();
-    }
-
-    // ===== Internal helper methods =====
+// ===== Internal helper methods =====
 
     private void ensureUserExists(Long userId) {
         Integer count = jdbcTemplate.queryForObject(
@@ -474,9 +582,10 @@ public class OrderService {
     private OrderSnapshot getOrderByNo(String orderNo) {
         List<OrderSnapshot> orders = jdbcTemplate.query(
             """
-            SELECT id, order_no, user_id, status, total_amount, payment_amount,
-                   receiver_name, receiver_phone, receiver_address,
-                   created_at, pay_time, cancel_time, lock_expire_at, remark
+            SELECT id, order_no, user_id, status, total_amount, payment_amount, delivery_fee,
+                   receiver_name, receiver_phone, receiver_address, delivery_mode, delivery_slot,
+                   created_at, pay_time, cancel_time, lock_expire_at,
+                   tracking_company, tracking_no, shipped_at, remark
             FROM customer_order
             WHERE order_no = ?
             """,
@@ -492,9 +601,10 @@ public class OrderService {
     private OrderSnapshot getOrderForUpdate(String orderNo) {
         List<OrderSnapshot> orders = jdbcTemplate.query(
             """
-            SELECT id, order_no, user_id, status, total_amount, payment_amount,
-                   receiver_name, receiver_phone, receiver_address,
-                   created_at, pay_time, cancel_time, lock_expire_at, remark
+            SELECT id, order_no, user_id, status, total_amount, payment_amount, delivery_fee,
+                   receiver_name, receiver_phone, receiver_address, delivery_mode, delivery_slot,
+                   created_at, pay_time, cancel_time, lock_expire_at,
+                   tracking_company, tracking_no, shipped_at, remark
             FROM customer_order
             WHERE order_no = ?
             FOR UPDATE
@@ -516,13 +626,19 @@ public class OrderService {
             rs.getString("status"),
             rs.getBigDecimal("total_amount"),
             rs.getBigDecimal("payment_amount"),
+            rs.getBigDecimal("delivery_fee"),
             rs.getString("receiver_name"),
             rs.getString("receiver_phone"),
             rs.getString("receiver_address"),
+            rs.getString("delivery_mode"),
+            rs.getString("delivery_slot"),
             toLocalDateTime(rs.getTimestamp("created_at")),
             toLocalDateTime(rs.getTimestamp("pay_time")),
             toLocalDateTime(rs.getTimestamp("cancel_time")),
             toLocalDateTime(rs.getTimestamp("lock_expire_at")),
+            rs.getString("tracking_company"),
+            rs.getString("tracking_no"),
+            toLocalDateTime(rs.getTimestamp("shipped_at")),
             rs.getString("remark")
         );
     }
@@ -553,8 +669,13 @@ public class OrderService {
         );
 
         Map<Long, List<OrderItemResponse>> itemMap = new LinkedHashMap<>();
+        Map<Long, String> userDisplayNames = new LinkedHashMap<>();
         for (OrderSnapshot order : orders) {
             itemMap.put(order.id(), new ArrayList<>());
+            Long userId = order.userId();
+            if (userId != null && userId > 0 && !userDisplayNames.containsKey(userId)) {
+                userDisplayNames.put(userId, loadUserDisplayName(userId));
+            }
         }
         for (OrderItemRow row : itemRows) {
             List<OrderItemResponse> list = itemMap.computeIfAbsent(row.orderId(), key -> new ArrayList<>());
@@ -573,16 +694,211 @@ public class OrderService {
             order.status(),
             order.totalAmount(),
             order.paymentAmount(),
-            order.receiverName(),
+            order.deliveryFee(),
+            resolveReceiverDisplayName(
+                order.receiverName(),
+                userDisplayNames.get(order.userId()),
+                order.receiverPhone()
+            ),
             order.receiverPhone(),
             order.receiverAddress(),
+            order.deliveryMode(),
+            order.deliverySlot(),
             order.createdAt(),
             order.payTime(),
             order.cancelTime(),
             order.lockExpireAt(),
+            order.trackingCompany(),
+            order.trackingNo(),
+            order.shippedAt(),
             order.remark(),
             itemMap.getOrDefault(order.id(), List.of())
         )).toList();
+    }
+
+    private String loadUserDisplayName(Long userId) {
+        if (userId == null || userId <= 0) {
+            return null;
+        }
+        try {
+            return jdbcTemplate.queryForObject(
+                "SELECT name FROM user_customer WHERE id = ?",
+                String.class,
+                userId
+            );
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static String resolveReceiverDisplayName(String receiverName, String userDisplayName, String receiverPhone) {
+        String normalizedReceiverName = normalizeReceiverDisplayText(receiverName);
+        if (normalizedReceiverName != null) {
+            return normalizedReceiverName;
+        }
+
+        String normalizedUserDisplayName = normalizeReceiverDisplayText(userDisplayName);
+        if (normalizedUserDisplayName != null) {
+            return normalizedUserDisplayName;
+        }
+
+        return normalizeNullableText(receiverPhone);
+    }
+
+    private static String normalizeReceiverDisplayText(String value) {
+        String normalized = normalizeNullableText(value);
+        if (normalized == null) {
+            return null;
+        }
+        if (normalized.indexOf('?') >= 0 || normalized.indexOf('？') >= 0) {
+            return null;
+        }
+        return normalized;
+    }
+
+    private boolean tableExists(String tableName) {
+        Integer count = jdbcTemplate.queryForObject(
+            """
+            SELECT COUNT(1)
+            FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = ?
+            """,
+            Integer.class,
+            tableName
+        );
+        return count != null && count > 0;
+    }
+
+    private void addColumnIfMissing(String columnName, String ddl) {
+        Integer count = jdbcTemplate.queryForObject(
+            """
+            SELECT COUNT(1)
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'customer_order'
+              AND COLUMN_NAME = ?
+            """,
+            Integer.class,
+            columnName
+        );
+        if (count == null || count == 0) {
+            jdbcTemplate.execute(ddl);
+        }
+    }
+
+    private static final String DEFAULT_MERCHANT_KEY = "__DEFAULT__";
+
+    private static String resolveMerchantKey(String merchantAccount) {
+        String normalized = normalizeNullableText(merchantAccount);
+        return normalized == null ? DEFAULT_MERCHANT_KEY : normalized;
+    }
+
+    private static BigDecimal normalizeFee(BigDecimal value) {
+        return safeAmount(value).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private static BigDecimal allocateFee(
+        BigDecimal totalFee,
+        BigDecimal partAmount,
+        BigDecimal totalAmount,
+        BigDecimal allocatedSoFar,
+        boolean isLast
+    ) {
+        BigDecimal normalizedTotalFee = normalizeFee(totalFee);
+        if (normalizedTotalFee.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        BigDecimal normalizedAllocated = normalizeFee(allocatedSoFar);
+        if (isLast) {
+            BigDecimal remain = normalizedTotalFee.subtract(normalizedAllocated).setScale(2, RoundingMode.HALF_UP);
+            if (remain.compareTo(BigDecimal.ZERO) < 0) {
+                return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+            }
+            return remain;
+        }
+
+        BigDecimal normalizedTotalAmount = safeAmount(totalAmount);
+        if (normalizedTotalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        BigDecimal normalizedPart = safeAmount(partAmount);
+        if (normalizedPart.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        BigDecimal ratio = normalizedPart.divide(normalizedTotalAmount, 10, RoundingMode.HALF_UP);
+        BigDecimal fee = normalizedTotalFee.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal remain = normalizedTotalFee.subtract(normalizedAllocated);
+        if (fee.compareTo(remain) > 0) {
+            fee = remain;
+        }
+        if (fee.compareTo(BigDecimal.ZERO) < 0) {
+            fee = BigDecimal.ZERO;
+        }
+        return fee.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private record ResolvedOrderLine(
+        Long productId,
+        String productTitle,
+        BigDecimal unitPrice,
+        Integer quantity,
+        BigDecimal lineAmount
+    ) {
+    }
+
+    private static final class MerchantOrderDraft {
+
+        private final String merchantAccount;
+        private final String merchantName;
+        private final List<ResolvedOrderLine> lines = new ArrayList<>();
+        private final Map<Long, BigDecimal> flowerDemand = new LinkedHashMap<>();
+        private BigDecimal itemAmount = BigDecimal.ZERO;
+
+        private MerchantOrderDraft(String merchantAccount, String merchantName) {
+            this.merchantAccount = merchantAccount;
+            this.merchantName = merchantName;
+        }
+
+        private String merchantAccount() {
+            return merchantAccount;
+        }
+
+        private String merchantName() {
+            return merchantName;
+        }
+
+        private List<ResolvedOrderLine> lines() {
+            return lines;
+        }
+
+        private Map<Long, BigDecimal> flowerDemand() {
+            return flowerDemand;
+        }
+
+        private BigDecimal itemAmount() {
+            return itemAmount;
+        }
+
+        private void itemAmount(BigDecimal value) {
+            this.itemAmount = value == null ? BigDecimal.ZERO : value;
+        }
+    }
+
+    private static String normalizeNullableText(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    private static String normalizeNullableCode(String value) {
+        String normalized = normalizeNullableText(value);
+        return normalized == null ? null : normalized.toUpperCase();
     }
 
     private static String appendRemark(String oldRemark, String appendText) {
@@ -647,13 +963,19 @@ public class OrderService {
         String status,
         BigDecimal totalAmount,
         BigDecimal paymentAmount,
+        BigDecimal deliveryFee,
         String receiverName,
         String receiverPhone,
         String receiverAddress,
+        String deliveryMode,
+        String deliverySlot,
         LocalDateTime createdAt,
         LocalDateTime payTime,
         LocalDateTime cancelTime,
         LocalDateTime lockExpireAt,
+        String trackingCompany,
+        String trackingNo,
+        LocalDateTime shippedAt,
         String remark
     ) {
     }

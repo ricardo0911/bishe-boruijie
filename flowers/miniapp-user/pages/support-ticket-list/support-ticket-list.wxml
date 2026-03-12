@@ -1,0 +1,66 @@
+<view class="page">
+  <view class="hero-card card">
+    <text class="hero-title">我的反馈</text>
+    <text class="hero-desc">查看已提交的反馈工单、处理进度和客服回复。</text>
+    <button class="primary-btn hero-btn" bindtap="onGoTicketForm">继续提交反馈</button>
+  </view>
+
+  <scroll-view class="filter-row" scroll-x="true" show-scrollbar="false" enhanced="true">
+    <view class="filter-list">
+      <view
+        wx:for="{{statusFilters}}"
+        wx:key="value"
+        class="filter-chip {{currentStatus === item.value ? 'filter-chip-active' : ''}}"
+        data-status="{{item.value}}"
+        bindtap="onChangeStatus"
+      >
+        {{item.label}}
+      </view>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{loading}}" class="loading-wrap">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">正在加载反馈记录...</text>
+  </view>
+
+  <block wx:elif="{{tickets.length > 0}}">
+    <view class="ticket-card card" wx:for="{{tickets}}" wx:key="ticketNo">
+      <view class="ticket-top">
+        <view class="ticket-main">
+          <text class="ticket-title">{{item.title}}</text>
+          <text class="ticket-no">工单号：{{item.ticketNo}}</text>
+        </view>
+        <text class="status-badge status-{{item.status}}">{{item.statusText}}</text>
+      </view>
+
+      <view class="meta-row">
+        <text class="meta-tag">{{item.issueTypeText}}</text>
+        <text wx:if="{{item.orderNo}}" class="meta-tag">订单：{{item.orderNo}}</text>
+      </view>
+
+      <text class="content-text">{{item.content}}</text>
+
+      <view wx:if="{{item.handleNote}}" class="reply-box">
+        <text class="reply-title">客服处理</text>
+        <text class="reply-content">{{item.handleNote}}</text>
+      </view>
+
+      <view class="time-list">
+        <text class="time-text">提交时间：{{item.createdAt}}</text>
+        <text wx:if="{{item.processedAt}}" class="time-text">处理时间：{{item.processedAt}}</text>
+      </view>
+
+      <view class="foot-row">
+        <text class="contact-text">联系人：{{item.contactName}} {{item.contactPhone}}</text>
+        <button wx:if="{{item.orderNo}}" class="mini-link" data-order-no="{{item.orderNo}}" bindtap="onGoOrder">看订单</button>
+      </view>
+    </view>
+  </block>
+
+  <view wx:else class="empty-wrap">
+    <text class="empty-title">还没有反馈记录</text>
+    <text class="empty-desc">提交后可在这里查看处理进度和客服回复。</text>
+    <button class="primary-btn empty-btn" bindtap="onGoTicketForm">立即反馈</button>
+  </view>
+</view>

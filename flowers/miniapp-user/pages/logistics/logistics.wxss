@@ -1,0 +1,287 @@
+.page {
+  min-height: 100vh;
+  padding: 24rpx;
+  background: linear-gradient(180deg, #fff6f7 0%, #fffaf6 100%);
+  box-sizing: border-box;
+}
+
+.state-card,
+.hero-card,
+.card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  box-shadow: 0 12rpx 36rpx rgba(203, 68, 86, 0.08);
+}
+
+.state-card {
+  margin-top: 120rpx;
+  padding: 48rpx 32rpx;
+  text-align: center;
+  color: #8f7d88;
+  font-size: 28rpx;
+}
+
+.hero-card {
+  padding: 32rpx;
+  background: linear-gradient(135deg, #cb4456 0%, #e27b87 100%);
+  color: #ffffff;
+}
+
+.hero-title {
+  display: block;
+  font-size: 38rpx;
+  font-weight: 600;
+}
+
+.hero-subtitle,
+.hero-desc {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  opacity: 0.96;
+}
+
+.card {
+  margin-top: 24rpx;
+  padding: 28rpx;
+}
+
+.card-title {
+  margin-bottom: 24rpx;
+  color: #2c1f28;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f4e7ea;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  color: #8f7d88;
+  font-size: 26rpx;
+}
+
+.info-value {
+  color: #2c1f28;
+  font-size: 26rpx;
+  text-align: right;
+}
+
+.tracking-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.copy-link {
+  color: #cb4456;
+  font-size: 24rpx;
+}
+
+.timeline-item {
+  position: relative;
+  padding: 0 0 28rpx 40rpx;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 12rpx;
+  top: 18rpx;
+  bottom: -10rpx;
+  width: 2rpx;
+  background: #f0d7dc;
+}
+
+.timeline-item:last-child .timeline-line {
+  display: none;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 0;
+  top: 8rpx;
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  background: #f0d7dc;
+}
+
+.timeline-dot-active {
+  background: #cb4456;
+}
+
+.timeline-dot-current {
+  box-shadow: 0 0 0 8rpx rgba(203, 68, 86, 0.14);
+}
+
+.timeline-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.timeline-title {
+  color: #2c1f28;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.timeline-time {
+  color: #8f7d88;
+  font-size: 24rpx;
+}
+
+.timeline-desc {
+  display: block;
+  margin-top: 10rpx;
+  color: #b39aa2;
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
+.timeline-desc-active {
+  color: #5a4651;
+}
+
+.receiver-line {
+  display: block;
+  color: #2c1f28;
+  font-size: 26rpx;
+  line-height: 1.8;
+}
+
+.receiver-address {
+  margin-top: 8rpx;
+}
+
+.receiver-remark {
+  display: block;
+  margin-top: 16rpx;
+  color: #8f7d88;
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
+.bottom-placeholder {
+  height: 140rpx;
+}
+
+.bottom-actions {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20rpx 24rpx calc(20rpx + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 -8rpx 28rpx rgba(44, 31, 40, 0.08);
+  z-index: 100;
+}
+
+.action-btn {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 999rpx;
+  margin: 0;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.action-btn::after,
+.refund-dialog-btn::after {
+  border: none;
+}
+
+.action-btn-primary {
+  background: linear-gradient(135deg, #d86c89 0%, #bf4d68 100%);
+  color: #ffffff;
+}
+
+.refund-dialog-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.38);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+}
+
+.refund-dialog {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 32rpx;
+  border-radius: 32rpx 32rpx 0 0;
+  background: #ffffff;
+}
+
+.refund-dialog-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.refund-dialog-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #352b33;
+}
+
+.refund-dialog-subtitle {
+  font-size: 24rpx;
+  color: #9a8b94;
+  line-height: 1.5;
+}
+
+.refund-dialog-textarea {
+  width: 100%;
+  min-height: 220rpx;
+  margin-top: 24rpx;
+  padding: 24rpx;
+  box-sizing: border-box;
+  border-radius: 24rpx;
+  background: #fff7f8;
+  font-size: 26rpx;
+  color: #352b33;
+}
+
+.refund-dialog-footer {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 28rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 8rpx);
+}
+
+.refund-dialog-btn {
+  flex: 1;
+  height: 84rpx;
+  line-height: 84rpx;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin: 0;
+}
+
+.refund-dialog-cancel {
+  background: #fff7f8;
+  color: #8c7280;
+}
+
+.refund-dialog-confirm {
+  background: linear-gradient(135deg, #d86c89 0%, #bf4d68 100%);
+  color: #ffffff;
+}

@@ -1,5 +1,31 @@
-﻿const { get, post } = require("../../utils/request");
+const { get, post } = require("../../utils/request");
 const { formatPrice } = require("../../utils/format");
+const { requireLogin } = require("../../utils/auth");
+
+const DEFAULT_MERCHANT_NAME = "花之都官方花店";
+const PASSWORD_BOXES = [0, 1, 2, 3, 4, 5];
+const KEYPAD_ROWS = [
+  [
+    { key: "1", label: "1", type: "digit" },
+    { key: "2", label: "2", type: "digit" },
+    { key: "3", label: "3", type: "digit" },
+  ],
+  [
+    { key: "4", label: "4", type: "digit" },
+    { key: "5", label: "5", type: "digit" },
+    { key: "6", label: "6", type: "digit" },
+  ],
+  [
+    { key: "7", label: "7", type: "digit" },
+    { key: "8", label: "8", type: "digit" },
+    { key: "9", label: "9", type: "digit" },
+  ],
+  [
+    { key: "blank", label: "", type: "blank" },
+    { key: "0", label: "0", type: "digit" },
+    { key: "delete", label: "删除", type: "action" },
+  ],
+];
 
 function toFen(amount) {
   const n = Number(amount || 0);
@@ -18,6 +44,25 @@ function nowWxTimeEnd() {
   return `${yyyy}${MM}${dd}${hh}${mm}${ss}`;
 }
 
+function pickMerchantName(orderData, firstItem) {
+  return (
+    orderData.merchantName ||
+    orderData.merchant_name ||
+    orderData.shopName ||
+    orderData.shop_name ||
+    firstItem.merchantName ||
+    firstItem.merchant_name ||
+    DEFAULT_MERCHANT_NAME
+  );
+}
+
+function buildProductSummary(firstTitle, items) {
+  if (items.length > 1) {
+    return `${firstTitle} 等${items.length}件商品`;
+  }
+  return firstTitle;
+}
+
 Page({
   data: {
     loading: true,
@@ -26,10 +71,18 @@ Page({
     amount: "0.00",
     orderStatus: "",
     productTitle: "",
+    productSummary: "鲜花订单",
+    merchantName: DEFAULT_MERCHANT_NAME,
     itemCount: 0,
+    showPasswordPopup: false,
+    passwordValue: "",
+    passwordLength: 0,
+    passwordBoxes: PASSWORD_BOXES,
+    keypadRows: KEYPAD_ROWS,
   },
 
   onLoad(options) {
+    if (!requireLogin()) return;
     const orderNo = (options.orderNo || "").trim();
     const amount = formatPrice(options.amount || 0);
 
@@ -53,16 +106,21 @@ Page({
         return;
       }
 
-      const items = Array.isArray(res.data.items) ? res.data.items : [];
-      const firstTitle = items.length ? (items[0].productTitle || "鲜花订单") : "鲜花订单";
-      const itemCount = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-      const amount = formatPrice(res.data.totalAmount || this.data.amount || 0);
+      const orderData = res.data;
+      const items = Array.isArray(orderData.items) ? orderData.items : [];
+      const firstItem = items[0] || {};
+      const firstTitle = firstItem.productTitle || "鲜花订单";
+      const itemCount = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0) || items.length || 1;
+      const amountSource = orderData.totalAmount == null ? this.data.amount : orderData.totalAmount;
+      const amount = formatPrice(amountSource || 0);
 
       this.setData({
         loading: false,
         amount,
-        orderStatus: res.data.status || "",
+        orderStatus: orderData.status || "",
         productTitle: firstTitle,
+        productSummary: buildProductSummary(firstTitle, items),
+        merchantName: pickMerchantName(orderData, firstItem),
         itemCount,
       });
     } catch (err) {
@@ -71,8 +129,62 @@ Page({
     }
   },
 
-  async onConfirmPay() {
+  noop() {},
+
+  onConfirmPay() {
     if (this.data.submitting || this.data.loading) return;
+    this.setData({
+      showPasswordPopup: true,
+      passwordValue: "",
+      passwordLength: 0,
+    });
+  },
+
+  closePasswordPopup() {
+    if (this.data.submitting) return;
+    this.setData({
+      showPasswordPopup: false,
+      passwordValue: "",
+      passwordLength: 0,
+    });
+  },
+
+  onForgotPassword() {
+    wx.showToast({ title: "演示版无需校验真实密码", icon: "none" });
+  },
+
+  onPasswordKeyTap(e) {
+    if (this.data.submitting) return;
+
+    const { key, type } = e.currentTarget.dataset;
+    if (type === "blank") return;
+
+    if (type === "action") {
+      const passwordValue = this.data.passwordValue.slice(0, -1);
+      this.setData({
+        passwordValue,
+        passwordLength: passwordValue.length,
+      });
+      return;
+    }
+
+    if (type !== "digit" || this.data.passwordLength >= 6) return;
+
+    const passwordValue = `${this.data.passwordValue}${key}`.slice(0, 6);
+    this.setData({
+      passwordValue,
+      passwordLength: passwordValue.length,
+    });
+
+    if (passwordValue.length === 6) {
+      setTimeout(() => {
+        this.submitPayment(passwordValue);
+      }, 160);
+    }
+  },
+
+  async submitPayment(passwordValue) {
+    if (this.data.submitting || passwordValue.length !== 6) return;
     this.setData({ submitting: true });
 
     try {
@@ -84,7 +196,7 @@ Page({
 
       if (!payRes.success) {
         wx.showToast({ title: payRes.message || "支付失败", icon: "none" });
-        this.setData({ submitting: false });
+        this.resetPasswordInput();
         return;
       }
 
@@ -109,8 +221,16 @@ Page({
       } else {
         wx.showToast({ title: "支付失败", icon: "none" });
       }
-      this.setData({ submitting: false });
+      this.resetPasswordInput();
     }
+  },
+
+  resetPasswordInput() {
+    this.setData({
+      submitting: false,
+      passwordValue: "",
+      passwordLength: 0,
+    });
   },
 
   callWxPay(params) {
@@ -141,13 +261,17 @@ Page({
     try {
       await post("/payment/callback", payload);
     } catch (err) {
-      // ignore callback error in non-wechat environments
     }
   },
 
   finishPaySuccess() {
     wx.showToast({ title: "支付成功", icon: "success" });
-    this.setData({ submitting: false });
+    this.setData({
+      submitting: false,
+      showPasswordPopup: false,
+      passwordValue: "",
+      passwordLength: 0,
+    });
     setTimeout(() => {
       wx.redirectTo({
         url: `/pages/order-detail/order-detail?orderNo=${this.data.orderNo}`,
@@ -156,6 +280,11 @@ Page({
   },
 
   onCancelPay() {
+    if (this.data.showPasswordPopup) {
+      this.closePasswordPopup();
+      return;
+    }
+
     wx.redirectTo({
       url: `/pages/order-detail/order-detail?orderNo=${this.data.orderNo}`,
     });

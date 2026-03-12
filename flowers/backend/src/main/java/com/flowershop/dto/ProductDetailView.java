@@ -16,6 +16,10 @@ public record ProductDetailView(
     BigDecimal unitPrice,
     BigDecimal autoPrice,
     String status,
+    String merchantAccount,
+    String merchantName,
+    Integer stock,
+    Integer sales,
     List<BomItemView> bomItems
 ) {
 }

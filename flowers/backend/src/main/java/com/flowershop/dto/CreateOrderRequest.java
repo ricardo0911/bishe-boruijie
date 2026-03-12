@@ -25,6 +25,8 @@ public class CreateOrderRequest {
     @DecimalMin(value = "0.00", message = "deliveryFee不能小于0")
     private BigDecimal deliveryFee = BigDecimal.ZERO;
 
+    private String deliveryMode;
+    private String deliverySlot;
     private String remark;
     private String receiverName;
     private String receiverPhone;
@@ -60,6 +62,22 @@ public class CreateOrderRequest {
 
     public void setDeliveryFee(BigDecimal deliveryFee) {
         this.deliveryFee = deliveryFee;
+    }
+
+    public String getDeliveryMode() {
+        return deliveryMode;
+    }
+
+    public void setDeliveryMode(String deliveryMode) {
+        this.deliveryMode = deliveryMode;
+    }
+
+    public String getDeliverySlot() {
+        return deliverySlot;
+    }
+
+    public void setDeliverySlot(String deliverySlot) {
+        this.deliverySlot = deliverySlot;
     }
 
     public String getRemark() {

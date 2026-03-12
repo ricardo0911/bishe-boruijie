@@ -32,18 +32,11 @@
       position: relative;
       width: 920px;
       height: 760px;
-      border: 1px solid #d8d8d8;
+      border: none;
       background: #fff;
     }
     .boundary {
-      position: absolute;
-      left: 150px;
-      top: 44px;
-      width: 700px;
-      height: 650px;
-      border: 1.5px solid #333;
-      z-index: 1;
-      background: #fff;
+      display: none;
     }
     .boundary-title {
       position: absolute;
@@ -65,12 +58,12 @@
     .head {
       width: 18px;
       height: 18px;
-      border: 1.4px solid #333;
+      border: 1.8px solid #555;
       border-radius: 50%;
-      background: #f7e2c4;
+      background: #fff;
     }
-    .body { width: 1.4px; height: 22px; background: #333; }
-    .arms { width: 30px; height: 1.4px; background: #333; margin-top: -15px; }
+    .body { width: 1.8px; height: 22px; background: #555; }
+    .arms { width: 30px; height: 1.8px; background: #555; margin-top: -15px; }
     .legs {
       position: relative;
       width: 24px;
@@ -82,33 +75,38 @@
       content: '';
       position: absolute;
       top: 0;
-      width: 1.4px;
+      width: 1.8px;
       height: 20px;
-      background: #333;
+      background: #555;
     }
     .legs::before { left: 3px; transform: rotate(16deg); }
     .legs::after { right: 3px; transform: rotate(-16deg); }
     .actor-label {
       margin-top: 4px;
-      font-size: 24px;
+      font-size: 18px;
       white-space: nowrap;
+      padding: 0;
+      background: transparent;
+      position: relative;
+      z-index: 4;
+      color: #444;
     }
     .oval {
       position: absolute;
-      min-width: 150px;
-      padding: 9px 16px;
-      border: 1.5px solid #2f5f8f;
+      min-width: 128px;
+      padding: 12px 18px;
+      border: 2px solid #666;
       border-radius: 999px;
-      background: #9fc5eb;
-      font-size: 24px;
-      font-weight: 600;
+      background: #fff;
+      font-size: 18px;
+      font-weight: 400;
       text-align: center;
       transform: translate(-50%, -50%);
       z-index: 2;
       white-space: nowrap;
-      color: #000;
+      color: #444;
     }
-    .small { min-width: 132px; font-size: 20px; }
+    .small { min-width: 116px; font-size: 17px; }
     .svg {
       position: absolute;
       inset: 0;
@@ -135,16 +133,27 @@
 
       const boundary = document.createElement('div');
       boundary.className = 'boundary';
-      const bt = document.createElement('div');
-      bt.className = 'boundary-title';
-      bt.textContent = title;
-      boundary.appendChild(bt);
       diagram.appendChild(boundary);
 
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('class', 'svg');
       svg.setAttribute('viewBox', '0 0 920 760');
       diagram.appendChild(svg);
+
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+      marker.setAttribute('id', 'arrowhead');
+      marker.setAttribute('markerWidth', '10');
+      marker.setAttribute('markerHeight', '7');
+      marker.setAttribute('refX', '10');
+      marker.setAttribute('refY', '3.5');
+      marker.setAttribute('orient', 'auto');
+      const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      arrowPath.setAttribute('d', 'M0,0 L10,3.5 L0,7 Z');
+      arrowPath.setAttribute('fill', '#555');
+      marker.appendChild(arrowPath);
+      defs.appendChild(marker);
+      svg.appendChild(defs);
 
       const points = {};
       actors.forEach((info) => {
@@ -162,7 +171,13 @@
         actorText.textContent = info.label;
         actor.appendChild(actorText);
         diagram.appendChild(actor);
-        points[info.id] = { x: info.left + 25, y: info.top + 67 };
+        points[info.id] = {
+          x: info.left + (info.anchorX ?? 54),
+          y: info.top + (info.anchorY ?? 30),
+          startX: info.left + (info.startX ?? 41),
+          startY: info.top + (info.startY ?? 30),
+          route: 'actor'
+        };
       });
 
       function oval(id, x, y, text, small) {
@@ -172,40 +187,98 @@
         o.style.top = y + 'px';
         o.textContent = text;
         diagram.appendChild(o);
-        points[id] = { x, y };
+        const width = o.offsetWidth || (small ? 116 : 128);
+        const height = o.offsetHeight || 52;
+        points[id] = {
+          x,
+          y,
+          centerX: x,
+          centerY: y,
+          leftX: x - width / 2,
+          rightX: x + width / 2,
+          topY: y - height / 2,
+          bottomY: y + height / 2,
+          radiusX: width / 2,
+          radiusY: height / 2,
+          route: 'usecase'
+        };
       }
 
       usecases.forEach((u) => oval(u.id, u.x, u.y, u.label, u.small));
 
-      function line(from, to, dashed, label) {
+      function ellipseAnchor(node, fromX, fromY, inset = 0) {
+        const cx = node.centerX ?? node.x;
+        const cy = node.centerY ?? node.y;
+        const rx = Math.max(1, (node.radiusX ?? 60) - inset);
+        const ry = Math.max(1, (node.radiusY ?? 26) - inset);
+        const vx = fromX - cx;
+        const vy = fromY - cy;
+        const denom = Math.sqrt((vx * vx) / (rx * rx) + (vy * vy) / (ry * ry)) || 1;
+        return {
+          x: cx + vx / denom,
+          y: cy + vy / denom
+        };
+      }
+
+      function line(def) {
+        const { from, to, dashed, label } = def;
         const a = points[from];
         const b = points[to];
         if (!a || !b) return;
+        const stroke = '#555';
+        const width = dashed ? '1.6' : '2';
+        let startX = a.centerX ?? a.x;
+        let startY = a.centerY ?? a.y;
+        let endX = b.centerX ?? b.x;
+        let endY = b.centerY ?? b.y;
+
+        if (a.route === 'actor' && !dashed) {
+          startX = a.startX;
+          startY = a.startY;
+        } else if (a.route === 'usecase') {
+          const startAnchor = ellipseAnchor(a, b.centerX ?? b.x, b.centerY ?? b.y);
+          startX = startAnchor.x;
+          startY = startAnchor.y;
+        }
+
+        if (b.route === 'usecase') {
+          const refX = a.route === 'actor' ? startX : (a.centerX ?? a.x);
+          const refY = a.route === 'actor' ? startY : (a.centerY ?? a.y);
+          const endAnchor = ellipseAnchor(b, refX, refY, a.route === 'actor' && !dashed ? -10 : 0);
+          endX = endAnchor.x;
+          endY = endAnchor.y;
+        }
+
         const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        l.setAttribute('x1', a.x);
-        l.setAttribute('y1', a.y);
-        l.setAttribute('x2', b.x);
-        l.setAttribute('y2', b.y);
-        l.setAttribute('stroke', '#333');
-        l.setAttribute('stroke-width', '1.6');
+        l.setAttribute('x1', startX);
+        l.setAttribute('y1', startY);
+        l.setAttribute('x2', endX);
+        l.setAttribute('y2', endY);
+        l.setAttribute('stroke', stroke);
+        l.setAttribute('stroke-width', width);
         if (dashed) l.setAttribute('stroke-dasharray', '8 6');
+        if (a.route === 'actor' && !dashed) l.setAttribute('marker-end', 'url(#arrowhead)');
         svg.appendChild(l);
 
         if (label) {
-          const tx = (a.x + b.x) / 2;
-          const ty = (a.y + b.y) / 2 - 8;
+          const tx = (startX + endX) / 2;
+          const ty = (startY + endY) / 2 - 8;
           const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
           t.setAttribute('x', tx);
           t.setAttribute('y', ty);
           t.setAttribute('font-size', '14');
-          t.setAttribute('fill', '#333');
+          t.setAttribute('fill', '#555');
           t.setAttribute('text-anchor', 'middle');
+          t.setAttribute('stroke', '#fff');
+          t.setAttribute('stroke-width', '6');
+          t.setAttribute('stroke-linejoin', 'round');
+          t.setAttribute('paint-order', 'stroke');
           t.textContent = label;
           svg.appendChild(t);
         }
       }
 
-      lines.forEach((ln) => line(ln.from, ln.to, ln.dashed, ln.label));
+      lines.forEach((ln) => line(ln));
 
       const cp = document.createElement('div');
       cp.className = 'caption';
@@ -217,18 +290,51 @@
     }
 
     buildPage(
-      'uc Customer',
-      [{ id: 'actor', label: '用户', left: 170, top: 305 }],
+      'uc System',
       [
-        { id: 'join', x: 340, y: 170, label: '浏览商品' },
-        { id: 'cart', x: 570, y: 170, label: '加入购物车' },
-        { id: 'create', x: 340, y: 300, label: '创建订单' },
-        { id: 'pay', x: 570, y: 300, label: '在线支付' },
-        { id: 'cancel', x: 760, y: 300, label: '取消订单', small: true },
-        { id: 'review', x: 340, y: 430, label: '评价订单' },
-        { id: 'after', x: 570, y: 430, label: '申请售后' },
-        { id: 'address', x: 340, y: 560, label: '管理地址' },
-        { id: 'favorite', x: 570, y: 560, label: '收藏商品' }
+        { id: 'sysUser', label: '用户', left: 110, top: 170 },
+        { id: 'sysMerchant', label: '商家', left: 110, top: 380 },
+        { id: 'sysAdmin', label: '管理员', left: 110, top: 570 }
+      ],
+      [
+        { id: 's1', x: 640, y: 90, label: '浏览商品' },
+        { id: 's2', x: 640, y: 155, label: '购物车管理' },
+        { id: 's3', x: 640, y: 220, label: '创建订单' },
+        { id: 's4', x: 640, y: 285, label: '售后服务' },
+        { id: 's5', x: 640, y: 390, label: '商品管理' },
+        { id: 's6', x: 640, y: 455, label: '订单处理' },
+        { id: 's7', x: 640, y: 520, label: '库存预警' },
+        { id: 's8', x: 640, y: 610, label: '用户管理' },
+        { id: 's9', x: 640, y: 675, label: '商家管理' },
+        { id: 's10', x: 640, y: 740, label: '系统配置' }
+      ],
+      [
+        { from: 'sysUser', to: 's1' },
+        { from: 'sysUser', to: 's2' },
+        { from: 'sysUser', to: 's3' },
+        { from: 'sysUser', to: 's4' },
+        { from: 'sysMerchant', to: 's5' },
+        { from: 'sysMerchant', to: 's6' },
+        { from: 'sysMerchant', to: 's7' },
+        { from: 'sysAdmin', to: 's8' },
+        { from: 'sysAdmin', to: 's9' },
+        { from: 'sysAdmin', to: 's10' }
+      ],
+      '图 4-5 系统总用例图'
+    );
+
+    buildPage(
+      'uc Customer',
+      [{ id: 'actor', label: '用户', left: 110, top: 305 }],
+      [
+        { id: 'join', x: 640, y: 90, label: '浏览商品' },
+        { id: 'cart', x: 640, y: 160, label: '加入购物车' },
+        { id: 'create', x: 640, y: 230, label: '创建订单' },
+        { id: 'pay', x: 640, y: 300, label: '在线支付' },
+        { id: 'review', x: 640, y: 370, label: '评价订单' },
+        { id: 'after', x: 640, y: 440, label: '申请售后' },
+        { id: 'address', x: 640, y: 510, label: '管理地址' },
+        { id: 'favorite', x: 640, y: 580, label: '收藏商品' }
       ],
       [
         { from: 'actor', to: 'join' },
@@ -238,53 +344,57 @@
         { from: 'actor', to: 'review' },
         { from: 'actor', to: 'after' },
         { from: 'actor', to: 'address' },
-        { from: 'actor', to: 'favorite' },
-        { from: 'create', to: 'pay', dashed: true, label: '<<include>>' },
-        { from: 'create', to: 'cancel', dashed: true, label: '<<include>>' }
+        { from: 'actor', to: 'favorite' }
       ],
       '图 4-6 用户用例图'
     );
 
     buildPage(
       'uc Merchant',
-      [{ id: 'merchant', label: '商家', left: 170, top: 305 }],
+      [{ id: 'merchant', label: '商家', left: 110, top: 305 }],
       [
-        { id: 'p1', x: 340, y: 170, label: '商品管理' },
-        { id: 'p2', x: 570, y: 170, label: '花材管理' },
-        { id: 'p3', x: 760, y: 170, label: '库存预警' },
-        { id: 'p4', x: 340, y: 330, label: '订单处理' },
-        { id: 'p5', x: 570, y: 330, label: '支付回调处理' }
+        { id: 'p1', x: 640, y: 120, label: '商品管理' },
+        { id: 'p2', x: 640, y: 220, label: '花材管理' },
+        { id: 'p3', x: 640, y: 320, label: '库存预警' },
+        { id: 'p4', x: 640, y: 420, label: '订单处理' },
+        { id: 'p5', x: 640, y: 520, label: '支付回调处理' }
       ],
       [
         { from: 'merchant', to: 'p1' },
         { from: 'merchant', to: 'p2' },
         { from: 'merchant', to: 'p3' },
         { from: 'merchant', to: 'p4' },
-        { from: 'merchant', to: 'p5' },
-        { from: 'p2', to: 'p3', dashed: true, label: '<<include>>' },
-        { from: 'p4', to: 'p5', dashed: true, label: '<<include>>' }
+        { from: 'merchant', to: 'p5' }
       ],
       '图 4-7 商家用例图'
     );
 
     buildPage(
       'uc Admin',
-      [{ id: 'admin', label: '管理员', left: 170, top: 305 }],
+      [{ id: 'admin', label: '管理员', left: 110, top: 305 }],
       [
-        { id: 'a1', x: 340, y: 220, label: '售后审核' },
-        { id: 'a2', x: 570, y: 220, label: '系统配置' },
-        { id: 'a3', x: 340, y: 430, label: '统计分析' },
-        { id: 'a4', x: 570, y: 430, label: '商家管理' }
+        { id: 'a1', x: 640, y: 120, label: '统计概览' },
+        { id: 'a2', x: 640, y: 220, label: '用户管理' },
+        { id: 'a3', x: 640, y: 320, label: '商家管理', small: true },
+        { id: 'a4', x: 640, y: 420, label: '订单监管' },
+        { id: 'a5', x: 640, y: 520, label: '系统配置' }
       ],
       [
         { from: 'admin', to: 'a1' },
         { from: 'admin', to: 'a2' },
         { from: 'admin', to: 'a3' },
         { from: 'admin', to: 'a4' },
-        { from: 'a1', to: 'a3', dashed: true, label: '<<include>>' }
+        { from: 'admin', to: 'a5' }
       ],
       '图 4-8 管理员用例图'
     );
   </script>
 </body>
 </html>
+
+
+
+
+
+
+

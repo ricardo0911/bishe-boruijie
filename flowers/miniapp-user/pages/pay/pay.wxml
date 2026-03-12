@@ -1,49 +1,110 @@
 <view class="pay-page safe-bottom">
-  <view class="pay-brand">
-    <text class="pay-brand-title">微信支付</text>
-    <text class="pay-brand-sub">安全支付保障</text>
-  </view>
-
-  <view class="card amount-card">
-    <view class="amount-row">
-      <text class="amount-symbol">¥</text>
+  <view class="amount-panel">
+    <text class="page-caption">确认支付</text>
+    <view class="amount-line">
+      <text class="currency-symbol">¥</text>
       <text class="amount-value">{{amount}}</text>
     </view>
-    <text class="amount-tip">待支付金额</text>
+    <text class="pay-target">向{{merchantName}}付款</text>
   </view>
 
-  <view class="card order-card" wx:if="{{!loading}}">
+  <view class="pay-section" wx:if="{{!loading}}">
+    <view class="info-row">
+      <text class="info-label">收款方</text>
+      <text class="info-value text-ellipsis">{{merchantName}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">商品说明</text>
+      <text class="info-value text-ellipsis">{{productSummary}}</text>
+    </view>
     <view class="info-row">
       <text class="info-label">订单号</text>
-      <text class="info-value">{{orderNo}}</text>
+      <text class="info-value info-value-subtle">{{orderNo}}</text>
     </view>
     <view class="info-row">
-      <text class="info-label">商品</text>
-      <text class="info-value text-ellipsis">{{productTitle}}</text>
-    </view>
-    <view class="info-row">
-      <text class="info-label">数量</text>
+      <text class="info-label">购买数量</text>
       <text class="info-value">{{itemCount}} 件</text>
     </view>
   </view>
 
-  <view class="card method-card">
-    <view class="method-left">
-      <view class="wechat-icon">微</view>
-      <view class="method-text">
-        <text class="method-title">微信支付</text>
-        <text class="method-desc">推荐，支持零钱/银行卡</text>
+  <view class="pay-section loading-section" wx:if="{{loading}}">
+    <text class="loading-text">订单信息加载中...</text>
+  </view>
+
+  <view class="pay-section">
+    <view class="info-row method-row">
+      <view class="method-main">
+        <view class="wechat-logo">
+          <view class="wechat-bubble bubble-large"></view>
+          <view class="wechat-bubble bubble-small"></view>
+        </view>
+        <view class="method-copy">
+          <text class="method-title">微信支付</text>
+          <text class="method-desc">推荐使用微信支付完成本次订单</text>
+        </view>
+      </view>
+      <view class="method-check">
+        <view class="method-check-dot"></view>
       </view>
     </view>
-    <text class="method-tag">默认</text>
   </view>
 
-  <view class="safe-tip">
-    <text>支付即表示同意《支付服务协议》</text>
+  <view class="safe-row">
+    <text class="safe-icon">✓</text>
+    <text class="safe-text">微信安全支付保障，本次交易由平台加密保护</text>
   </view>
 
-  <view class="pay-actions">
-    <button class="pay-btn" loading="{{submitting}}" bindtap="onConfirmPay">立即支付</button>
-    <button class="cancel-btn" bindtap="onCancelPay">稍后支付</button>
+  <view class="footer-actions">
+    <button class="pay-btn" loading="{{submitting}}" bindtap="onConfirmPay">立即支付 ¥{{amount}}</button>
+    <button class="cancel-btn" bindtap="onCancelPay">返回订单</button>
+    <text class="agreement-text">确认支付即表示你已阅读并同意《支付服务协议》</text>
+  </view>
+
+  <view class="password-mask" wx:if="{{showPasswordPopup}}" bindtap="closePasswordPopup">
+    <view class="password-sheet" catchtap="noop">
+      <view class="sheet-header">
+        <text class="sheet-close" bindtap="closePasswordPopup">×</text>
+        <text class="sheet-title">请输入支付密码</text>
+        <text class="sheet-placeholder"></text>
+      </view>
+
+      <view class="sheet-amount-block">
+        <text class="sheet-payee">付款给 {{merchantName}}</text>
+        <view class="sheet-amount-line">
+          <text class="sheet-currency">¥</text>
+          <text class="sheet-amount">{{amount}}</text>
+        </view>
+      </view>
+
+      <view class="password-boxes">
+        <view
+          class="password-box {{passwordLength === index ? 'password-box-active' : ''}}"
+          wx:for="{{passwordBoxes}}"
+          wx:key="*this"
+        >
+          <view class="password-dot" wx:if="{{index < passwordLength}}"></view>
+        </view>
+      </view>
+
+      <view class="sheet-helper-row">
+        <text class="sheet-helper-text">使用模拟密码完成前端支付演示</text>
+        <text class="sheet-helper-link" bindtap="onForgotPassword">忘记密码</text>
+      </view>
+
+      <view class="keypad">
+        <view class="keypad-row" wx:for="{{keypadRows}}" wx:for-item="row">
+          <view
+            class="keypad-key {{item.type === 'action' ? 'keypad-key-action' : ''}} {{item.type === 'blank' ? 'keypad-key-blank' : ''}}"
+            wx:for="{{row}}"
+            wx:key="key"
+            data-key="{{item.key}}"
+            data-type="{{item.type}}"
+            bindtap="onPasswordKeyTap"
+          >
+            <text wx:if="{{item.type !== 'blank'}}">{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
   </view>
 </view>

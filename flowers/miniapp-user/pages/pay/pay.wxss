@@ -1,79 +1,70 @@
 .pay-page {
   min-height: 100vh;
   padding: 24rpx 24rpx calc(36rpx + env(safe-area-inset-bottom));
-  background: linear-gradient(180deg, #ecfff5 0%, #f7fbff 40%, #ffffff 100%);
+  background: #ededed;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
-.pay-brand {
-  padding: 8rpx 4rpx 20rpx;
-}
-
-.pay-brand-title {
-  display: block;
-  font-size: 44rpx;
-  line-height: 1.2;
-  font-weight: 700;
-  color: #1f2a33;
-}
-
-.pay-brand-sub {
-  margin-top: 8rpx;
-  display: block;
-  font-size: 24rpx;
-  color: #5d6d79;
-}
-
-.card {
+.amount-panel {
+  margin-top: 12rpx;
+  padding: 48rpx 32rpx 40rpx;
   border-radius: 24rpx;
   background: #ffffff;
-  box-shadow: 0 12rpx 30rpx rgba(12, 28, 41, 0.08);
-}
-
-.amount-card {
-  padding: 32rpx 28rpx;
   text-align: center;
 }
 
-.amount-row {
+.page-caption {
+  display: block;
+  font-size: 28rpx;
+  color: #7a7a7a;
+}
+
+.amount-line {
+  margin-top: 28rpx;
   display: flex;
   align-items: baseline;
   justify-content: center;
 }
 
-.amount-symbol {
-  margin-right: 8rpx;
-  font-size: 42rpx;
-  color: #1f2a33;
-  font-weight: 600;
+.currency-symbol {
+  margin-right: 10rpx;
+  font-size: 46rpx;
+  color: #111111;
+  font-weight: 500;
 }
 
 .amount-value {
-  font-size: 78rpx;
+  font-size: 88rpx;
   line-height: 1;
-  color: #1f2a33;
-  font-weight: 800;
+  color: #111111;
+  font-weight: 700;
 }
 
-.amount-tip {
-  margin-top: 14rpx;
+.pay-target {
+  margin-top: 24rpx;
   display: block;
-  color: #5f6f7b;
-  font-size: 24rpx;
+  font-size: 28rpx;
+  color: #5f5f5f;
 }
 
-.order-card {
-  margin-top: 18rpx;
-  padding: 18rpx 24rpx;
+.pay-section {
+  margin-top: 24rpx;
+  border-radius: 24rpx;
+  background: #ffffff;
+  overflow: hidden;
 }
 
 .info-row {
-  min-height: 66rpx;
+  min-height: 96rpx;
+  padding: 0 28rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18rpx;
-  border-bottom: 1rpx solid #edf1f5;
+  gap: 24rpx;
+  border-bottom: 1rpx solid #efefef;
+  box-sizing: border-box;
 }
 
 .info-row:last-child {
@@ -81,15 +72,22 @@
 }
 
 .info-label {
-  font-size: 26rpx;
-  color: #6f7f8b;
+  flex-shrink: 0;
+  font-size: 28rpx;
+  color: #1f1f1f;
 }
 
 .info-value {
   flex: 1;
+  min-width: 0;
   text-align: right;
-  font-size: 26rpx;
-  color: #202c36;
+  font-size: 28rpx;
+  color: #1f1f1f;
+}
+
+.info-value-subtle {
+  color: #7a7a7a;
+  font-size: 24rpx;
 }
 
 .text-ellipsis {
@@ -98,37 +96,60 @@
   text-overflow: ellipsis;
 }
 
-.method-card {
-  margin-top: 18rpx;
-  padding: 22rpx 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18rpx;
+.loading-section {
+  padding: 34rpx 28rpx;
 }
 
-.method-left {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
+.loading-text {
+  display: block;
+  text-align: center;
+  font-size: 26rpx;
+  color: #7a7a7a;
+}
+
+.method-row {
+  min-height: 112rpx;
+}
+
+.method-main {
+  flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
 }
 
-.wechat-icon {
-  width: 68rpx;
-  height: 68rpx;
+.wechat-logo {
+  width: 72rpx;
+  height: 72rpx;
   border-radius: 18rpx;
   background: #07c160;
-  color: #ffffff;
-  font-size: 32rpx;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
   flex-shrink: 0;
 }
 
-.method-text {
+.wechat-bubble {
+  position: absolute;
+  background: #ffffff;
+  border-radius: 999rpx;
+}
+
+.bubble-large {
+  top: 14rpx;
+  left: 10rpx;
+  width: 30rpx;
+  height: 24rpx;
+}
+
+.bubble-small {
+  right: 10rpx;
+  bottom: 16rpx;
+  width: 24rpx;
+  height: 20rpx;
+}
+
+.method-copy {
+  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -136,60 +157,252 @@
 
 .method-title {
   font-size: 30rpx;
-  color: #17232d;
-  font-weight: 700;
+  color: #111111;
 }
 
 .method-desc {
-  margin-top: 4rpx;
-  font-size: 22rpx;
-  color: #6f7f8b;
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: #7a7a7a;
 }
 
-.method-tag {
-  padding: 4rpx 14rpx;
-  border-radius: 999rpx;
-  background: #e7f8ef;
-  color: #07a152;
-  font-size: 22rpx;
-  font-weight: 600;
+.method-check {
+  width: 38rpx;
+  height: 38rpx;
+  border-radius: 50%;
+  background: #07c160;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.safe-tip {
-  margin-top: 22rpx;
+.method-check-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.safe-row {
+  margin-top: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+}
+
+.safe-icon {
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  background: rgba(7, 193, 96, 0.14);
+  color: #07c160;
+  font-size: 20rpx;
+  line-height: 28rpx;
   text-align: center;
-  font-size: 22rpx;
-  color: #8a98a3;
 }
 
-.pay-actions {
-  margin-top: 28rpx;
+.safe-text {
+  font-size: 24rpx;
+  color: #7a7a7a;
+}
+
+.footer-actions {
+  margin-top: auto;
+  padding-top: 48rpx;
 }
 
 .pay-btn {
-  height: 92rpx;
-  border-radius: 20rpx;
+  height: 96rpx;
+  border-radius: 16rpx;
   background: #07c160;
   color: #ffffff;
   font-size: 32rpx;
   font-weight: 700;
-  line-height: 92rpx;
+  line-height: 96rpx;
 }
 
-.pay-btn::after {
+.pay-btn::after,
+.cancel-btn::after {
   border: none;
 }
 
 .cancel-btn {
-  margin-top: 14rpx;
-  height: 82rpx;
-  border-radius: 20rpx;
-  background: #f2f6f9;
-  color: #5f6f7b;
-  font-size: 28rpx;
-  line-height: 82rpx;
+  margin-top: 18rpx;
+  height: 88rpx;
+  border-radius: 16rpx;
+  background: #ffffff;
+  color: #4a4a4a;
+  font-size: 30rpx;
+  line-height: 88rpx;
 }
 
-.cancel-btn::after {
-  border: none;
+.agreement-text {
+  margin-top: 22rpx;
+  display: block;
+  text-align: center;
+  font-size: 22rpx;
+  color: #8d8d8d;
+}
+
+.password-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.password-sheet {
+  width: 100%;
+  padding: 0 0 calc(env(safe-area-inset-bottom) + 20rpx);
+  background: #f7f7f7;
+  border-radius: 28rpx 28rpx 0 0;
+  overflow: hidden;
+}
+
+.sheet-header {
+  height: 96rpx;
+  padding: 0 28rpx;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1rpx solid #ececec;
+}
+
+.sheet-close,
+.sheet-placeholder {
+  width: 56rpx;
+  text-align: center;
+  font-size: 44rpx;
+  color: #777777;
+}
+
+.sheet-title {
+  font-size: 30rpx;
+  color: #111111;
+  font-weight: 600;
+}
+
+.sheet-amount-block {
+  padding: 28rpx 32rpx 24rpx;
+  background: #ffffff;
+  text-align: center;
+}
+
+.sheet-payee {
+  display: block;
+  font-size: 26rpx;
+  color: #666666;
+}
+
+.sheet-amount-line {
+  margin-top: 18rpx;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.sheet-currency {
+  margin-right: 8rpx;
+  font-size: 40rpx;
+  color: #111111;
+}
+
+.sheet-amount {
+  font-size: 72rpx;
+  line-height: 1;
+  color: #111111;
+  font-weight: 700;
+}
+
+.password-boxes {
+  margin: 20rpx 24rpx 0;
+  display: flex;
+  background: #ffffff;
+  border-radius: 18rpx;
+  overflow: hidden;
+  border: 1rpx solid #e7e7e7;
+}
+
+.password-box {
+  flex: 1;
+  height: 88rpx;
+  border-right: 1rpx solid #e7e7e7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.password-box:last-child {
+  border-right: none;
+}
+
+.password-box-active {
+  box-shadow: inset 0 0 0 2rpx #07c160;
+}
+
+.password-dot {
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background: #111111;
+}
+
+.sheet-helper-row {
+  padding: 18rpx 28rpx 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sheet-helper-text {
+  font-size: 22rpx;
+  color: #8c8c8c;
+}
+
+.sheet-helper-link {
+  font-size: 24rpx;
+  color: #576b95;
+}
+
+.keypad {
+  margin-top: 8rpx;
+  padding: 0 12rpx;
+}
+
+.keypad-row {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 12rpx;
+}
+
+.keypad-key {
+  flex: 1;
+  height: 98rpx;
+  border-radius: 16rpx;
+  background: #ffffff;
+  color: #111111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  font-weight: 500;
+}
+
+.keypad-key-action {
+  background: #d9dce2;
+  color: #4f5966;
+  font-size: 28rpx;
+}
+
+.keypad-key-blank {
+  background: transparent;
 }

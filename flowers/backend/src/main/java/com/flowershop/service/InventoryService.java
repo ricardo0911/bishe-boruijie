@@ -5,6 +5,7 @@ import com.flowershop.dto.InventoryAlertResponse;
 import com.flowershop.exception.BusinessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -303,6 +304,81 @@ public class InventoryService {
         );
     }
 
+    @Transactional
+    public void adjustAvailableStock(Long flowerId, int targetStock, String reason, int shelfLifeDays, String qualityStatus) {
+        if (targetStock < 0) {
+            throw new BusinessException("INVALID_STOCK_TARGET", "Target stock cannot be negative");
+        }
+
+        List<BatchStockInternal> batches = jdbcTemplate.query(
+            """
+            SELECT id, current_qty, locked_qty
+            FROM inventory_batch
+            WHERE flower_id = ?
+            ORDER BY wilt_time ASC, receipt_time ASC
+            FOR UPDATE
+            """,
+            (rs, rowNum) -> new BatchStockInternal(
+                rs.getLong("id"),
+                rs.getBigDecimal("current_qty"),
+                rs.getBigDecimal("locked_qty")
+            ),
+            flowerId
+        );
+
+        BigDecimal currentAvailable = batches.stream()
+            .map(batch -> batch.currentQty().subtract(batch.lockedQty()))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal targetAvailable = BigDecimal.valueOf(targetStock);
+        int deltaSign = targetAvailable.compareTo(currentAvailable);
+
+        if (deltaSign == 0) {
+            return;
+        }
+
+        if (deltaSign > 0) {
+            addBatch(flowerId, reason == null ? "" : reason, targetStock - currentAvailable.intValue(), shelfLifeDays, qualityStatus);
+            return;
+        }
+
+        BigDecimal remainToReduce = currentAvailable.subtract(targetAvailable);
+        for (BatchStockInternal batch : batches) {
+            BigDecimal available = batch.currentQty().subtract(batch.lockedQty());
+            if (available.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+
+            BigDecimal reduceQty = min(available, remainToReduce);
+            if (reduceQty.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+
+            int updated = jdbcTemplate.update(
+                """
+                UPDATE inventory_batch
+                SET current_qty = current_qty - ?, updated_at = NOW()
+                WHERE id = ?
+                  AND current_qty - locked_qty >= ?
+                """,
+                reduceQty,
+                batch.batchId(),
+                reduceQty
+            );
+            if (updated == 0) {
+                throw new BusinessException("ADJUST_STOCK_FAILED", "Inventory batch changed during adjustment: " + batch.batchId());
+            }
+
+            remainToReduce = remainToReduce.subtract(reduceQty);
+            if (remainToReduce.compareTo(BigDecimal.ZERO) <= 0) {
+                break;
+            }
+        }
+
+        if (remainToReduce.compareTo(BigDecimal.ZERO) > 0) {
+            throw new BusinessException("INSUFFICIENT_AVAILABLE_STOCK", "Insufficient available stock for adjustment");
+        }
+    }
+
     private String findFlowerName(Long flowerId) {
         List<String> names = jdbcTemplate.query(
             "SELECT name FROM flower_material WHERE id = ?",
@@ -326,3 +402,4 @@ public class InventoryService {
     private record LockRow(Long id, Long batchId, BigDecimal lockQty) {
     }
 }
+

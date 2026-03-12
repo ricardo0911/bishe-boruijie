@@ -1,5 +1,6 @@
-﻿const { get, post } = require("../../utils/request");
-const { formatPrice, resolvePrice, pickText, resolveImageUrl, getUserId } = require("../../utils/format");
+const { requireLogin } = require("../../utils/auth");
+const { get, post } = require("../../utils/request");
+const { toNumber, formatPrice, resolvePrice, pickText, resolveImageUrl, resolveMerchantName, getUserId } = require("../../utils/format");
 
 const CATEGORY_META = {
   VALENTINE: { label: "情人花", short: "爱" },
@@ -22,6 +23,7 @@ Page({
     cartLoading: false,
     favoriteLoading: false,
     product: null,
+    merchantAddress: "",
     reviews: [],
     reviewPage: 1,
     reviewPageSize: 10,
@@ -36,6 +38,7 @@ Page({
   },
 
   onLoad(options) {
+    if (!requireLogin()) return;
     const id = Number(options.id || 0);
     if (!id) {
       wx.showToast({ title: "参数错误", icon: "none" });
@@ -43,9 +46,6 @@ Page({
     }
 
     this.setData({ productId: id });
-    if (wx.showShareMenu) {
-      wx.showShareMenu({ menus: ["shareAppMessage", "shareTimeline"] });
-    }
     this.loadAll();
     this.checkFavoriteStatus();
   },
@@ -58,31 +58,6 @@ Page({
     if (this.data.hasMoreReviews) {
       this.loadMoreReviews();
     }
-  },
-
-  onShareAppMessage() {
-    const product = this.data.product;
-    if (!product) {
-      return {
-        title: "花店精选",
-        path: "/pages/index/index",
-      };
-    }
-    return {
-      title: product.title,
-      desc: product.description || "精选鲜花，品质保证",
-      path: `/pages/detail/detail?id=${this.data.productId}`,
-      imageUrl: product.coverImage || "",
-    };
-  },
-
-  onShareTimeline() {
-    const product = this.data.product;
-    return {
-      title: product ? product.title : "花店精选",
-      query: `id=${this.data.productId}`,
-      imageUrl: product ? product.coverImage : "",
-    };
   },
 
   async loadAll() {
@@ -119,14 +94,19 @@ Page({
           }))
         : [];
 
+      const productStock = toNumber(item.stock, 0);
+      const productSales = toNumber(item.sales, 0);
       const specs = Array.isArray(item.specs) && item.specs.length
         ? item.specs
-        : [{ id: "default", name: "默认规格", price: resolvePrice(item), stock: item.stock || 999 }];
+        : [{ id: "default", name: "默认规格", price: resolvePrice(item), stock: productStock }];
 
       const specsWithPrice = specs.map((spec) => ({
         ...spec,
         price: formatPrice(spec.price),
+        stock: toNumber(spec.stock, productStock),
       }));
+
+      const merchantName = resolveMerchantName(item);
 
       this.setData({
         product: {
@@ -138,20 +118,48 @@ Page({
           categoryShort: meta.short,
           typeLabel: getTypeLabel(item.type),
           unitPrice: formatPrice(resolvePrice(item)),
+          merchantName,
           coverImage: resolveImageUrl(item.coverImage || item.cover_image || ""),
           images,
           packagingFee: formatPrice(item.packagingFee),
           deliveryFee: formatPrice(item.deliveryFee),
           bomItems,
           specs: specsWithPrice,
-          stock: item.stock || 999,
-          sales: item.sales || 0,
+          stock: productStock,
+          sales: productSales,
         },
         selectedSpec: specsWithPrice[0],
       });
+
+      this.loadMerchantAddress(merchantName);
     } catch (err) {
       wx.showToast({ title: "网络错误", icon: "none" });
     }
+  },
+
+  async loadMerchantAddress(merchantName) {
+    const name = String(merchantName || "").trim();
+    if (!name) {
+      this.setData({ merchantAddress: "" });
+      return;
+    }
+
+    try {
+      const res = await get("/merchants/public/list");
+      if (res.success && Array.isArray(res.data)) {
+        const match = res.data.find((item) => String((item && item.name) || "") === name);
+        this.setData({ merchantAddress: match && match.address ? String(match.address) : "" });
+        return;
+      }
+    } catch (err) {
+      // ignore
+    }
+
+    this.setData({ merchantAddress: "" });
+  },
+
+  onPickMerchant() {
+    wx.navigateTo({ url: "/pages/merchant-select/merchant-select" });
   },
 
   async loadReviews() {
@@ -170,7 +178,9 @@ Page({
         score: Number(item.score || 0),
         content: item.content || "",
         createTime: item.createTime || item.create_time || "",
-        images: item.images || [],
+        images: Array.isArray(item.images) ? item.images.map((img) => resolveImageUrl(img)) : [],
+        reply: item.reply || "",
+        replyTime: item.replyTime || item.reply_time || "",
       }));
 
       const start = (reviewPage - 1) * reviewPageSize;
@@ -278,6 +288,7 @@ Page({
   },
 
   async onAddCart() {
+    if (!requireLogin()) return;
     if (this.data.cartLoading || !this.data.productId) return;
 
     const { selectedSpec, quantity } = this.data;
@@ -308,6 +319,7 @@ Page({
   },
 
   onBuyNow() {
+    if (!requireLogin()) return;
     const { productId, selectedSpec, quantity } = this.data;
     if (!selectedSpec) {
       wx.showToast({ title: "请选择规格", icon: "none" });
@@ -340,7 +352,7 @@ Page({
   async onToggleFavorite() {
     const userId = getUserId();
     if (!userId) {
-      wx.showToast({ title: "请先登录", icon: "none" });
+      requireLogin();
       return;
     }
 
@@ -372,10 +384,6 @@ Page({
     } finally {
       this.setData({ favoriteLoading: false });
     }
-  },
-
-  onShare() {
-    // noop
   },
 
   onGoCart() {

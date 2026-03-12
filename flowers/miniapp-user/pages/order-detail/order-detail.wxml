@@ -11,8 +11,8 @@
     <view class="status-header status-{{order.statusClass}}">
       <view class="status-icon-wrap">
         <text class="status-icon" wx:if="{{order.status === 'PENDING_PAY'}}">⏰</text>
-        <text class="status-icon" wx:elif="{{order.status === 'PAID' || order.status === 'CONFIRMED'}}">📦</text>
-        <text class="status-icon" wx:elif="{{order.status === 'SHIPPED'}}">🚚</text>
+        <text class="status-icon" wx:elif="{{order.status === 'PAID'}}">📦</text>
+        <text class="status-icon" wx:elif="{{order.status === 'CONFIRMED' || order.status === 'SHIPPED'}}">🚚</text>
         <text class="status-icon" wx:elif="{{order.status === 'COMPLETED'}}">✅</text>
         <text class="status-icon" wx:elif="{{order.status === 'CANCELLED' || order.status === 'REFUNDED'}}">❌</text>
         <text class="status-icon" wx:else>📋</text>
@@ -29,7 +29,7 @@
     </view>
 
     <!-- 物流信息（已发货状态显示） -->
-    <view class="section logistics-section" wx:if="{{order.status === 'SHIPPED' || order.status === 'COMPLETED'}}">
+    <view class="section logistics-section" wx:if="{{order.status === 'CONFIRMED' || order.status === 'SHIPPED' || order.status === 'COMPLETED'}}">
       <view class="section-title">
         <text class="title-icon">🚚</text>
         <text class="title-text">物流信息</text>
@@ -51,7 +51,7 @@
           <text class="logistics-value">{{order.shippedAt || '-'}}</text>
         </view>
       </view>
-      <button wx:if="{{order.status === 'SHIPPED'}}" class="btn-secondary logistics-btn" bindtap="onViewLogistics">
+      <button class="btn-secondary action-btn" bindtap="onViewLogistics">
         查看物流详情
       </button>
     </view>
@@ -128,6 +128,14 @@
           <text class="info-label">支付时间</text>
           <text class="info-value">{{order.paidAt}}</text>
         </view>
+        <view class="info-item" wx:if="{{order.deliveryModeLabel}}">
+          <text class="info-label">配送方式</text>
+          <text class="info-value">{{order.deliveryModeLabel}}</text>
+        </view>
+        <view class="info-item" wx:if="{{order.deliverySlotLabel}}">
+          <text class="info-label">配送时段</text>
+          <text class="info-value">{{order.deliverySlotLabel}}</text>
+        </view>
         <view class="info-item" wx:if="{{order.remark}}">
           <text class="info-label">订单备注</text>
           <text class="info-value remark">{{order.remark}}</text>
@@ -176,14 +184,14 @@
     </block>
 
     <!-- 已支付/待发货状态 -->
-    <block wx:if="{{order.status === 'PAID' || order.status === 'CONFIRMED'}}">
+    <block wx:if="{{order.status === 'PAID'}}">
       <button class="btn-secondary action-btn" bindtap="onRefund" loading="{{actionLoading}}">
         申请退款
       </button>
     </block>
 
-    <!-- 已发货状态 -->
-    <block wx:if="{{order.status === 'SHIPPED'}}">
+    <!-- 待收货状态 -->
+    <block wx:if="{{order.status === 'CONFIRMED' || order.status === 'SHIPPED'}}">
       <button class="btn-secondary action-btn" bindtap="onViewLogistics">
         查看物流
       </button>
@@ -194,8 +202,8 @@
 
     <!-- 已完成状态 -->
     <block wx:if="{{order.status === 'COMPLETED'}}">
-      <button class="btn-secondary action-btn" bindtap="onViewLogistics">
-        查看物流
+      <button class="btn-secondary action-btn" bindtap="onRefund" loading="{{actionLoading}}">
+        申请退款
       </button>
       <button class="btn-primary action-btn" bindtap="onBuyAgain">
         再次购买
@@ -208,5 +216,27 @@
         再次购买
       </button>
     </block>
+  </view>
+
+  <view wx:if="{{showRefundDialog}}" class="refund-dialog-mask" bindtap="onCloseRefundDialog">
+    <view class="refund-dialog" catchtap="noop" catchtouchmove="noop">
+      <view class="refund-dialog-header">
+        <text class="refund-dialog-title">申请退款</text>
+        <text class="refund-dialog-subtitle">请填写退款理由，提交后将进入商家审核。</text>
+      </view>
+      <textarea
+        class="refund-dialog-textarea"
+        value="{{refundReason}}"
+        placeholder="请填写退款理由"
+        maxlength="500"
+        auto-height
+        focus="{{showRefundDialog}}"
+        bindinput="onInputRefundReason"
+      />
+      <view class="refund-dialog-footer">
+        <button class="refund-dialog-btn refund-dialog-cancel" bindtap="onCloseRefundDialog" disabled="{{actionLoading}}">取消</button>
+        <button class="refund-dialog-btn refund-dialog-confirm" bindtap="onSubmitRefund" loading="{{actionLoading}}">提交申请</button>
+      </view>
+    </view>
   </view>
 </view>

@@ -17,9 +17,15 @@
 
   <!-- 右侧商品区域 -->
   <view class="product-area">
-    <view class="category-brand">
-      <text class="category-brand-title">花之都 · 鲜花馆</text>
-      <text class="category-brand-sub">按场景挑选心意，今天也让花朵替你说话。</text>
+
+    <!-- 门店选择 -->
+    <view class="merchant-bar" bindtap="onPickMerchant">
+      <text class="merchant-bar-label">花店</text>
+      <view class="merchant-bar-main">
+        <text class="merchant-bar-name">{{selectedMerchantName}}</text>
+        <text wx:if="{{selectedMerchantAddress}}" class="merchant-bar-address">{{selectedMerchantAddress}}</text>
+      </view>
+      <text class="merchant-bar-arrow">›</text>
     </view>
 
     <!-- 分类标题 -->

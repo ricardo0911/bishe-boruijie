@@ -3,13 +3,21 @@ server:
 
 app:
   admin-web-root: ../flower-admin-web/
-  merchant-web-root: ../flower-web/
+  merchant-web-root: ../flower-merchant-web/
   upload-dir: uploads/
   debug-seed:
     enabled: false
   auth:
     enabled: true
-    admin-token: ${ADMIN_TOKEN:please-change-admin-token}
+    accounts:
+      admin:
+        account: ${ADMIN_ACCOUNT:admin}
+        password: ${ADMIN_PASSWORD:admin123456}
+        display-name: ${ADMIN_DISPLAY_NAME:System Admin}
+      merchant:
+        account: ${MERCHANT_ACCOUNT:merchant}
+        password: ${MERCHANT_PASSWORD:merchant123456}
+        display-name: ${MERCHANT_DISPLAY_NAME:Merchant Operator}
   wechat:
     pay:
       api-key: ${WECHAT_PAY_API_KEY:}

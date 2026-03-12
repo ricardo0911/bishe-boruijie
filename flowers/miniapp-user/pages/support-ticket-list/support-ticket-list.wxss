@@ -1,0 +1,263 @@
+.page {
+  min-height: 100vh;
+  padding: 24rpx;
+  background: #f8f5f6;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 24rpx;
+  border: 2rpx solid #f0e1e7;
+  box-shadow: 0 12rpx 28rpx rgba(154, 75, 102, 0.1);
+}
+
+.hero-card {
+  padding: 30rpx;
+  background: linear-gradient(135deg, #fff6f4 0%, #ffe8ee 100%);
+}
+
+.hero-title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #352b33;
+}
+
+.hero-desc {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 25rpx;
+  color: #7f6974;
+  line-height: 1.7;
+}
+
+.hero-btn,
+.empty-btn {
+  margin-top: 24rpx;
+  height: 78rpx;
+  line-height: 78rpx;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  padding: 0 28rpx;
+}
+
+.primary-btn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #cb4456 0%, #e56b87 100%);
+}
+
+.primary-btn::after,
+.mini-link::after {
+  border: none;
+}
+
+.filter-row {
+  margin: 22rpx 0 18rpx;
+  white-space: nowrap;
+}
+
+.filter-list {
+  display: inline-flex;
+  gap: 16rpx;
+  padding-right: 8rpx;
+}
+
+.filter-chip {
+  padding: 16rpx 26rpx;
+  border-radius: 999rpx;
+  background: #fff;
+  border: 2rpx solid #efd8e1;
+  color: #8a7580;
+  font-size: 24rpx;
+}
+
+.filter-chip-active {
+  background: #cb4456;
+  border-color: #cb4456;
+  color: #fff;
+}
+
+.ticket-card {
+  margin-bottom: 20rpx;
+  padding: 28rpx;
+}
+
+.ticket-top,
+.foot-row,
+.meta-row {
+  display: flex;
+  align-items: center;
+}
+
+.ticket-top {
+  justify-content: space-between;
+  gap: 20rpx;
+  align-items: flex-start;
+}
+
+.ticket-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.ticket-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #352b33;
+  line-height: 1.5;
+}
+
+.ticket-no {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #9a8b94;
+}
+
+.status-badge {
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.status-PENDING {
+  color: #a96b00;
+  background: #fff3d6;
+}
+
+.status-PROCESSING {
+  color: #1f6aa5;
+  background: #e5f2ff;
+}
+
+.status-RESOLVED {
+  color: #198754;
+  background: #e7f7ef;
+}
+
+.status-CLOSED {
+  color: #7f6974;
+  background: #f1ecef;
+}
+
+.meta-row {
+  gap: 14rpx;
+  flex-wrap: wrap;
+  margin-top: 18rpx;
+}
+
+.meta-tag {
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: #fff7fa;
+  color: #bb5476;
+  font-size: 22rpx;
+}
+
+.content-text {
+  display: block;
+  margin-top: 18rpx;
+  padding: 22rpx;
+  border-radius: 18rpx;
+  background: #fbf7f9;
+  font-size: 26rpx;
+  color: #4b3c45;
+  line-height: 1.7;
+}
+
+.reply-box {
+  margin-top: 18rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 18rpx;
+  background: #fdf5f8;
+  border: 1px solid #f0dfe6;
+}
+
+.reply-title {
+  display: block;
+  font-size: 24rpx;
+  color: #bb5476;
+  font-weight: 600;
+}
+
+.reply-content {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 25rpx;
+  color: #4b3c45;
+  line-height: 1.7;
+}
+
+.time-list {
+  margin-top: 18rpx;
+}
+
+.time-text,
+.contact-text {
+  display: block;
+  font-size: 22rpx;
+  color: #9a8b94;
+  line-height: 1.8;
+}
+
+.foot-row {
+  justify-content: space-between;
+  gap: 20rpx;
+  margin-top: 18rpx;
+  align-items: center;
+}
+
+.mini-link {
+  margin: 0;
+  min-width: 132rpx;
+  min-height: 56rpx;
+  line-height: 56rpx;
+  border-radius: 999rpx;
+  background: #fff7fa;
+  color: #bb5476;
+  border: 2rpx solid #efd8e1;
+  font-size: 22rpx;
+  padding: 0 18rpx;
+}
+
+.empty-wrap,
+.loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 180rpx 40rpx;
+}
+
+.empty-title,
+.loading-text {
+  font-size: 30rpx;
+  color: #352b33;
+  font-weight: 600;
+}
+
+.empty-desc {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  color: #9a8b94;
+  text-align: center;
+  line-height: 1.7;
+}
+
+.loading-spinner {
+  width: 48rpx;
+  height: 48rpx;
+  border: 4rpx solid #f0e6ea;
+  border-top-color: #bf4d68;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20rpx;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,66 @@
+<view class="container safe-bottom">
+  <view class="hero-card card">
+    <text class="hero-title">客服中心</text>
+    <text class="hero-desc">提交工单、电话咨询与售后帮助，都可以在这里快速处理。</text>
+
+    <view class="hero-status">
+      <text class="status-dot"></text>
+      <text class="status-text">服务时间：{{support.serviceHours}}</text>
+    </view>
+
+    <view class="action-row">
+      <button class="primary-btn action-btn" bindtap="onGoTicketForm">提交反馈</button>
+      <button class="secondary-btn action-btn" bindtap="onGoTicketList">我的反馈</button>
+      <button class="secondary-btn action-btn" bindtap="onCallPhone">电话咨询</button>
+    </view>
+
+    <view class="tip-box">
+      <text class="tip-text">若微信原生在线客服暂未开通，可直接提交客服工单，我们会根据你留下的联系方式尽快联系处理。</text>
+    </view>
+  </view>
+
+  <view class="card info-card">
+    <view class="section-head">
+      <text class="section-title">门店信息</text>
+      <text class="section-sub">{{support.serviceDesc}}</text>
+    </view>
+
+    <view class="info-item">
+      <text class="info-label">店铺名称</text>
+      <text class="info-value">{{support.name}}</text>
+    </view>
+    <view class="info-item">
+      <text class="info-label">客服电话</text>
+      <view class="info-side">
+        <text class="info-value">{{support.contactPhone}}</text>
+        <text class="inline-link" bindtap="onCopyPhone">复制</text>
+      </view>
+    </view>
+    <view class="info-item no-border">
+      <text class="info-label">门店地址</text>
+      <view class="info-side multi-line">
+        <text class="info-value address-text">{{support.address}}</text>
+        <text class="inline-link" bindtap="onCopyAddress">复制</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card faq-card">
+    <view class="section-head">
+      <text class="section-title">常见问题</text>
+      <text class="section-sub">下单、配送、售后快速解答</text>
+    </view>
+
+    <view class="faq-item {{item.expanded ? 'faq-item-open' : ''}}" wx:for="{{faqList}}" wx:key="question" data-index="{{index}}" bindtap="onToggleFaq">
+      <view class="faq-head">
+        <text class="faq-question">{{item.question}}</text>
+        <text class="faq-arrow">{{item.expanded ? '收起' : '展开'}}</text>
+      </view>
+      <text wx:if="{{item.expanded}}" class="faq-answer">{{item.answer}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-mask">
+    <text class="loading-text">正在同步客服信息...</text>
+  </view>
+</view>

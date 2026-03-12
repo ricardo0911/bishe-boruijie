@@ -6,6 +6,7 @@ import com.flowershop.dto.RefundRequest;
 import com.flowershop.dto.RefundResponse;
 import com.flowershop.dto.SimpleActionResponse;
 import com.flowershop.exception.BusinessException;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -40,9 +41,65 @@ public class AfterSaleService {
         this.inventoryService = inventoryService;
     }
 
+    @PostConstruct
+    public void ensureSchema() {
+        jdbcTemplate.execute(
+            """
+            CREATE TABLE IF NOT EXISTS after_sale_record (
+              id BIGINT PRIMARY KEY AUTO_INCREMENT,
+              refund_no VARCHAR(32) NOT NULL,
+              order_no VARCHAR(32) NOT NULL,
+              order_id BIGINT NOT NULL,
+              refund_amount DECIMAL(12, 2) NOT NULL,
+              reason VARCHAR(255) NOT NULL,
+              description TEXT NULL,
+              evidence_images VARCHAR(2000) NULL,
+              status VARCHAR(32) NOT NULL,
+              reject_reason VARCHAR(500) NULL,
+              transaction_id VARCHAR(64) NULL,
+              apply_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              audit_time DATETIME NULL,
+              refund_time DATETIME NULL,
+              created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+              UNIQUE KEY uk_refund_no (refund_no),
+              KEY idx_after_sale_order_id (order_id),
+              KEY idx_after_sale_order_no (order_no),
+              KEY idx_after_sale_status (status),
+              KEY idx_after_sale_apply_time (apply_time)
+            ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+            """
+        );
+
+        jdbcTemplate.execute("ALTER TABLE after_sale_record CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+        addColumnIfMissing(
+            "after_sale_record",
+            "original_order_status",
+            "ALTER TABLE after_sale_record ADD COLUMN original_order_status VARCHAR(32) NULL COMMENT 'original order status' AFTER evidence_images"
+        );
+    }
+
+        private void addColumnIfMissing(String tableName, String columnName, String alterSql) {
+        Integer count = jdbcTemplate.queryForObject(
+            """
+            SELECT COUNT(1)
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = ?
+              AND COLUMN_NAME = ?
+            """,
+            Integer.class,
+            tableName,
+            columnName
+        );
+        if (count == null || count == 0) {
+            jdbcTemplate.execute(alterSql);
+        }
+    }
+
     /**
      * 申请退款
-     * 订单状态: PAID/CONFIRMED -> REFUND_REQUESTED
+     * 订单状态: PAID/CONFIRMED/COMPLETED -> REFUND_REQUESTED
      */
     @Transactional
     public RefundResponse applyRefund(RefundRequest request) {
@@ -187,7 +244,7 @@ public class AfterSaleService {
         }
 
         // 3. 确定订单应该回到的状态
-        String originalStatus = determineOriginalStatus(record.orderId());
+        String originalStatus = resolveOriginalStatus(record);
 
         // 4. 更新售后记录状态
         jdbcTemplate.update(
@@ -338,7 +395,7 @@ public class AfterSaleService {
     // ===== 内部辅助方法 =====
 
     private boolean isRefundableStatus(String status) {
-        return "PAID".equals(status) || "CONFIRMED".equals(status);
+        return "PAID".equals(status) || "CONFIRMED".equals(status) || "COMPLETED".equals(status);
     }
 
     private boolean hasPendingAfterSale(Long orderId) {
@@ -359,8 +416,8 @@ public class AfterSaleService {
             PreparedStatement ps = connection.prepareStatement(
                 """
                 INSERT INTO after_sale_record(refund_no, order_no, order_id, refund_amount, reason,
-                    description, evidence_images, status, apply_time, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'REFUND_REQUESTED', NOW(), NOW(), NOW())
+                    description, evidence_images, original_order_status, status, apply_time, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'REFUND_REQUESTED', NOW(), NOW(), NOW())
                 """,
                 Statement.RETURN_GENERATED_KEYS
             );
@@ -371,6 +428,7 @@ public class AfterSaleService {
             ps.setString(5, request.getReason());
             ps.setString(6, request.getDescription());
             ps.setString(7, request.getEvidenceImages());
+            ps.setString(8, order.status());
             return ps;
         }, keyHolder);
 
@@ -419,7 +477,7 @@ public class AfterSaleService {
     private AfterSaleRecord getAfterSaleForUpdate(Long afterSaleId) {
         List<AfterSaleRecord> records = jdbcTemplate.query(
             """
-            SELECT id, refund_no, order_no, order_id, refund_amount, status
+            SELECT id, refund_no, order_no, order_id, refund_amount, status, original_order_status
             FROM after_sale_record
             WHERE id = ?
             FOR UPDATE
@@ -430,7 +488,8 @@ public class AfterSaleService {
                 rs.getString("order_no"),
                 rs.getLong("order_id"),
                 rs.getBigDecimal("refund_amount"),
-                rs.getString("status")
+                rs.getString("status"),
+                rs.getString("original_order_status")
             ),
             afterSaleId
         );
@@ -510,14 +569,29 @@ public class AfterSaleService {
         return orders.get(0);
     }
 
+    private String resolveOriginalStatus(AfterSaleRecord record) {
+        if (record.originalOrderStatus() != null && !record.originalOrderStatus().isBlank()) {
+            return record.originalOrderStatus();
+        }
+        return determineOriginalStatus(record.orderId());
+    }
+
     private String determineOriginalStatus(Long orderId) {
-        // 根据订单是否有支付时间判断原状态
-        LocalDateTime payTime = jdbcTemplate.queryForObject(
-            "SELECT pay_time FROM customer_order WHERE id = ?",
-            (rs, rowNum) -> toLocalDateTime(rs.getTimestamp("pay_time")),
+        String status = jdbcTemplate.queryForObject(
+            """
+            SELECT CASE
+                     WHEN completed_at IS NOT NULL THEN 'COMPLETED'
+                     WHEN shipped_at IS NOT NULL THEN 'CONFIRMED'
+                     WHEN pay_time IS NOT NULL THEN 'PAID'
+                     ELSE 'CONFIRMED'
+                   END AS original_status
+            FROM customer_order
+            WHERE id = ?
+            """,
+            String.class,
             orderId
         );
-        return payTime != null ? "PAID" : "CONFIRMED";
+        return status == null || status.isBlank() ? "CONFIRMED" : status;
     }
 
     private boolean mockWechatRefund(AfterSaleRecord record, String refundId) {
@@ -564,7 +638,8 @@ public class AfterSaleService {
         String orderNo,
         Long orderId,
         BigDecimal refundAmount,
-        String status
+        String status,
+        String originalOrderStatus
     ) {
     }
 }

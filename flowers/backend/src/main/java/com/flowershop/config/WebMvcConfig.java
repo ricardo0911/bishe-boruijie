@@ -22,7 +22,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${app.admin-web-root:../flower-admin-web/}")
     private String adminWebRoot;
 
-    @Value("${app.merchant-web-root:../flower-web/}")
+    @Value("${app.merchant-web-root:../flower-merchant-web/}")
     private String merchantWebRoot;
 
     @Value("${app.upload-dir:uploads/}")
@@ -40,14 +40,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
         String adminDistUri = toDistUri(adminWebRoot, "flower-admin-web");
         addSpaResourceHandler(registry, "/admin", adminDistUri);
 
-        String merchantDistUri = toDistUri(merchantWebRoot, "flower-web");
+        String merchantDistUri = toDistUri(merchantWebRoot, "flower-merchant-web");
         addSpaResourceHandler(registry, "/merchant", merchantDistUri);
         registry.addResourceHandler("/assets/**")
                 .addResourceLocations(merchantDistUri + "assets/");
 
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
         String uploadUri = uploadPath.toUri().toString();
-
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations(uploadUri);
     }
@@ -65,7 +64,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         }
 
                         Resource requestedResource = location.createRelative(normalizedPath);
-                        if (requestedResource.exists() && requestedResource.isReadable() && checkResource(requestedResource, location)) {
+                        if (requestedResource.exists()
+                                && requestedResource.isReadable()
+                                && checkResource(requestedResource, location)) {
                             return requestedResource;
                         }
 
@@ -91,11 +92,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private Path resolveDistPath(String webRoot, String moduleDirName) {
         Path userDir = Paths.get(System.getProperty("user.dir", ".")).toAbsolutePath().normalize();
         List<Path> candidates = List.of(
-            userDir.resolve(webRoot),
-            userDir.resolve("backend").resolve(webRoot),
-            userDir.resolve("flowers").resolve("backend").resolve(webRoot),
-            userDir.resolve(moduleDirName),
-            userDir.resolve("flowers").resolve(moduleDirName)
+                userDir.resolve(webRoot),
+                userDir.resolve("backend").resolve(webRoot),
+                userDir.resolve("flowers").resolve("backend").resolve(webRoot),
+                userDir.resolve(moduleDirName),
+                userDir.resolve("flowers").resolve(moduleDirName)
         );
 
         for (Path candidateRoot : candidates) {
@@ -110,47 +111,43 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        if (adminTokenInterceptor == null) {
+            return;
+        }
+
         registry.addInterceptor(adminTokenInterceptor)
                 .addPathPatterns("/api/v1/**")
-                // 排除不需要鉴权的路径
                 .excludePathPatterns(
-                        // 公开访问接口
-                        "/api/v1/products",
-                        "/api/v1/products/**",
+
                         "/api/v1/categories",
                         "/api/v1/categories/**",
                         "/api/v1/banners",
                         "/api/v1/banners/**",
-                        "/api/v1/reviews",
-                        "/api/v1/reviews/**",
-                        // 用户登录注册相关
+                        "/api/v1/auth/login",
+                        "/api/v1/auth/register",
+                        "/api/v1/auth/change-password",
                         "/api/v1/users/login",
                         "/api/v1/users/register",
                         "/api/v1/users/*",
                         "/api/v1/users/*/addresses",
                         "/api/v1/users/*/addresses/**",
                         "/api/v1/users/*/favorites",
-                        "/api/v1/users/*/favorites/**",
-                        "/api/v1/users/*/coupons",
-                        "/api/v1/users/*/coupons/**",
-                        // 购物车（用户端需要token但不需要admin token）
-                        "/api/v1/cart",
+                        "/api/v1/users/*/favorites/**",                        "/api/v1/cart",
                         "/api/v1/cart/**",
-                        // 订单（用户端）
                         "/api/v1/orders",
                         "/api/v1/orders/*",
                         "/api/v1/orders/user/**",
                         "/api/v1/orders/*/pay",
                         "/api/v1/orders/*/confirm",
+                        "/api/v1/orders/*/complete",
                         "/api/v1/orders/*/cancel",
                         "/api/v1/payment/callback",
                         "/api/v1/payment/status/**",
-                        // 上传接口（有单独的签名验证）
                         "/api/v1/upload",
                         "/api/v1/upload/**",
-                        // 商家公开接口
                         "/api/v1/merchants/public",
                         "/api/v1/merchants/public/**"
                 );
     }
 }
+

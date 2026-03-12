@@ -4,10 +4,12 @@ import com.flowershop.common.ApiResponse;
 import com.flowershop.dto.ProductDetailView;
 import com.flowershop.dto.ProductRecommendView;
 import com.flowershop.dto.ProductView;
+import com.flowershop.exception.BusinessException;
 import com.flowershop.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,8 +24,11 @@ public class ProductController {
     }
 
     @GetMapping
-    public ApiResponse<List<ProductView>> listProducts(@RequestParam(required = false) String category) {
-        return ApiResponse.success(productService.listProducts(category));
+    public ApiResponse<List<ProductView>> listProducts(
+        @RequestParam(required = false) String category,
+        @RequestParam(required = false) Long categoryId
+    ) {
+        return ApiResponse.success(productService.listProducts(category, categoryId));
     }
 
     @GetMapping("/recommend/recent")
@@ -65,9 +70,10 @@ public class ProductController {
             new BigDecimal(body.getOrDefault("packagingFee", "0").toString()),
             new BigDecimal(body.getOrDefault("deliveryFee", "0").toString()),
             (String) body.get("description"),
-            (String) body.get("coverImage")
+            (String) body.get("coverImage"),
+            parseBomItems(body.get("bomItems"))
         );
-        return ApiResponse.success("创建成功", null);
+        return ApiResponse.success("Created successfully", null);
     }
 
     @PutMapping("/{productId}")
@@ -82,8 +88,36 @@ public class ProductController {
             new BigDecimal(body.getOrDefault("deliveryFee", "0").toString()),
             (String) body.get("description"),
             (String) body.get("coverImage"),
-            (String) body.getOrDefault("status", "ON_SALE")
+            (String) body.getOrDefault("status", "ON_SALE"),
+            parseBomItems(body.get("bomItems"))
         );
-        return ApiResponse.success("更新成功", null);
+        return ApiResponse.success("Updated successfully", null);
+    }
+
+    @DeleteMapping("/{productId}")
+    public ApiResponse<String> deleteProduct(@PathVariable Long productId) {
+        productService.deleteProduct(productId);
+        return ApiResponse.success("Deleted successfully", null);
+    }
+
+    private List<ProductService.BomDemand> parseBomItems(Object rawBomItems) {
+        List<ProductService.BomDemand> bomItems = new ArrayList<>();
+        if (!(rawBomItems instanceof List<?> rawList)) {
+            return bomItems;
+        }
+        for (Object item : rawList) {
+            if (!(item instanceof Map<?, ?> rawMap)) {
+                continue;
+            }
+            Object flowerIdRaw = rawMap.get("flowerId");
+            Object dosageRaw = rawMap.get("dosage");
+            if (flowerIdRaw == null || dosageRaw == null) {
+                throw new BusinessException("INVALID_BOM_ITEM", "BOM item is missing flowerId or dosage");
+            }
+            Long flowerId = Long.parseLong(flowerIdRaw.toString());
+            BigDecimal dosage = new BigDecimal(dosageRaw.toString());
+            bomItems.add(new ProductService.BomDemand(flowerId, dosage));
+        }
+        return bomItems;
     }
 }

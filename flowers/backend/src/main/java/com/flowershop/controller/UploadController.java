@@ -1,14 +1,14 @@
 package com.flowershop.controller;
 
 import com.flowershop.common.ApiResponse;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.*;
+import com.flowershop.service.ImageStorageService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,27 +17,30 @@ import java.util.UUID;
 public class UploadController {
 
     private static final Set<String> ALLOWED_TYPES = Set.of(
-            "image/jpeg", "image/png", "image/gif", "image/webp"
+        "image/jpeg", "image/png", "image/gif", "image/webp"
     );
 
     private static final long MAX_SIZE = 5 * 1024 * 1024;
 
-    @Value("${app.upload-dir:uploads/}")
-    private String uploadDir;
+    private final ImageStorageService imageStorageService;
+
+    public UploadController(ImageStorageService imageStorageService) {
+        this.imageStorageService = imageStorageService;
+    }
 
     @PostMapping("/image")
     public ApiResponse<String> uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
-            return ApiResponse.fail("UPLOAD_EMPTY", "请选择要上传的文件");
+            return ApiResponse.fail("UPLOAD_EMPTY", "Please choose an image to upload");
         }
 
         if (file.getSize() > MAX_SIZE) {
-            return ApiResponse.fail("FILE_TOO_LARGE", "文件大小不能超过5MB");
+            return ApiResponse.fail("FILE_TOO_LARGE", "Image size must not exceed 5MB");
         }
 
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
-            return ApiResponse.fail("INVALID_TYPE", "仅支持 JPG/PNG/GIF/WEBP 格式");
+            return ApiResponse.fail("INVALID_TYPE", "Only JPG/PNG/GIF/WEBP images are supported");
         }
 
         String originalName = file.getOriginalFilename();
@@ -47,14 +50,6 @@ public class UploadController {
         }
 
         String newFileName = UUID.randomUUID() + ext;
-
-        Path dir = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Files.createDirectories(dir);
-
-        Path target = dir.resolve(newFileName);
-        file.transferTo(target.toFile());
-
-        String url = "/uploads/" + newFileName;
-        return ApiResponse.success(url);
+        return ApiResponse.success(imageStorageService.storeUploadedImage(file, newFileName));
     }
 }

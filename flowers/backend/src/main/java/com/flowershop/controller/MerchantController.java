@@ -22,6 +22,16 @@ public class MerchantController {
         return ApiResponse.success(merchantService.listMerchants());
     }
 
+    @GetMapping("/public/support")
+    public ApiResponse<Map<String, Object>> getPublicSupportInfo() {
+        return ApiResponse.success(merchantService.getPublicSupportInfo());
+    }
+
+    @GetMapping("/public/list")
+    public ApiResponse<List<Map<String, Object>>> listPublicMerchants() {
+        return ApiResponse.success(merchantService.listPublicMerchants());
+    }
+
     @PostMapping
     public ApiResponse<String> createMerchant(@RequestBody Map<String, String> body) {
         merchantService.createMerchant(

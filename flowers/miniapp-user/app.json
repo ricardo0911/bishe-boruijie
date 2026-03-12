@@ -1,21 +1,34 @@
 {
+  "entryPagePath": "pages/login/login",
   "pages": [
+    "pages/login/login",
+    "pages/register/register",
+    "pages/change-password/change-password",
     "pages/home/home",
+    "pages/merchant-select/merchant-select",
     "pages/search/search",
     "pages/category/category",
     "pages/cart/cart",
     "pages/orders/orders",
     "pages/profile/profile",
+    "pages/member-benefits/member-benefits",
+    "pages/service/service",
+    "pages/support-ticket/support-ticket",
+    "pages/support-ticket-list/support-ticket-list",
+    "pages/favorites/favorites",
+    "pages/review-list/review-list",
+    "pages/review-create/review-create",
     "pages/detail/detail",
     "pages/checkout/checkout",
     "pages/pay/pay",
     "pages/profile-edit/profile-edit",
     "pages/address-list/address-list",
     "pages/address-edit/address-edit",
+    "pages/logistics/logistics",
     "pages/order-detail/order-detail"
   ],
   "window": {
-    "navigationBarTitleText": "花之都",
+    "navigationBarTitleText": "\u82b1\u4e4b\u90fd",
     "navigationBarBackgroundColor": "#fff8f6",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#fff7f4",
@@ -29,31 +42,31 @@
     "list": [
       {
         "pagePath": "pages/home/home",
-        "text": "首页",
+        "text": "\u9996\u9875",
         "iconPath": "assets/tab/normal.png",
         "selectedIconPath": "assets/tab/active.png"
       },
       {
         "pagePath": "pages/category/category",
-        "text": "分类",
+        "text": "\u5206\u7c7b",
         "iconPath": "assets/tab/normal.png",
         "selectedIconPath": "assets/tab/active.png"
       },
       {
         "pagePath": "pages/cart/cart",
-        "text": "购物车",
+        "text": "\u8d2d\u7269\u8f66",
         "iconPath": "assets/tab/normal.png",
         "selectedIconPath": "assets/tab/active.png"
       },
       {
         "pagePath": "pages/orders/orders",
-        "text": "订单",
+        "text": "\u8ba2\u5355",
         "iconPath": "assets/tab/normal.png",
         "selectedIconPath": "assets/tab/active.png"
       },
       {
         "pagePath": "pages/profile/profile",
-        "text": "我的",
+        "text": "\u6211\u7684",
         "iconPath": "assets/tab/normal.png",
         "selectedIconPath": "assets/tab/active.png"
       }

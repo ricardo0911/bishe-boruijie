@@ -33,8 +33,10 @@ public class TextEncodingRepairService {
         int updatedRows = 0;
         updatedRows += repairTable("product", "id", List.of("title", "description"));
         updatedRows += repairTable("order_item", "id", List.of("product_title"));
+        updatedRows += repairTable("customer_order", "id", List.of("receiver_name", "receiver_address", "remark"));
         updatedRows += repairTable("user_customer", "id", List.of("name"));
         updatedRows += repairTable("user_address", "id", List.of("receiver_name", "province", "city", "district", "detail"));
+        updatedRows += repairTable("after_sale_record", "id", List.of("reason", "description", "reject_reason"));
 
         if (updatedRows > 0) {
             log.warn("Detected and repaired mojibake text rows: {}", updatedRows);

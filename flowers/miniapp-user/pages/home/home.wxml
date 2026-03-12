@@ -1,6 +1,17 @@
-<scroll-view class="container safe-bottom" scroll-y="true" refresher-enabled="true" refresher-triggered="{{refreshing}}" bindrefresherrefresh="onPullDownRefresh">
+<scroll-view class="container" scroll-y="true" refresher-enabled="true" refresher-triggered="{{refreshing}}" bindrefresherrefresh="onPullDownRefresh">
   <view class="search-wrap card" bindtap="goSearchPage">
     <text class="search-placeholder">搜索鲜花、花束、节日主题</text>
+  </view>
+
+  <view class="merchant-pick card" bindtap="onPickMerchant">
+    <view class="merchant-pick-main">
+      <text class="merchant-pick-label">花店</text>
+      <view class="merchant-pick-info">
+        <text class="merchant-pick-name">{{selectedMerchantName}}</text>
+        <text wx:if="{{selectedMerchantAddress}}" class="merchant-pick-address">{{selectedMerchantAddress}}</text>
+      </view>
+    </view>
+    <text class="merchant-pick-arrow">›</text>
   </view>
 
   <view class="brand-hero card">
@@ -80,6 +91,7 @@
         <view wx:else class="inspiration-badge">{{item.categoryShort}}</view>
         <view class="inspiration-info">
           <text class="inspiration-title">{{item.title}}</text>
+          <text class="inspiration-merchant">{{item.merchantName}}</text>
           <text class="inspiration-reason">{{item.reason}}</text>
           <view class="inspiration-bottom">
             <text class="inspiration-sales" wx:if="{{item.recentSales>0}}">近30天 {{item.recentSales}} 单</text>
@@ -111,6 +123,7 @@
       </view>
       <view class="product-content">
         <text class="product-title">{{item.title}}</text>
+        <text class="product-merchant">{{item.merchantName}}</text>
         <text wx:if="{{item.recentSales>0}}" class="recent-sales">近30天销量 {{item.recentSales}}</text>
         <view class="price-row">
           <text class="price-symbol">¥</text>
@@ -131,6 +144,7 @@
       </view>
       <view class="product-content">
         <text class="product-title">{{item.title}}</text>
+        <text class="product-merchant">{{item.merchantName}}</text>
         <view class="price-row">
           <text class="price-symbol">¥</text>
           <text class="price-value">{{item.unitPrice}}</text>

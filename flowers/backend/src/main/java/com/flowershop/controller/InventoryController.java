@@ -40,4 +40,15 @@ public class InventoryController {
         );
         return ApiResponse.success("入库成功", null);
     }
+    @PostMapping("/adjust")
+    public ApiResponse<String> adjustStock(@RequestBody Map<String, Object> body) {
+        inventoryService.adjustAvailableStock(
+            Long.parseLong(body.get("flowerId").toString()),
+            Integer.parseInt(body.get("targetStock").toString()),
+            (String) body.getOrDefault("reason", ""),
+            Integer.parseInt(body.getOrDefault("shelfLifeDays", "7").toString()),
+            (String) body.getOrDefault("qualityStatus", "A")
+        );
+        return ApiResponse.success("库存调整成功", null);
+    }
 }

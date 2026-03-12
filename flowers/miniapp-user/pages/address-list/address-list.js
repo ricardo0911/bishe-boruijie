@@ -1,5 +1,6 @@
 ﻿const { get, del, patch } = require("../../utils/request");
 const { getUserId } = require("../../utils/format");
+const { requireLogin } = require("../../utils/auth");
 
 function normalizeAddress(item) {
   const address = {
@@ -32,6 +33,7 @@ Page({
   },
 
   onLoad(options) {
+    if (!requireLogin()) return;
     this.setData({
       from: (options && options.from) || "",
     });
@@ -39,6 +41,7 @@ Page({
   },
 
   onShow() {
+    if (!requireLogin()) return;
     const needRefresh = wx.getStorageSync("address_list_need_refresh");
     if (needRefresh) {
       wx.removeStorageSync("address_list_need_refresh");

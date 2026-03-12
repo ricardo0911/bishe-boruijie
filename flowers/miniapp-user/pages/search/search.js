@@ -1,5 +1,8 @@
 ﻿const { get } = require("../../utils/request");
 const { formatPrice, resolvePrice, resolveImageUrl } = require("../../utils/format");
+const { requireLogin } = require("../../utils/auth");
+
+const SELECTED_MERCHANT_KEY = "selected_merchant";
 
 const CATEGORY_LABEL_MAP = {
   VALENTINE: "情人节",
@@ -58,15 +61,30 @@ Page({
     categories: [],
     activeCategory: "ALL",
     activeCategoryLabel: "全部分类",
+    selectedMerchantName: "全部花店",
   },
 
   onLoad(options) {
+    if (!requireLogin()) return;
     const keyword = options && options.q ? decodeURIComponent(options.q) : "";
+    this.refreshSelectedMerchant();
     this.setData({ keyword: keyword.trim() });
     this.loadProducts();
   },
 
+  onShow() {
+    if (!requireLogin()) return;
+    const changed = this.refreshSelectedMerchant();
+    if (changed && !this.data.loading) {
+      this.loadProducts();
+    }
+  },
+
   onPullDownRefresh() {
+    if (!requireLogin()) {
+      wx.stopPullDownRefresh();
+      return;
+    }
     this.loadProducts().finally(() => wx.stopPullDownRefresh());
   },
 
@@ -87,8 +105,12 @@ Page({
         return;
       }
 
+      const selectedMerchant = wx.getStorageSync(SELECTED_MERCHANT_KEY);
+      const selectedName = selectedMerchant && selectedMerchant.name ? String(selectedMerchant.name) : "";
+
       const products = res.data.map(normalizeProduct);
-      const categories = buildCategories(products);
+      const filteredByMerchant = selectedName ? products.filter((item) => item.shopName === selectedName) : products;
+      const categories = buildCategories(filteredByMerchant);
       const activeCategoryExists = categories.some((item) => item.key === this.data.activeCategory);
       const activeCategory = activeCategoryExists ? this.data.activeCategory : "ALL";
       const activeCategoryLabel = (categories.find((item) => item.key === activeCategory) || categories[0]).label;
@@ -96,7 +118,7 @@ Page({
       this.setData(
         {
           loading: false,
-          products,
+          products: filteredByMerchant,
           categories,
           activeCategory,
           activeCategoryLabel,
@@ -114,6 +136,18 @@ Page({
       });
       wx.showToast({ title: "网络错误", icon: "none" });
     }
+  },
+
+  refreshSelectedMerchant() {
+    const selected = wx.getStorageSync(SELECTED_MERCHANT_KEY);
+    const name = selected && selected.name ? String(selected.name) : "全部花店";
+    const changed = name !== this.data.selectedMerchantName;
+    this.setData({ selectedMerchantName: name });
+    return changed;
+  },
+
+  onPickMerchant() {
+    wx.navigateTo({ url: "/pages/merchant-select/merchant-select" });
   },
 
   onInputKeyword(e) {

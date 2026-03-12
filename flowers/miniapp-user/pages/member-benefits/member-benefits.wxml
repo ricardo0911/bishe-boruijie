@@ -1,0 +1,67 @@
+<view class="container safe-bottom member-page">
+  <view class="card hero-card">
+    <text class="hero-badge">会员中心</text>
+    <text class="hero-title">{{member.levelName}}</text>
+    <text class="hero-subtitle">当前积分 {{member.points}}</text>
+    <text class="hero-desc">{{member.summary}}</text>
+
+    <view class="progress-panel">
+      <view class="progress-head">
+        <text class="progress-label">成长进度</text>
+        <text class="progress-value">{{member.progress}}%</text>
+      </view>
+      <view class="progress-track">
+        <view class="progress-fill" style="width: {{member.progress}}%;"></view>
+      </view>
+      <text class="progress-tip">{{member.toNextText}}</text>
+    </view>
+  </view>
+
+  <view class="card rights-card">
+    <view class="section-head">
+      <text class="section-title">当前权益</text>
+      <text class="section-sub">会员等级越高，下单折扣越划算</text>
+    </view>
+
+    <view class="right-item">
+      <text class="right-dot"></text>
+      <text class="right-text">购买时自动享会员折扣</text>
+    </view>
+    <view class="right-item">
+      <text class="right-dot"></text>
+      <text class="right-text">当前等级：{{member.levelName}}</text>
+    </view>
+    <view class="right-item">
+      <text class="right-dot"></text>
+      <text class="right-text">当前折扣：{{member.discountText}}</text>
+    </view>
+  </view>
+
+  <view class="card levels-card">
+    <view class="section-head">
+      <text class="section-title">会员等级说明</text>
+      <text class="section-sub">积分达到门槛后，购买时自动生效</text>
+    </view>
+
+    <view wx:for="{{levelCards}}" wx:key="key" class="level-item {{item.isCurrent ? 'level-item-current' : item.isUnlocked ? 'level-item-unlocked' : ''}}">
+      <view class="level-head">
+        <view>
+          <text class="level-name">{{item.levelName}}</text>
+          <text class="level-threshold">满{{item.minPoints}}积分</text>
+        </view>
+        <text class="level-discount">{{item.discountText}}</text>
+      </view>
+      <text class="level-benefit">{{item.benefitText}}</text>
+      <view class="level-foot">
+        <text class="level-save">{{item.sampleSaveText}}</text>
+        <text class="level-status">{{item.statusText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <button class="primary-btn" bindtap="onGoShopping">去逛逛</button>
+
+  <view wx:if="{{loading}}" class="loading-wrap">
+    <text class="loading-text">正在同步会员信息...</text>
+  </view>
+</view>

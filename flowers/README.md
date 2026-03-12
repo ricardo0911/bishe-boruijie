@@ -14,9 +14,10 @@
 .
 ├─ backend/                     # Spring Boot 后端
 ├─ miniapp-user/                # 微信小程序（用户端）
-├─ flower-web/                  # 前端页面（用户端/商家端/管理员端）
+├─ flower-admin-web/            # 管理员端
+├─ flower-merchant-web/         # 商家端
 ├─ analysis/                    # Python 分析服务（FastAPI）
-├─ db/                          # MySQL 建表与种子数据
+├─ sql/                         # MySQL 当前数据库导出初始化文件
 ├─ docs/                        # 接口清单、系统设计模板、架构说明
 └─ README.md
 ```
@@ -37,8 +38,7 @@
 
 1) 新建 MySQL 数据库并执行脚本：
 
-- `db/schema.sql`
-- `db/seed.sql`
+- `sql/init.sql`
 
 2) 默认数据库名：`flower_shop`
 
@@ -84,7 +84,11 @@ uvicorn service:app --reload --port 8001
 先构建前端：
 
 ```bash
-cd flower-web
+cd flower-admin-web
+npm install
+npm run build
+
+cd ../flower-merchant-web
 npm install
 npm run build
 ```
@@ -93,6 +97,7 @@ npm run build
 
 - `http://localhost:18080/merchant`
 - `http://localhost:18080/admin`
+- 管理端现已改为服务端会话鉴权：登录后前端只需携带 `X-Admin-Token`，后端从 `auth_session` 表解析角色，不再信任前端传入角色头。
 
 说明：
 - 后端对管理类接口启用了 `X-Admin-Token` 校验，默认值为 `please-change-admin-token`。

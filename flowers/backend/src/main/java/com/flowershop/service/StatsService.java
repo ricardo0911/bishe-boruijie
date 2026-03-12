@@ -26,7 +26,7 @@ public class StatsService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // ===== 销售概览统计 =====
+    // ===== 闂佸簱鍋撻柛鐑嗗枟椤┭呮喆閸垻鍩犻悹?=====
 
     public SalesOverviewResponse getSalesOverview() {
         return new SalesOverviewResponse(
@@ -90,7 +90,7 @@ public class StatsService {
         ));
     }
 
-    // ===== 销售趋势分析 =====
+    // ===== 闂佸簱鍋撻柛鐑嗗枦缁夊ジ宕濋崹顔肩€婚柡?=====
 
     public SalesTrendResponse getSalesTrend(String period, LocalDate startDate, LocalDate endDate) {
         String periodType = validatePeriod(period);
@@ -197,7 +197,7 @@ public class StatsService {
         ), Date.valueOf(startDate), Date.valueOf(endDate));
     }
 
-    // ===== 热销商品排行 =====
+    // ===== 闁绘埈鍙冮弨銏ゅ疮閸℃鎯傞柟鐑樺笩椤?=====
 
     public TopProductResponse getTopProducts(Integer limit, LocalDate startDate, LocalDate endDate) {
         int safeLimit = limit == null ? 10 : Math.max(1, Math.min(limit, 100));
@@ -237,13 +237,13 @@ public class StatsService {
         return new TopProductResponse(safeLimit, products);
     }
 
-    // ===== 品类销售分析 =====
+    // ===== 闁告繀鑳剁悮顐︽煥閳ь剟宕鐓庣€婚柡?=====
 
     public CategorySalesResponse getCategorySales(LocalDate startDate, LocalDate endDate) {
         LocalDate effectiveStart = startDate != null ? startDate : LocalDate.now().minusDays(30);
         LocalDate effectiveEnd = endDate != null ? endDate : LocalDate.now();
 
-        // 获取总销售额用于计算占比
+        // 闁兼儳鍢茶ぐ鍥箑婵犳碍鏁橀柛鐑嗗櫍椤ゅ倿鎮介妸銈囪壘閻犱緤绱曢悾濠氬础閻樺磭妲?
         BigDecimal totalSales = jdbcTemplate.queryForObject("""
             SELECT COALESCE(SUM(oi.line_amount), 0)
             FROM order_item oi
@@ -301,7 +301,7 @@ public class StatsService {
         );
     }
 
-    // ===== 低库存预警 =====
+    // ===== 濞达絽楠哥花杈┾偓娑欙耿椤ｂ晝鎷?=====
 
     public LowStockAlertResponse getLowStockAlerts(Integer threshold) {
         String sql = """
@@ -344,84 +344,153 @@ public class StatsService {
         return new LowStockAlertResponse(items.size(), items);
     }
 
-    // ===== 原有仪表板统计（保留） =====
+    // ===== 闁告鍠愬﹢浣圭椤忓洢鈧啴寮剁捄銊у煚閻犱讲妲勭槐娆愮┍濠靛牊娈岄柨?=====
 
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new LinkedHashMap<>();
 
-        // 用户数
-        Integer userCount = jdbcTemplate.queryForObject("SELECT COUNT(1) FROM user_customer", Integer.class);
-        stats.put("totalUsers", userCount != null ? userCount : 0);
+        String userTable = resolvePreferredTable("user_customer", "users");
+        stats.put("totalUsers", switch (userTable) {
+            case "users" -> queryInt("SELECT COUNT(1) FROM users");
+            case "user_customer" -> queryInt("SELECT COUNT(1) FROM user_customer");
+            default -> 0;
+        });
 
-        // 商品数
-        Integer productCount = jdbcTemplate.queryForObject(
-            "SELECT COUNT(1) FROM product WHERE status = 'ON_SALE'", Integer.class);
-        stats.put("totalProducts", productCount != null ? productCount : 0);
+        String productTable = resolvePreferredTable("product", "products");
+        stats.put("totalProducts", switch (productTable) {
+            case "products" -> queryInt("SELECT COUNT(1) FROM products WHERE status = 1");
+            case "product" -> queryInt("SELECT COUNT(1) FROM product WHERE status = 'ON_SALE'");
+            default -> 0;
+        });
 
-        // 花材种类
-        Integer flowerCount = jdbcTemplate.queryForObject(
-            "SELECT COUNT(1) FROM flower_material WHERE enabled = 1", Integer.class);
-        stats.put("totalFlowers", flowerCount != null ? flowerCount : 0);
+        String flowerTable = resolvePreferredTable("flower_material", "flowers");
+        stats.put("totalFlowers", switch (flowerTable) {
+            case "flowers" -> queryInt("SELECT COUNT(1) FROM flowers WHERE status = 1");
+            case "flower_material" -> queryInt("SELECT COUNT(1) FROM flower_material WHERE enabled = 1");
+            default -> 0;
+        });
 
-        // 今日订单数
-        Integer todayOrders = jdbcTemplate.queryForObject(
-            "SELECT COUNT(1) FROM customer_order WHERE DATE(created_at) = CURDATE()", Integer.class);
-        stats.put("todayOrders", todayOrders != null ? todayOrders : 0);
+        String orderTable = resolvePreferredTable("customer_order", "orders");
+        if ("orders".equals(orderTable)) {
+            stats.put("todayOrders", queryInt("SELECT COUNT(1) FROM orders WHERE DATE(created_at) = CURDATE()"));
+            stats.put("todaySales", queryDecimal("""
+                SELECT COALESCE(SUM(COALESCE(pay_amount, total_amount)), 0)
+                FROM orders
+                WHERE DATE(created_at) = CURDATE() AND status IN ('PAID','PROCESSING','DELIVERING','COMPLETED')
+                """));
+            stats.put("weekOrders", queryInt("SELECT COUNT(1) FROM orders WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"));
+            stats.put("weekSales", queryDecimal("""
+                SELECT COALESCE(SUM(COALESCE(pay_amount, total_amount)), 0)
+                FROM orders
+                WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                  AND status IN ('PAID','PROCESSING','DELIVERING','COMPLETED')
+                """));
+            stats.put("monthOrders", queryInt("SELECT COUNT(1) FROM orders WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)"));
+            stats.put("monthSales", queryDecimal("""
+                SELECT COALESCE(SUM(COALESCE(pay_amount, total_amount)), 0)
+                FROM orders
+                WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                  AND status IN ('PAID','PROCESSING','DELIVERING','COMPLETED')
+                """));
+            stats.put("pendingOrders", queryInt("SELECT COUNT(1) FROM orders WHERE status = 'PAID'"));
+        } else if ("customer_order".equals(orderTable)) {
+            stats.put("todayOrders", queryInt("SELECT COUNT(1) FROM customer_order WHERE DATE(created_at) = CURDATE()"));
+            stats.put("todaySales", queryDecimal("""
+                SELECT COALESCE(SUM(payment_amount), 0)
+                FROM customer_order
+                WHERE DATE(created_at) = CURDATE() AND status IN ('PAID','CONFIRMED','COMPLETED')
+                """));
+            stats.put("weekOrders", queryInt("SELECT COUNT(1) FROM customer_order WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"));
+            stats.put("weekSales", queryDecimal("""
+                SELECT COALESCE(SUM(payment_amount), 0)
+                FROM customer_order
+                WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                  AND status IN ('PAID','CONFIRMED','COMPLETED')
+                """));
+            stats.put("monthOrders", queryInt("SELECT COUNT(1) FROM customer_order WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)"));
+            stats.put("monthSales", queryDecimal("""
+                SELECT COALESCE(SUM(payment_amount), 0)
+                FROM customer_order
+                WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                  AND status IN ('PAID','CONFIRMED','COMPLETED')
+                """));
+            stats.put("pendingOrders", queryInt("SELECT COUNT(1) FROM customer_order WHERE status = 'PAID'"));
+        } else {
+            stats.put("todayOrders", 0);
+            stats.put("todaySales", BigDecimal.ZERO);
+            stats.put("weekOrders", 0);
+            stats.put("weekSales", BigDecimal.ZERO);
+            stats.put("monthOrders", 0);
+            stats.put("monthSales", BigDecimal.ZERO);
+            stats.put("pendingOrders", 0);
+        }
 
-        // 今日销售额
-        BigDecimal todaySales = jdbcTemplate.queryForObject(
-            """
-            SELECT COALESCE(SUM(payment_amount), 0)
-            FROM customer_order
-            WHERE DATE(created_at) = CURDATE() AND status IN ('PAID','CONFIRMED','COMPLETED')
-            """, BigDecimal.class);
-        stats.put("todaySales", todaySales != null ? todaySales : BigDecimal.ZERO);
-
-        // 近7天订单数
-        Integer weekOrders = jdbcTemplate.queryForObject(
-            "SELECT COUNT(1) FROM customer_order WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)", Integer.class);
-        stats.put("weekOrders", weekOrders != null ? weekOrders : 0);
-
-        // 近7天销售额
-        BigDecimal weekSales = jdbcTemplate.queryForObject(
-            """
-            SELECT COALESCE(SUM(payment_amount), 0)
-            FROM customer_order
-            WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-              AND status IN ('PAID','CONFIRMED','COMPLETED')
-            """, BigDecimal.class);
-        stats.put("weekSales", weekSales != null ? weekSales : BigDecimal.ZERO);
-
-        // 近30天订单数
-        Integer monthOrders = jdbcTemplate.queryForObject(
-            "SELECT COUNT(1) FROM customer_order WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)", Integer.class);
-        stats.put("monthOrders", monthOrders != null ? monthOrders : 0);
-
-        // 近30天销售额
-        BigDecimal monthSales = jdbcTemplate.queryForObject(
-            """
-            SELECT COALESCE(SUM(payment_amount), 0)
-            FROM customer_order
-            WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-              AND status IN ('PAID','CONFIRMED','COMPLETED')
-            """, BigDecimal.class);
-        stats.put("monthSales", monthSales != null ? monthSales : BigDecimal.ZERO);
-
-        // 待处理订单（PAID 但还未 CONFIRMED/COMPLETED）
-        Integer pendingOrders = jdbcTemplate.queryForObject(
-            "SELECT COUNT(1) FROM customer_order WHERE status = 'PAID'", Integer.class);
-        stats.put("pendingOrders", pendingOrders != null ? pendingOrders : 0);
-
-        // 库存预警数
-        Integer alertCount = jdbcTemplate.queryForObject(
-            """
-            SELECT COUNT(1)
-            FROM flower_material f
-            WHERE f.enabled = 1 AND f.warn_threshold >
-                (SELECT COALESCE(SUM(ib.current_qty - ib.locked_qty), 0) FROM inventory_batch ib WHERE ib.flower_id = f.id)
-            """, Integer.class);
-        stats.put("inventoryAlerts", alertCount != null ? alertCount : 0);
+        if ("flowers".equals(flowerTable) && tableExists("inventory_batches")) {
+            stats.put("inventoryAlerts", queryInt("""
+                SELECT COUNT(1)
+                FROM flowers f
+                WHERE f.status = 1 AND f.alert_threshold >
+                    (SELECT COALESCE(SUM(ib.current_qty), 0) FROM inventory_batches ib WHERE ib.flower_id = f.id)
+                """));
+        } else if ("flower_material".equals(flowerTable) && tableExists("inventory_batch")) {
+            stats.put("inventoryAlerts", queryInt("""
+                SELECT COUNT(1)
+                FROM flower_material f
+                WHERE f.enabled = 1 AND f.warn_threshold >
+                    (SELECT COALESCE(SUM(ib.current_qty - ib.locked_qty), 0) FROM inventory_batch ib WHERE ib.flower_id = f.id)
+                """));
+        } else {
+            stats.put("inventoryAlerts", 0);
+        }
 
         return stats;
+    }
+
+    private int queryInt(String sql) {
+        Integer value = jdbcTemplate.queryForObject(sql, Integer.class);
+        return value != null ? value : 0;
+    }
+
+    private BigDecimal queryDecimal(String sql) {
+        BigDecimal value = jdbcTemplate.queryForObject(sql, BigDecimal.class);
+        return value != null ? value : BigDecimal.ZERO;
+    }
+
+    private String resolvePreferredTable(String currentTable, String legacyTable) {
+        if (tableHasRows(currentTable)) {
+            return currentTable;
+        }
+        if (tableHasRows(legacyTable)) {
+            return legacyTable;
+        }
+        if (tableExists(currentTable)) {
+            return currentTable;
+        }
+        if (tableExists(legacyTable)) {
+            return legacyTable;
+        }
+        return null;
+    }
+
+    private boolean tableExists(String tableName) {
+        Integer count = jdbcTemplate.queryForObject(
+            """
+            SELECT COUNT(1)
+            FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = ?
+            """,
+            Integer.class,
+            tableName
+        );
+        return count != null && count > 0;
+    }
+
+    private boolean tableHasRows(String tableName) {
+        if (!tableExists(tableName)) {
+            return false;
+        }
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(1) FROM " + tableName, Integer.class);
+        return count != null && count > 0;
     }
 }

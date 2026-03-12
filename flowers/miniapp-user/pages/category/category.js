@@ -1,5 +1,8 @@
 const { get } = require("../../utils/request");
-const { formatPrice, resolvePrice, resolveImageUrl } = require("../../utils/format");
+const { formatPrice, resolvePrice, resolveImageUrl, resolveMerchantName } = require("../../utils/format");
+const { requireLogin } = require("../../utils/auth");
+
+const SELECTED_MERCHANT_KEY = "selected_merchant";
 
 const PAGE_SIZE = 10;
 
@@ -8,6 +11,8 @@ Page({
     categories: [],
     currentCategoryId: null,
     currentCategoryName: "全部商品",
+    selectedMerchantName: "全部花店",
+    selectedMerchantAddress: "",
     products: [],
     page: 0,
     size: PAGE_SIZE,
@@ -17,10 +22,12 @@ Page({
   },
 
   onLoad(options) {
+    if (!requireLogin("/pages/category/category")) return;
+    this.refreshSelectedMerchant();
     this.loadCategories().then(() => {
       if (options && options.categoryId) {
         const categoryId = parseInt(options.categoryId, 10);
-        this.switchCategory(categoryId);
+        this.switchCategory(Number.isNaN(categoryId) ? options.categoryId : categoryId);
       } else {
         this.loadProducts();
       }
@@ -28,14 +35,26 @@ Page({
   },
 
   onShow() {
+    if (!requireLogin("/pages/category/category")) return;
+    const merchantChanged = this.refreshSelectedMerchant();
     const pendingCategoryId = wx.getStorageSync("categoryFilterId");
     if (pendingCategoryId) {
       wx.removeStorageSync("categoryFilterId");
-      this.switchCategory(pendingCategoryId);
+      const categoryId = parseInt(pendingCategoryId, 10);
+      this.switchCategory(Number.isNaN(categoryId) ? pendingCategoryId : categoryId);
+      return;
+    }
+
+    if (merchantChanged && !this.data.loading) {
+      this.refreshProducts();
     }
   },
 
   onPullDownRefresh() {
+    if (!requireLogin("/pages/category/category")) {
+      wx.stopPullDownRefresh();
+      return;
+    }
     this.refreshProducts().finally(() => wx.stopPullDownRefresh());
   },
 
@@ -49,11 +68,12 @@ Page({
     try {
       const res = await get("/categories");
       if (res.success && Array.isArray(res.data)) {
-        const categories = res.data.map(item => ({
+        const categories = res.data.map((item) => ({
           id: item.id,
           name: item.name,
+          code: item.code || "",
           icon: item.icon || "",
-          sort: item.sort || 0,
+          sort: item.sort || item.sortOrder || 0,
         }));
         this.setData({ categories });
       } else {
@@ -69,23 +89,46 @@ Page({
     await this.loadProducts();
   },
 
+  refreshSelectedMerchant() {
+    const selected = wx.getStorageSync(SELECTED_MERCHANT_KEY);
+    const name = selected && selected.name ? String(selected.name) : "全部花店";
+    const address = selected && selected.address ? String(selected.address) : "";
+    const changed = name !== this.data.selectedMerchantName || address !== this.data.selectedMerchantAddress;
+    this.setData({ selectedMerchantName: name, selectedMerchantAddress: address });
+    return changed;
+  },
+
+  onPickMerchant() {
+    wx.navigateTo({ url: "/pages/merchant-select/merchant-select" });
+  },
+
   async loadProducts() {
     if (this.data.loading) return;
 
     this.setData({ loading: true, initialLoading: this.data.page === 0 });
 
     try {
-      const { currentCategoryId, page, size } = this.data;
+      const { currentCategoryId, page, size, categories } = this.data;
       let url = `/products?page=${page}&size=${size}`;
       if (currentCategoryId) {
-        url += `&categoryId=${currentCategoryId}`;
+        const currentCategory = categories.find((item) => String(item.id) === String(currentCategoryId));
+        const categoryValue = currentCategory?.code || currentCategory?.name || "";
+        if (categoryValue) {
+          url += `&category=${encodeURIComponent(categoryValue)}`;
+        }
       }
 
       const res = await get(url);
 
       if (res.success && Array.isArray(res.data)) {
-        const newProducts = res.data.map(item => this.normalizeProduct(item));
-        const products = page === 0 ? newProducts : [...this.data.products, ...newProducts];
+        const newProducts = res.data.map((item) => this.normalizeProduct(item));
+        const selectedMerchant = wx.getStorageSync(SELECTED_MERCHANT_KEY);
+        const selectedName = selectedMerchant && selectedMerchant.name ? String(selectedMerchant.name) : "";
+        const pageProducts = selectedName
+          ? newProducts.filter((item) => item.merchantName === selectedName)
+          : newProducts;
+
+        const products = page === 0 ? pageProducts : [...this.data.products, ...pageProducts];
         const hasMore = newProducts.length === size;
 
         this.setData({
@@ -128,18 +171,20 @@ Page({
       id: item.id,
       title: item.title || item.name || "",
       unitPrice: formatPrice(resolvePrice(item)),
+      merchantName: resolveMerchantName(item),
       coverImage: resolveImageUrl(item.coverImage || item.cover_image || item.image || ""),
-      categoryName: item.categoryName || item.category_name || "",
+      categoryName: item.categoryName || item.category_name || item.category || "",
       sales: item.sales || 0,
     };
   },
 
   switchCategory(categoryId) {
-    const category = this.data.categories.find(c => c.id === categoryId);
+    const normalizedCategoryId = Number.isNaN(parseInt(categoryId, 10)) ? categoryId : parseInt(categoryId, 10);
+    const category = this.data.categories.find((item) => String(item.id) === String(normalizedCategoryId));
     const categoryName = category ? category.name : "全部商品";
 
     this.setData({
-      currentCategoryId: categoryId,
+      currentCategoryId: normalizedCategoryId,
       currentCategoryName: categoryName,
       products: [],
       page: 0,
@@ -150,8 +195,9 @@ Page({
   },
 
   onTapCategory(e) {
-    const id = e.currentTarget.dataset.id;
-    if (id === this.data.currentCategoryId) return;
+    const rawId = e.currentTarget.dataset.id;
+    const id = Number.isNaN(parseInt(rawId, 10)) ? rawId : parseInt(rawId, 10);
+    if (String(id) === String(this.data.currentCategoryId)) return;
     this.switchCategory(id);
   },
 

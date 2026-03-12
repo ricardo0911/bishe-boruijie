@@ -1,5 +1,6 @@
 ﻿const { get, post, put } = require("../../utils/request");
 const { getUserId } = require("../../utils/format");
+const { requireLogin } = require("../../utils/auth");
 
 Page({
   data: {
@@ -20,6 +21,7 @@ Page({
   },
 
   onLoad(options) {
+    if (!requireLogin()) return;
     if (options && options.id) {
       this.setData({
         isEdit: true,
@@ -31,6 +33,7 @@ Page({
 
   async loadAddress(addressId) {
     const userId = getUserId();
+    if (!userId) return;
     try {
       const res = await get(`/users/${userId}/addresses/${addressId}`);
       if (res.success && res.data) {

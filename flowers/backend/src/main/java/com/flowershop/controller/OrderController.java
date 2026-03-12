@@ -2,6 +2,7 @@ package com.flowershop.controller;
 
 import com.flowershop.common.ApiResponse;
 import com.flowershop.dto.CancelOrderRequest;
+import com.flowershop.dto.ConfirmOrderRequest;
 import com.flowershop.dto.CreateOrderRequest;
 import com.flowershop.dto.CreateOrderResponse;
 import com.flowershop.dto.OrderDetailResponse;
@@ -74,8 +75,11 @@ public class OrderController {
     }
 
     @PostMapping("/{orderNo}/confirm")
-    public ApiResponse<SimpleActionResponse> confirmOrder(@PathVariable String orderNo) {
-        return ApiResponse.success(orderService.confirmOrder(orderNo));
+    public ApiResponse<SimpleActionResponse> confirmOrder(
+        @PathVariable String orderNo,
+        @RequestBody(required = false) ConfirmOrderRequest request
+    ) {
+        return ApiResponse.success(orderService.confirmOrder(orderNo, request));
     }
 
     @PostMapping("/{orderNo}/complete")
@@ -89,11 +93,5 @@ public class OrderController {
         @RequestBody(required = false) CancelOrderRequest request
     ) {
         return ApiResponse.success(orderService.cancelOrder(orderNo, request));
-    }
-
-    @PostMapping("/release-expired")
-    public ApiResponse<Map<String, Integer>> releaseExpiredOrders() {
-        int count = orderService.releaseExpiredOrders();
-        return ApiResponse.success(Map.of("releasedOrders", count));
     }
 }

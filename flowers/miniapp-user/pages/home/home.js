@@ -1,5 +1,8 @@
 const { get } = require("../../utils/request");
-const { formatPrice, resolvePrice, resolveImageUrl } = require("../../utils/format");
+const { formatPrice, resolvePrice, resolveImageUrl, resolveMerchantName } = require("../../utils/format");
+const { requireLogin } = require("../../utils/auth");
+
+const SELECTED_MERCHANT_KEY = "selected_merchant";
 
 const CATEGORY_META = {
   VALENTINE: { label: "情人节", short: "爱" },
@@ -89,11 +92,27 @@ Page({
     giftMessage: "",
     recommendProducts: [],
     hotProducts: [],
+    selectedMerchantName: "全部花店",
+    selectedMerchantAddress: "",
     loading: true,
   },
 
   onLoad() {
+    if (!requireLogin("/pages/home/home")) return;
+    this.refreshSelectedMerchant();
     this.loadProducts();
+  },
+
+  onShow() {
+    if (!requireLogin("/pages/home/home")) return;
+    const changed = this.refreshSelectedMerchant();
+    if (changed) {
+      this.loadProducts();
+      return;
+    }
+    if (!this.data.loading && !this.data.hotProducts.length) {
+      this.loadProducts();
+    }
   },
 
   onPullDownRefresh() {
@@ -114,11 +133,20 @@ Page({
         return;
       }
 
-      const normalized = productsRes.data.map((item) => this.normalizeProduct(item));
+      const selectedMerchant = wx.getStorageSync(SELECTED_MERCHANT_KEY);
+      const selectedName = selectedMerchant && selectedMerchant.name ? String(selectedMerchant.name) : "";
+
+      let normalized = productsRes.data.map((item) => this.normalizeProduct(item));
+      if (selectedName) {
+        normalized = normalized.filter((item) => item.merchantName === selectedName);
+      }
       let recommendProducts = normalized.slice(0, 4);
 
       if (recommendRes && recommendRes.success && Array.isArray(recommendRes.data) && recommendRes.data.length) {
         recommendProducts = recommendRes.data.map((item) => this.normalizeProduct(item));
+        if (selectedName) {
+          recommendProducts = recommendProducts.filter((item) => item.merchantName === selectedName);
+        }
       }
 
       const inspirationProducts = this.buildInspirationProducts(normalized);
@@ -139,6 +167,19 @@ Page({
     }
   },
 
+  refreshSelectedMerchant() {
+    const selected = wx.getStorageSync(SELECTED_MERCHANT_KEY);
+    const name = selected && selected.name ? String(selected.name) : "全部花店";
+    const address = selected && selected.address ? String(selected.address) : "";
+    const changed = name !== this.data.selectedMerchantName || address !== this.data.selectedMerchantAddress;
+    this.setData({ selectedMerchantName: name, selectedMerchantAddress: address });
+    return changed;
+  },
+
+  onPickMerchant() {
+    wx.navigateTo({ url: "/pages/merchant-select/merchant-select" });
+  },
+
   normalizeProduct(item) {
     const category = item.category || "DAILY";
     const meta = CATEGORY_META[category] || { label: "精选", short: "花" };
@@ -152,6 +193,7 @@ Page({
       unitPrice: formatPrice(priceNumber),
       priceNumber,
       recentSales: Number(item.recentSales || 0),
+      merchantName: resolveMerchantName(item),
       coverImage: resolveImageUrl(item.coverImage || item.cover_image || ""),
     };
   },

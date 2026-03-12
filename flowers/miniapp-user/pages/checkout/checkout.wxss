@@ -76,46 +76,6 @@
   font-weight: 300;
 }
 
-/* 优惠券卡片 */
-.coupon-card {
-  margin-top: 12rpx;
-  padding: 24rpx;
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-}
-
-.coupon-mode-tip {
-  margin: 0 20rpx 12rpx;
-  padding: 12rpx 16rpx;
-  border-radius: 10rpx;
-  background: #fff6e8;
-  color: #8a5a17;
-  font-size: 22rpx;
-}
-
-.coupon-label {
-  font-size: 28rpx;
-  color: #675761;
-}
-
-.coupon-value {
-  flex: 1;
-  text-align: right;
-  font-size: 26rpx;
-  color: #8f7d88;
-}
-
-.coupon-selected {
-  color: #bf4d68;
-  font-weight: 600;
-}
-
-.coupon-arrow {
-  font-size: 36rpx;
-  color: #a08f99;
-  font-weight: 300;
-}
 
 .form-card {
   padding: 0 20rpx;
@@ -235,18 +195,7 @@
   margin-top: 12rpx;
 }
 
-.coupon-card + .fee-card {
-  margin-top: 12rpx;
-}
 
-.discount-row {
-  color: #bf4d68;
-}
-
-.discount-price {
-  color: #bf4d68;
-  font-weight: 600;
-}
 
 .form-item {
   min-height: 94rpx;
@@ -316,6 +265,13 @@
   color: #352b33;
 }
 
+.item-merchant {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #8d7b86;
+}
+
 .item-bottom {
   margin-top: 8rpx;
   display: flex;
@@ -340,6 +296,11 @@
   font-size: 27rpx;
   color: #675761;
   min-height: 58rpx;
+}
+
+.discount-price {
+  color: #bf4d68;
+  font-weight: 600;
 }
 
 .fee-row.total-row {

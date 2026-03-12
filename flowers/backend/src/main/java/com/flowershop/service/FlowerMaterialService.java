@@ -63,4 +63,48 @@ public class FlowerMaterialService {
             throw new BusinessException("FLOWER_NOT_FOUND", "花材不存在: " + id);
         }
     }
+    public void delete(Long id) {
+        getById(id);
+
+        if (countReferencesIfTableExists("product_bom", id) > 0) {
+            throw new BusinessException("FLOWER_IN_USE", "该花材已被商品花材清单引用，无法删除");
+        }
+        if (countReferencesIfTableExists("inventory_batch", id) > 0) {
+            throw new BusinessException("FLOWER_IN_USE", "该花材已有库存批次记录，无法删除");
+        }
+        if (countReferencesIfTableExists("stock_lock", id) > 0) {
+            throw new BusinessException("FLOWER_IN_USE", "该花材存在库存锁定记录，无法删除");
+        }
+
+        int deleted = jdbcTemplate.update("DELETE FROM flower_material WHERE id = ?", id);
+        if (deleted == 0) {
+            throw new BusinessException("FLOWER_NOT_FOUND", "花材不存在: " + id);
+        }
+    }
+
+    private long countReferencesIfTableExists(String tableName, Long flowerId) {
+        if (!tableExists(tableName)) {
+            return 0;
+        }
+        Long count = jdbcTemplate.queryForObject(
+            "SELECT COUNT(1) FROM " + tableName + " WHERE flower_id = ?",
+            Long.class,
+            flowerId
+        );
+        return count == null ? 0 : count;
+    }
+
+    private boolean tableExists(String tableName) {
+        Integer count = jdbcTemplate.queryForObject(
+            """
+            SELECT COUNT(1)
+            FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = ?
+            """,
+            Integer.class,
+            tableName
+        );
+        return count != null && count > 0;
+    }
 }

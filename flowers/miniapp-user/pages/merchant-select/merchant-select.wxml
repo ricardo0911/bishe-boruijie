@@ -1,0 +1,40 @@
+<view class="container">
+  <view class="card header-card">
+    <text class="header-title">选择花店</text>
+    <text class="header-sub">可查看门店地址，选择后将优先展示该门店商品。</text>
+  </view>
+
+  <view class="card option-card {{selectedName === '' ? 'active' : ''}}" bindtap="onSelectAll">
+    <view class="option-main">
+      <text class="option-name">全部花店</text>
+      <text class="option-sub">不限制门店</text>
+    </view>
+    <text class="option-check">{{selectedName === '' ? '✓' : ''}}</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty-wrap">
+    <text class="empty-title">加载中...</text>
+  </view>
+
+  <view wx:elif="{{merchants.length === 0}}" class="empty-wrap">
+    <text class="empty-title">暂无可选花店</text>
+  </view>
+
+  <view wx:else class="list">
+    <view
+      wx:for="{{merchants}}"
+      wx:key="id"
+      class="card option-card {{selectedName === item.name ? 'active' : ''}}"
+      data-index="{{index}}"
+      bindtap="onSelectMerchant"
+    >
+      <view class="option-main">
+        <text class="option-name">{{item.name}}</text>
+        <text wx:if="{{item.address}}" class="option-sub">{{item.address}}</text>
+        <text wx:if="{{item.contactPhone}}" class="option-sub phone">{{item.contactPhone}}</text>
+      </view>
+      <text class="option-check">{{selectedName === item.name ? '✓' : ''}}</text>
+    </view>
+  </view>
+</view>
+

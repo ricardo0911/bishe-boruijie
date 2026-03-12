@@ -34,10 +34,14 @@
       <view class="card info-card">
         <view class="title-row">
           <text class="title">{{product.title}}</text>
-          <button class="share-button" open-type="share" bindtap="onShare">
-            <text class="share-icon">↗</text>
-            <text class="share-text">分享</text>
-          </button>
+        </view>
+        <view class="merchant-row" bindtap="onPickMerchant">
+          <text class="merchant-label">店铺</text>
+          <view class="merchant-main">
+            <text class="merchant-name">{{product.merchantName}}</text>
+            <text wx:if="{{merchantAddress}}" class="merchant-address">{{merchantAddress}}</text>
+          </view>
+          <text class="merchant-arrow">›</text>
         </view>
 
         <view class="price-meta-row">
@@ -51,28 +55,8 @@
           </view>
         </view>
 
-        <text class="desc">{{product.description || '暂无描述'}}</text>
-
-        <view class="tag-row">
-          <text class="tag">{{product.typeLabel}}</text>
-          <text class="tag">{{product.categoryLabel}}</text>
-        </view>
       </view>
 
-      <view class="card service-strip">
-        <view class="service-item">
-          <text class="service-dot"></text>
-          <text class="service-text">花材新鲜</text>
-        </view>
-        <view class="service-item">
-          <text class="service-dot"></text>
-          <text class="service-text">同城速配</text>
-        </view>
-        <view class="service-item">
-          <text class="service-dot"></text>
-          <text class="service-text">支持贺卡</text>
-        </view>
-      </view>
 
       <view class="card spec-entry" bindtap="showSpecPopup" data-type="cart">
         <text class="spec-label">规格</text>
@@ -118,6 +102,11 @@
             <text class="review-content">{{item.content || '用户未填写评价内容'}}</text>
             <view wx:if="{{item.images && item.images.length > 0}}" class="review-images">
               <image wx:for="{{item.images}}" wx:for-item="img" wx:key="index" class="review-img" src="{{img}}" mode="aspectFill" />
+            </view>
+            <view wx:if="{{item.reply}}" class="reply-box">
+              <text class="reply-title">商家回复</text>
+              <text class="reply-content">{{item.reply}}</text>
+              <text wx:if="{{item.replyTime}}" class="reply-time">{{item.replyTime}}</text>
             </view>
             <text wx:if="{{item.createTime}}" class="review-time">{{item.createTime}}</text>
           </view>

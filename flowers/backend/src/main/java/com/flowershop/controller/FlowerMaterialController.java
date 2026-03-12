@@ -59,4 +59,9 @@ public class FlowerMaterialController {
         );
         return ApiResponse.success("更新成功", null);
     }
+    @DeleteMapping("/{id}")
+    public ApiResponse<String> delete(@PathVariable Long id) {
+        flowerMaterialService.delete(id);
+        return ApiResponse.success("删除成功", null);
+    }
 }

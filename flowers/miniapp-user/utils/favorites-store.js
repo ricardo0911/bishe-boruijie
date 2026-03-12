@@ -6,7 +6,7 @@ function toId(value) {
 }
 
 function buildStoreKey(userId) {
-  return `${FAVORITES_STORE_PREFIX}${userId || "guest"}`;
+  return `${FAVORITES_STORE_PREFIX}${toId(userId)}`;
 }
 
 function readFavorites(userId) {

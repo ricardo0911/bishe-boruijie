@@ -3,7 +3,7 @@
     <input
       class="search-input"
       value="{{keyword}}"
-      placeholder="搜索鲜花、花束、节日主题"
+      placeholder="搜索鲜花、分类、店铺"
       confirm-type="search"
       bindinput="onInputKeyword"
       bindconfirm="onConfirmSearch"
@@ -16,9 +16,36 @@
     <text class="tool-link" bindtap="onClearKeyword">清空</text>
   </view>
 
+  <view class="merchant-filter card" bindtap="onPickMerchant">
+    <text class="merchant-filter-label">花店</text>
+    <text class="merchant-filter-name">{{selectedMerchantName}}</text>
+    <text class="merchant-filter-arrow">›</text>
+  </view>
+
   <view class="search-state" wx:if="{{!loading}}">
     <text class="state-text">共 {{filteredProducts.length}} 件商品</text>
+    <text class="state-sep">·</text>
+    <text class="state-text">{{activeCategoryLabel}}</text>
   </view>
+
+  <scroll-view
+    wx:if="{{!loading && categories.length > 0}}"
+    class="category-strip"
+    scroll-x="true"
+    show-scrollbar="false"
+  >
+    <view class="category-strip-inner">
+      <view
+        class="category-chip {{activeCategory === item.key ? 'category-chip-active' : ''}}"
+        wx:for="{{categories}}"
+        wx:key="key"
+        data-key="{{item.key}}"
+        bindtap="onSelectCategory"
+      >
+        <text>{{item.label}}</text>
+      </view>
+    </view>
+  </scroll-view>
 
   <view wx:if="{{loading}}" class="empty-wrap">
     <text class="empty-title">加载中...</text>
@@ -26,6 +53,7 @@
 
   <view wx:elif="{{filteredProducts.length === 0}}" class="empty-wrap">
     <text class="empty-title">没有找到相关商品</text>
+    <text class="empty-subtitle">试试切换鲜花分类或输入店铺关键词</text>
   </view>
 
   <view wx:else class="product-grid">
@@ -41,9 +69,16 @@
         <view wx:else class="image-placeholder">花</view>
       </view>
       <view class="product-body">
+        <view class="product-tags">
+          <text class="product-tag">{{item.categoryLabel}}</text>
+        </view>
         <text class="product-title">{{item.title}}</text>
+        <view class="shop-row">
+          <text class="shop-label">店铺</text>
+          <text class="shop-name">{{item.shopName}}</text>
+        </view>
         <view class="price-row">
-          <text class="price-symbol">￥</text>
+          <text class="price-symbol">¥</text>
           <text class="price-value">{{item.unitPrice}}</text>
         </view>
       </view>

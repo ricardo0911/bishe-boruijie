@@ -1,11 +1,10 @@
 <view class="container safe-bottom">
-  <!-- 状态筛选标签 -->
   <scroll-view class="tab-scroll" scroll-x="true" enable-flex="true" show-scrollbar="false">
     <view class="tab-wrap">
       <view
         wx:for="{{tabs}}"
         wx:key="key"
-        class="tab-pill {{currentStatus===item.key?'tab-pill-active':''}}"
+        class="tab-pill {{currentStatus === item.key ? 'tab-pill-active' : ''}}"
         data-key="{{item.key}}"
         bindtap="onTapTab"
       >
@@ -15,12 +14,16 @@
   </scroll-view>
 
   <view class="orders-banner card">
-    <text class="orders-banner-title">花之都 · 订单花笺</text>
-    <text class="orders-banner-sub">从下单到签收，陪你追踪每一束花的旅程。</text>
+    <text class="orders-banner-title">订单列表</text>
+    <text class="orders-banner-sub">实时查看鲜花订单状态，支付、退款、收货都可以在这里完成。</text>
   </view>
 
-  <!-- 订单列表 -->
-  <view wx:if="{{orders.length>0}}">
+  <view wx:if="{{loading}}" class="loading-wrap">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">正在加载订单...</text>
+  </view>
+
+  <view wx:elif="{{orders.length > 0}}">
     <view
       class="order-card card"
       wx:for="{{orders}}"
@@ -28,7 +31,6 @@
       data-no="{{item.orderNo}}"
       bindtap="onTapOrder"
     >
-      <!-- 订单头部 -->
       <view class="order-head">
         <view class="order-head-left">
           <text class="order-no">订单号：{{item.orderNo}}</text>
@@ -37,7 +39,6 @@
         <text class="status-pill {{item.statusClass}}">{{item.statusLabel}}</text>
       </view>
 
-      <!-- 商品列表（最多显示2个） -->
       <view class="order-goods-list">
         <view class="goods-item" wx:for="{{item.items}}" wx:key="productId" wx:for-item="goods">
           <image
@@ -46,20 +47,18 @@
             mode="aspectFill"
           />
           <view class="goods-info">
-            <text class="goods-title">{{goods.productTitle}}</text>
+            <text class="goods-title">{{goods.productTitle || goods.productName || goods.title}}</text>
             <view class="goods-meta">
               <text class="goods-price">¥{{goods.unitPrice}}</text>
               <text class="goods-qty">x{{goods.quantity}}</text>
             </view>
           </view>
         </view>
-        <!-- 更多商品提示 -->
-        <view class="more-goods" wx:if="{{item.items.length > 2}}">
-          <text class="more-text">共{{item.itemCount}}件商品</text>
+        <view class="more-goods" wx:if="{{item.itemCount > 2}}">
+          <text class="more-text">共 {{item.itemCount}} 件商品</text>
         </view>
       </view>
 
-      <!-- 订单底部 -->
       <view class="order-foot">
         <view class="order-total">
           <text class="total-label">合计：</text>
@@ -67,21 +66,20 @@
           <text class="total-amount">{{item.totalAmount}}</text>
         </view>
 
-        <!-- 待支付倒计时 -->
         <view class="countdown-wrap" wx:if="{{item.status === 'PENDING_PAY' && countdownMap[item.orderNo]}}">
-          <text class="countdown-text">剩余 {{countdownMap[item.orderNo]}}</text>
+          <text class="countdown-text">剩余支付时间：{{countdownMap[item.orderNo]}}</text>
         </view>
       </view>
 
-      <!-- 操作按钮区 -->
+      <view wx:if="{{item.status === 'COMPLETED' && item.reviewableCount > 0}}" class="review-summary">{{item.reviewSummary}}</view>
+
       <view class="order-actions">
-        <!-- 待支付状态 -->
         <block wx:if="{{item.status === 'PENDING_PAY'}}">
           <button
             class="btn-primary action-btn"
             data-no="{{item.orderNo}}"
             data-amount="{{item.totalAmount}}"
-            loading="{{actionOrderNo===item.orderNo}}"
+            loading="{{actionOrderNo === item.orderNo}}"
             bindtap="onPay"
           >
             立即支付
@@ -89,83 +87,113 @@
           <button
             class="btn-secondary action-btn"
             data-no="{{item.orderNo}}"
-            loading="{{actionOrderNo===item.orderNo}}"
+            loading="{{actionOrderNo === item.orderNo}}"
             bindtap="onCancel"
           >
             取消订单
           </button>
         </block>
 
-        <!-- 已支付/待发货状态 -->
-        <block wx:if="{{item.status === 'PAID' || item.status === 'CONFIRMED'}}">
+        <block wx:elif="{{item.status === 'PAID'}}">
           <button
             class="btn-secondary action-btn"
             data-no="{{item.orderNo}}"
-            loading="{{actionOrderNo===item.orderNo}}"
-            bindtap="onCancel"
+            bindtap="onTapOrder"
+          >
+            查看详情
+          </button>
+          <button
+            class="btn-primary action-btn"
+            data-no="{{item.orderNo}}"
+            loading="{{actionOrderNo === item.orderNo}}"
+            bindtap="onRefund"
           >
             申请退款
           </button>
         </block>
 
-        <!-- 已发货状态 -->
-        <block wx:if="{{item.status === 'SHIPPED'}}">
+        <block wx:elif="{{item.status === 'CONFIRMED' || item.status === 'SHIPPED'}}">
+          <button
+            class="btn-secondary action-btn"
+            data-no="{{item.orderNo}}"
+            bindtap="onViewLogistics"
+          >
+            查看物流
+          </button>
           <button
             class="btn-primary action-btn"
             data-no="{{item.orderNo}}"
-            loading="{{actionOrderNo===item.orderNo}}"
+            loading="{{actionOrderNo === item.orderNo}}"
             bindtap="onConfirmReceive"
           >
             确认收货
           </button>
-          <button class="btn-secondary action-btn" data-no="{{item.orderNo}}" bindtap="onTapOrder">
-            查看物流
+        </block>
+
+        <block wx:elif="{{item.status === 'COMPLETED'}}">
+          <button
+            class="btn-secondary action-btn {{item.reviewButtonClass}}"
+            data-no="{{item.orderNo}}"
+            bindtap="onGoReview"
+          >
+            {{item.reviewActionText}}
+          </button>
+          <button
+            class="btn-primary action-btn"
+            data-no="{{item.orderNo}}"
+            loading="{{actionOrderNo === item.orderNo}}"
+            bindtap="onRefund"
+          >
+            申请退款
           </button>
         </block>
 
-        <!-- 已完成状态 -->
-        <block wx:if="{{item.status === 'COMPLETED'}}">
+        <block wx:else>
+          <button
+            class="btn-secondary action-btn"
+            data-no="{{item.orderNo}}"
+            bindtap="onTapOrder"
+          >
+            查看详情
+          </button>
           <button
             class="btn-primary action-btn"
             data-no="{{item.orderNo}}"
             bindtap="onBuyAgain"
           >
-            再次购买
-          </button>
-          <button class="btn-secondary action-btn" data-no="{{item.orderNo}}" bindtap="onTapOrder">
-            查看详情
-          </button>
-        </block>
-
-        <!-- 已取消/已退款状态 -->
-        <block wx:if="{{item.status === 'CANCELLED' || item.status === 'REFUNDED'}}">
-          <button
-            class="btn-primary action-btn"
-            data-no="{{item.orderNo}}"
-            bindtap="onBuyAgain"
-          >
-            再次购买
-          </button>
-          <button class="btn-secondary action-btn" data-no="{{item.orderNo}}" bindtap="onTapOrder">
-            查看详情
+            再来一单
           </button>
         </block>
       </view>
     </view>
-
   </view>
 
-  <!-- 空状态 -->
-  <view wx:elif="{{!loading}}" class="empty-wrap">
+  <view wx:else class="empty-wrap">
     <image class="empty-icon" src="/assets/empty.png" mode="aspectFit" />
     <text class="empty-title">暂无订单</text>
-    <text class="empty-desc">去选购心仪的鲜花吧</text>
+    <text class="empty-desc">去首页挑选一束鲜花，完成下单后会显示在这里。</text>
     <button class="btn-primary empty-btn" bindtap="onBuyAgain">去逛逛</button>
   </view>
 
-  <!-- 加载中 -->
-  <view wx:if="{{loading}}" class="loading-wrap">
-    <view class="loading-spinner"></view>
-    <text class="loading-text">加载中...</text>
+  <view wx:if="{{refundPopupVisible}}" class="refund-dialog-mask" bindtap="onCloseRefundPopup">
+    <view class="refund-dialog" catchtap="noop" catchtouchmove="noop">
+      <view class="refund-dialog-header">
+        <text class="refund-dialog-title">申请退款</text>
+        <text class="refund-dialog-subtitle">请填写退款理由，提交后将进入商家审核。</text>
+      </view>
+      <textarea
+        class="refund-dialog-textarea"
+        value="{{refundReason}}"
+        placeholder="请填写退款理由"
+        maxlength="500"
+        auto-height
+        focus="{{refundPopupVisible}}"
+        bindinput="onInputRefundReason"
+      />
+      <view class="refund-dialog-footer">
+        <button class="refund-dialog-btn refund-dialog-cancel" bindtap="onCloseRefundPopup" disabled="{{actionOrderNo === refundOrderNo}}">取消</button>
+        <button class="refund-dialog-btn refund-dialog-confirm" bindtap="onSubmitRefund" loading="{{actionOrderNo === refundOrderNo}}">提交申请</button>
+      </view>
+    </view>
   </view>
 </view>

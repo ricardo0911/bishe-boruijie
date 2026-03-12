@@ -1,11 +1,16 @@
-﻿const { get, post } = require("../../utils/request");
+const { get, post } = require("../../utils/request");
 const { formatPrice, resolveImageUrl } = require("../../utils/format");
+const { requireLogin } = require("../../utils/auth");
+const { resolveDeliveryModeLabel, resolveDeliverySlotLabel, stripLegacyDeliveryRemark } = require("../../utils/delivery");
 
 const ORDER_STATUS = {
   LOCKED: "LOCKED",
   PENDING_PAY: "PENDING_PAY",
   PAID: "PAID",
   CONFIRMED: "CONFIRMED",
+  REFUND_REQUESTED: "REFUND_REQUESTED",
+  REFUNDING: "REFUNDING",
+  REFUND_FAILED: "REFUND_FAILED",
   SHIPPED: "SHIPPED",
   COMPLETED: "COMPLETED",
   CANCELLED: "CANCELLED",
@@ -15,8 +20,11 @@ const ORDER_STATUS = {
 const STATUS_LABEL_MAP = {
   LOCKED: "待支付",
   PENDING_PAY: "待支付",
-  PAID: "已支付",
-  CONFIRMED: "待发货",
+  PAID: "待发货",
+  CONFIRMED: "待收货",
+  REFUND_REQUESTED: "退款审核中",
+  REFUNDING: "退款处理中",
+  REFUND_FAILED: "退款失败",
   SHIPPED: "待收货",
   COMPLETED: "已完成",
   CANCELLED: "已取消",
@@ -27,7 +35,10 @@ const STATUS_DESC_MAP = {
   LOCKED: "请在30分钟内完成支付，超时订单将自动取消",
   PENDING_PAY: "请在30分钟内完成支付，超时订单将自动取消",
   PAID: "商家正在准备您的订单，请耐心等待",
-  CONFIRMED: "商家已确认订单，正在安排发货",
+  CONFIRMED: "商品已发出，请注意查收",
+  REFUND_REQUESTED: "退款申请已提交，等待商家审核",
+  REFUNDING: "退款审核已通过，正在处理退款",
+  REFUND_FAILED: "退款处理失败，请联系商家人工处理",
   SHIPPED: "商品已发出，请注意查收",
   COMPLETED: "订单已完成，感谢您的购买",
   CANCELLED: "订单已取消",
@@ -50,7 +61,8 @@ function resolveStatusClass(status) {
   if (status === ORDER_STATUS.PAID || status === ORDER_STATUS.COMPLETED) return "success";
   if (status === ORDER_STATUS.CANCELLED || status === ORDER_STATUS.REFUNDED) return "danger";
   if (status === ORDER_STATUS.PENDING_PAY || status === ORDER_STATUS.LOCKED) return "warning";
-  if (status === ORDER_STATUS.SHIPPED) return "info";
+  if (status === ORDER_STATUS.REFUND_REQUESTED || status === ORDER_STATUS.REFUNDING || status === ORDER_STATUS.REFUND_FAILED) return "warning";
+  if (status === ORDER_STATUS.CONFIRMED || status === ORDER_STATUS.SHIPPED) return "info";
   return "default";
 }
 
@@ -78,6 +90,8 @@ Page({
     order: null,
     countdown: null,
     actionLoading: false,
+    showRefundDialog: false,
+    refundReason: "",
     productCoverMap: {},
   },
 
@@ -85,6 +99,7 @@ Page({
   productCoverCache: null,
 
   onLoad(options) {
+    if (!requireLogin()) return;
     const orderNo = options.orderNo || "";
     if (!orderNo) {
       wx.showToast({ title: "订单号错误", icon: "none" });
@@ -96,6 +111,7 @@ Page({
   },
 
   onShow() {
+    if (!requireLogin()) return;
     if (this.data.orderNo && !this.data.loading) {
       this.loadOrderDetail();
     }
@@ -173,6 +189,8 @@ Page({
 
     const goodsAmount = items.reduce((sum, it) => sum + Number(it.unitPrice || 0) * Number(it.quantity || 0), 0);
     const deliveryFee = Number(item.deliveryFee || 0);
+    const deliveryModeLabel = resolveDeliveryModeLabel(item.deliveryMode, item.remark);
+    const deliverySlotLabel = resolveDeliverySlotLabel(item.deliverySlot, item.remark);
 
     return {
       orderNo: item.orderNo,
@@ -186,14 +204,18 @@ Page({
       deliveryFee: formatPrice(deliveryFee),
       totalAmount: formatPrice(item.totalAmount || 0),
       createdAt: item.createdAt || "",
-      paidAt: item.paidAt || "",
+      paidAt: item.paidAt || item.payTime || "",
       shippedAt: item.shippedAt || "",
       completedAt: item.completedAt || "",
-      cancelledAt: item.cancelledAt || "",
+      cancelledAt: item.cancelledAt || item.cancelTime || "",
       receiverName: item.receiverName || "",
       receiverPhone: item.receiverPhone || "",
       receiverAddress: item.receiverAddress || "",
-      remark: item.remark || "",
+      deliveryMode: item.deliveryMode || "",
+      deliverySlot: item.deliverySlot || "",
+      deliveryModeLabel,
+      deliverySlotLabel,
+      remark: stripLegacyDeliveryRemark(item.remark || ""),
       trackingNo: item.trackingNo || "",
       trackingCompany: item.trackingCompany || "",
     };
@@ -315,9 +337,9 @@ Page({
 
     this.setData({ actionLoading: true });
     try {
-      const res = await post(`/orders/${this.data.orderNo}/confirm`);
+      const res = await post(`/orders/${this.data.orderNo}/complete`);
       if (res.success) {
-        wx.showToast({ title: "确认成功", icon: "success" });
+        wx.showToast({ title: "收货成功", icon: "success" });
         setTimeout(() => this.loadOrderDetail(), 500);
       } else {
         wx.showToast({ title: res.message || "操作失败", icon: "none" });
@@ -332,24 +354,45 @@ Page({
   async onRefund() {
     if (this.data.actionLoading) return;
 
-    const confirmRes = await new Promise((resolve) => {
-      wx.showModal({
-        title: "申请退款",
-        content: "确定要申请退款吗？",
-        confirmText: "确定",
-        cancelText: "取消",
-        confirmColor: "#cb4456",
-        success: resolve,
-        fail: () => resolve({ confirm: false }),
-      });
+    this.setData({
+      showRefundDialog: true,
+      refundReason: "",
     });
+  },
 
-    if (!confirmRes.confirm) return;
+  onInputRefundReason(e) {
+    this.setData({ refundReason: e.detail.value || "" });
+  },
+
+  onCloseRefundDialog() {
+    if (this.data.actionLoading) return;
+    this.setData({
+      showRefundDialog: false,
+      refundReason: "",
+    });
+  },
+
+  async onSubmitRefund() {
+    if (this.data.actionLoading) return;
+
+    const reason = (this.data.refundReason || "").trim();
+    if (!reason) {
+      wx.showToast({ title: "请填写退款理由", icon: "none" });
+      return;
+    }
 
     this.setData({ actionLoading: true });
     try {
-      const res = await post(`/orders/${this.data.orderNo}/cancel`);
+      const res = await post('/after-sales', {
+        orderNo: this.data.orderNo,
+        refundAmount: this.data.order?.totalAmount || '0.00',
+        reason
+      });
       if (res.success) {
+        this.setData({
+          showRefundDialog: false,
+          refundReason: "",
+        });
         wx.showToast({ title: "退款申请已提交", icon: "success" });
         setTimeout(() => this.loadOrderDetail(), 500);
       } else {
@@ -374,6 +417,10 @@ Page({
   },
 
   onViewLogistics() {
-    wx.showToast({ title: "物流功能开发中", icon: "none" });
+    wx.navigateTo({
+      url: `/pages/logistics/logistics?orderNo=${encodeURIComponent(this.data.orderNo)}`,
+    });
   },
+
+  noop() {},
 });
