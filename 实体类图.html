@@ -31,7 +31,7 @@
     .entity-wrap {
       position: relative;
       width: 920px;
-      height: 660px;
+      height: 620px;
       background: #ffffff;
     }
     .entity-svg {
@@ -43,8 +43,8 @@
     }
     .entity-center {
       position: absolute;
-      width: 200px;
-      height: 96px;
+      width: 176px;
+      height: 80px;
       transform: translate(-50%, -50%);
       background: #ffffff;
       color: #222;
@@ -53,21 +53,21 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 36px;
+      font-size: 32px;
       letter-spacing: 1px;
       z-index: 3;
     }
     .attr {
       position: absolute;
       transform: translate(-50%, -50%);
-      width: 168px;
-      height: 84px;
+      width: 156px;
+      height: 72px;
       text-align: center;
-      border-radius: 999px;
+      border-radius: 50% / 50%;
       border: 3px solid #444a52;
       background: #ffffff;
       color: #222;
-      font-size: 20px;
+      font-size: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -198,90 +198,61 @@
 
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("class", "entity-svg");
-      svg.setAttribute("viewBox", "0 0 920 660");
+      svg.setAttribute("viewBox", "0 0 920 620");
       wrap.appendChild(svg);
 
       const cx = 460;
-      const cy = 478;
+      const cy = 310;
+      const centerWidth = 176;
+      const centerHeight = 80;
+      const attrHeight = 72;
+      const wrapWidth = 920;
+      const columnInset = 34;
 
       const center = document.createElement("div");
       center.className = "entity-center";
+      center.style.width = centerWidth + "px";
+      center.style.height = centerHeight + "px";
       center.style.left = cx + "px";
       center.style.top = cy + "px";
       center.textContent = entity.name;
       wrap.appendChild(center);
 
-      const count = entity.attrs.length;
-      const attrWidths = entity.attrs.map((name) => Math.max(150, Math.min(210, 92 + name.length * 20)));
-      const attrHeight = 84;
-      const wrapWidth = 920;
-      const wrapHeight = 660;
+      const attrWidths = entity.attrs.map((name) => Math.max(132, Math.min(170, 80 + name.length * 12)));
       const lineAnchorX = cx;
-      const lineAnchorY = cy - 48;
-
-      function hasAttrOverlap(nodes) {
-        for (let i = 0; i < nodes.length; i += 1) {
-          for (let j = i + 1; j < nodes.length; j += 1) {
-            const a = nodes[i];
-            const b = nodes[j];
-            const dx = Math.abs(a.x - b.x);
-            const dy = Math.abs(a.y - b.y);
-            const minDx = (a.width + b.width) / 2 + 16;
-            const minDy = attrHeight + 10;
-            if (dx < minDx && dy < minDy) return true;
-          }
-        }
-        return false;
-      }
-
-      function isInsideWrap(nodes) {
-        return nodes.every((node) => (
-          node.x - node.width / 2 >= 14 &&
-          node.x + node.width / 2 <= wrapWidth - 14 &&
-          node.y - attrHeight / 2 >= 14 &&
-          node.y + attrHeight / 2 <= wrapHeight - 14
-        ));
-      }
+      const lineAnchorY = cy;
 
       function buildAttrNodes() {
-        let start = ((count >= 9 ? 216 : count >= 7 ? 222 : 205) * Math.PI) / 180;
-        let end = ((count >= 9 ? -58 : count >= 7 ? -42 : -25) * Math.PI) / 180;
-        let rx = count >= 10 ? 350 : count >= 8 ? 332 : 302;
-        let ry = count >= 10 ? 282 : count >= 8 ? 266 : 242;
-        let lastNodes = [];
+        const leftItems = [];
+        const rightItems = [];
 
-        for (let attempt = 0; attempt < 10; attempt += 1) {
-          const step = count === 1 ? 0 : (end - start) / (count - 1);
-          const nodes = entity.attrs.map((name, i) => {
-            const baseAngle = count === 1 ? -Math.PI / 2 : start + step * i;
-            const nudgeScale = count >= 9 ? 0.12 : count >= 7 ? 0.06 : 0;
-            const nudge = step === 0 ? 0 : (i % 2 === 0 ? -1 : 1) * Math.abs(step) * nudgeScale;
-            const angle = baseAngle + nudge;
-            const radial = count >= 9
-              ? (i % 2 === 0 ? 1.04 : 0.96)
-              : count >= 7
-                ? (i % 2 === 0 ? 1.02 : 0.98)
-                : 1;
-            return {
-              name,
-              width: attrWidths[i],
-              x: cx + Math.cos(angle) * rx * radial,
-              y: cy + Math.sin(angle) * ry * radial,
-            };
-          });
-
-          lastNodes = nodes;
-          if (!hasAttrOverlap(nodes) && isInsideWrap(nodes)) {
-            return nodes;
+        entity.attrs.forEach((name, index) => {
+          const node = { name, width: attrWidths[index] };
+          if (index % 2 === 0) {
+            leftItems.push(node);
+          } else {
+            rightItems.push(node);
           }
+        });
 
-          rx = Math.min(rx + 10, 390);
-          ry = Math.min(ry + 8, 302);
-          start += (2 * Math.PI) / 180;
-          end -= (2 * Math.PI) / 180;
+        function buildColumn(nodes, isLeft) {
+          const count = nodes.length;
+          const span = count <= 1 ? 0 : Math.min(400, Math.max(180, (count - 1) * 104));
+          const startY = cy - span / 2;
+
+          return nodes.map((node, index) => ({
+            ...node,
+            x: isLeft
+              ? columnInset + node.width / 2
+              : wrapWidth - columnInset - node.width / 2,
+            y: count === 1 ? cy : startY + (span / (count - 1)) * index,
+          }));
         }
 
-        return lastNodes;
+        return [
+          ...buildColumn(leftItems, true),
+          ...buildColumn(rightItems, false),
+        ];
       }
 
       const attrNodes = buildAttrNodes();
